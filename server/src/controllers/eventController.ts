@@ -4,7 +4,7 @@ import { log } from '../utils/logger'
 import { MeetupEventSource } from './MeetupEventSource';
 import { EventbriteEventSource } from './EventbriteEventSource';
 
-const getEvents = function (req: Request, res: Response, next: NextFunction) {
+const getEvents = async function (req: Request, res: Response, next: NextFunction) {
 
     let result: Array<string> = [];
 
@@ -18,7 +18,13 @@ const getEvents = function (req: Request, res: Response, next: NextFunction) {
         if (source.enabled) {
 
             log.info('executing getEvent for source: ' + source.id)
-            // for (let e of await eventbriteES.searchEvent("brol")) {
+            let _result1 = await eventbriteES.searchEvent("brol");
+            let _result2 = await meetupES.searchEvent("brol");
+
+            result = _result1.concat(_result2)
+            // result.push('{ id: 1, name: "test"}')
+
+            // for (let e of ) {
             //     result.push(e)
             // }
         }

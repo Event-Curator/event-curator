@@ -12,7 +12,7 @@ class MeetupEventSource extends DefaultEventSource {
     let events = new Array()
     events.push("MEETUP event test 1")
     events.push("MEETUP event test 2")
-    return new Promise(() => events)
+    return new Promise((resolve, reject) => resolve(events))
   }
 
     // public get name(): string {
