@@ -1,6 +1,11 @@
-export interface Event {
-  id: number;
-  name: string;
+interface IEventSource {
+  
+  // must return the lowcase key that can be found in the sources.json config file
+  getId: () => string
+
+
+  searchEvent: (query: string) => Promise<Array<string>>
+
 }
 
-export let events: Event[] = [];
+export { IEventSource }
