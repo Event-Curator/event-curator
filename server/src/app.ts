@@ -1,6 +1,7 @@
 import express from 'express';
 import eventRoute from './routes/eventRoutes';
 import { errorHandler } from './middlewares/errorHandler';
+import { log } from './utils/logger'
 
 const app = express();
 
