@@ -1,15 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { log } from './utils/logger'
+import config from './utils/config';
+import eventRoute from './routes/eventRoutes';
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
+app.use(express.json())
 app.use(cors());
 app.use(express.static("../client/dist"));
+app.use('/api', eventRoute);
+app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}.`);
+app.listen(config.port, () => {
+  log.info(`Server listening on port ${config.port}.`);
 });
