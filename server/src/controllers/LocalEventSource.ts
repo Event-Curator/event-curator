@@ -1,6 +1,6 @@
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
-import * as pe from '../models/event.js'
+import * as pe from '../models/Event.js'
 import dummyData from '../../data/dummy.js'
 
 class LocalEventSource extends DefaultEventSource {
@@ -18,16 +18,18 @@ class LocalEventSource extends DefaultEventSource {
   searchEvent(query: string): Promise<Array<pe.EventType>> {
     log.debug("got query: ", query);
     
-    let anEvent = new pe.Event()
-
     // example
+    // let anEvent = new pe.Event()
     // anEvent.id = 1;
     // anEvent.name = "test";
     // anEvent.description = "this is a description";
+    // anEvent.originUrl = "http://blah";
 
     this.events = dummyData;
+    // this.events.push(anEvent);
 
-    log.debug(this.events);
+    // console.log(this.events.length);
+    // console.log("hello !");
 
     return new Promise( (resolve, reject) => resolve(this.events) );
   }

@@ -16,11 +16,14 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "md5": "^2.3.0",
     "ts-node-dev": "^2.0.0",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "x-ray-scraper": "^3.0.6"
   },
   "devDependencies": {
     "@types/express": "^5.0.2",
+    "@types/md5": "^2.3.5",
     "@types/node": "^22.15.21",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
