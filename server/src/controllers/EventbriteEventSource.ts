@@ -1,5 +1,5 @@
-import { log } from '../utils/logger.js';
-import { DefaultEventSource } from './DefaultEventSource.js';
+import { log } from '../utils/logger';
+import { DefaultEventSource } from './DefaultEventSource';
 
 class EventbriteEventSource extends DefaultEventSource {
 
