@@ -1,10 +1,10 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { log } from './utils/logger.js'
-import config from './utils/config.js';
-import eventRoute from './routes/eventRoutes.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import { log } from './utils/logger'
+import config from './utils/config';
+import eventRoute from './routes/eventRoutes';
+import { errorHandler } from './middlewares/errorHandler';
 
 dotenv.config();
 
