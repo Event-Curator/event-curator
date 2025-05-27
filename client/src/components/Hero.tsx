@@ -1,5 +1,4 @@
-import React from "react";
-import heroImg from "./Matsuri.jpg";
+import heroImg from "../assets/Matsuri.jpg";
 
 export default function Hero() {
   return (

@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function EventSection() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 mb-12">
