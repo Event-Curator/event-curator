@@ -6,10 +6,7 @@ import serviceAccountRaw from "./serviceAccountKey.json";
 import type { ServiceAccount } from "firebase-admin";
 import authenticateFirebaseToken from "./authMiddleware";
 dotenv.config();
-const serviceAccount = serviceAccountRaw as ServiceAccount;
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+
 
 //create express server
 const app = express();
