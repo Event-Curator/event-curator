@@ -1,4 +1,4 @@
-import { IEventSource } from "../models/event.js"
+import { IEventSource } from "../models/event"
 
 class DefaultEventSource implements IEventSource {
 
