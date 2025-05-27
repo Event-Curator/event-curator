@@ -14,7 +14,7 @@ export default function Hero() {
       <div className="relative z-10 text-center text-white">
         <h1 className="text-4xl md:text-5xl font-bold drop-shadow-lg">Discover & Share Events in Japan</h1>
         <p className="mt-3 text-lg md:text-2xl font-light drop-shadow-lg">
-          Matsuri, Art, Concerts, Sports, Anime & More
+          Festivals, Art, Concerts, Sports, Anime Events & More
         </p>
         <button className="btn btn-secondary mt-6">Explore Upcoming Events</button>
       </div>

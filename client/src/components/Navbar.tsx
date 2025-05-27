@@ -37,7 +37,7 @@ export default function Navbar() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError("An unknown error occurred.");
+        setError("Something went wrong when logging in.");
       }
     }
     setLoading(false);
@@ -57,7 +57,7 @@ export default function Navbar() {
         const code = (err as { code?: string }).code;
         setError(`${err.message}${code ? ` (${code})` : ""}`);
       } else {
-        setError("An unknown error occurred.");
+        setError("Something went wrong when logging in.");
       }
     }
     setLoading(false);
@@ -74,7 +74,7 @@ export default function Navbar() {
         const code = (err as { code?: string }).code;
         setError(`${err.message}${code ? ` (${code})` : ""}`);
       } else {
-        setError("An unknown error occurred.");
+        setError("Something went wrong when logging in.");
       }
     }
     setLoading(false);
@@ -167,13 +167,13 @@ export default function Navbar() {
             className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
           >
             <li>
-              <a>Events</a>
-            </li>
-            <li>
               <a>Categories</a>
             </li>
             <li>
-              <a>Contact</a>
+              <a>Locations</a>
+            </li>
+            <li>
+              <a>Prices</a>
             </li>
           </ul>
         </div>
