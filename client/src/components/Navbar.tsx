@@ -26,7 +26,7 @@ export default function Navbar() {
               <a>Categories</a>
             </li>
             <li>
-              <a>Contact</a>
+              <a>Prices</a>
             </li>
           </ul>
         </div>
