@@ -14,7 +14,7 @@ admin.initializeApp({
 //create express server
 const app = express();
 const PORT = process.env.PORT || 3000;
-//cors and a static file destination
+//cors and a static file destinatio
 app.use(cors());
 app.use(express.static("../client/dist"));
 //routers
