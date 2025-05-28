@@ -4,8 +4,8 @@
   "main": "app.ts",
   "type": "module",
   "scripts": {
-    "start": "node ./build/app.js",
-    "dev": "nodemon --exec node --loader ts-node/esm src/app.ts",
+    "start": "node ./build/App.js",
+    "dev": "nodemon --exec node --loader ts-node/esm src/App.ts",
     "build": "cd ../client && npm install && npm run build && cd ../server && npm install && tsc"
   },
   "author": "",
