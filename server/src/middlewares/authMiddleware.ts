@@ -1,18 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
-import serviceAccountRaw from "./serviceAccountKey.json";
+import { cert } from "firebase-admin/app";
+// import serviceAccountRaw from "./serviceAccountKey.json";
 import type { ServiceAccount } from "firebase-admin";
-const serviceAccount = serviceAccountRaw as ServiceAccount;
+import dotenv from "dotenv";
+dotenv.config();
+
+// const serviceAccount = serviceAccountRaw as ServiceAccount;
+const serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+// const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  // credential: admin.credential.cert(serviceAccount),
+  credential: cert(serviceAccount),
 });
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
+    // credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
+    credential: cert(serviceAccount),
   });
 }
-
 
 declare module "express-serve-static-core" {
   interface Request {
@@ -20,13 +28,20 @@ declare module "express-serve-static-core" {
   }
 }
 
-
-const authenticateFirebaseToken = async (req: Request, res: Response, next: NextFunction) => {
+const authenticateFirebaseToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
 
   if (!token) {
-    return res.status(401).json({ error: "Missing or invalid Authorization header" });
+    return res
+      .status(401)
+      .json({ error: "Missing or invalid Authorization header" });
   }
 
   try {
