@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getEvents } from "../controllers/eventController.js";
+import { getEvents } from "../controllers/EventController.js";
 import apicache from "apicache";
 
 const router = Router();
