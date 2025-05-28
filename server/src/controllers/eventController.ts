@@ -3,42 +3,36 @@ import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
 import { MeetupEventSource } from './MeetupEventSource.js';
 import { EventbriteEventSource } from './EventbriteEventSource.js';
+import * as pe from "../models/Event.js"
+import { LocalEventSource } from './LocalEventSource.js';
 
 const getEvents = async function (req: Request, res: Response, next: NextFunction) {
     
-    let result: Array<string> = [];
-    let providers: Array<Promise<Array<string>>> = [];
+    let result: Array<pe.EventType> = [];
+    let providers: Array<Promise<Array<pe.EventType>>> = [];
 
     let eventbriteES = new EventbriteEventSource();
     let meetupES = new MeetupEventSource();
-
-    // let events = eventbriteES.searchEvent("something_good"
+    let localES = new LocalEventSource();
 
     for (let source of config.sources) {
         
         if (source.enabled) {
 
             log.info('executing getEvent for source: ' + source.id)
-            providers.push(eventbriteES.searchEvent("brol"));
-            providers.push(meetupES.searchEvent("brol"));
+            // FIXME: when they will be ready
+            // providers.push(eventbriteES.searchEvent("test"));
+            // providers.push(meetupES.searchEvent("test"));
+            // let [_result1, _result2] = await Promise.all(providers);
+            // result = _result1.concat(_result2)
 
-            let [_result1, _result2] = await Promise.all(providers);
+            providers.push(localES.searchEvent("test"));
+            [ result ] = await Promise.all(providers);
+            console.log("====result>", result[0]);
 
-            result = _result1.concat(_result2)
-            // result.push('{ id: 1, name: "test"}')
-
-            // for (let e of ) {
-            //     result.push(e)
-            // }
         }
     }
 
-    // try {
-    //     res.json());
-
-    // } catch (error) {
-    //     next(error);
-    // }
     res.status(200)
     res.send(result)
 };

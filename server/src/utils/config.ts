@@ -16,13 +16,18 @@ let _source = [
     },
     {
        id: "eventbrite",
-        enabled: true,
+        enabled: false,
        endpoint: "https://www.eventbriteapi.com/v3"
     },
     {
        id: "meetup",
-        enabled: true,
+        enabled: false,
        endpoint: "https://meetup.brol/xxxx"
+    },
+    {
+       id: "local",
+        enabled: true,
+       endpoint: "file:///data/dummy.json"
     }
 ]
 
