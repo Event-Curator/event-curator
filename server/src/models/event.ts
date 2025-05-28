@@ -16,7 +16,7 @@ export enum EventCategoryEnum {
   SCIENCE = <any>"Science & Technology",
   TRAVEL = <any>"Travel & Outdoor",
   CHARITY = <any>"Charity & Causes",
-  RELIGIN = <any>"Religion & Spirituality",
+  RELIGION = <any>"Religion & Spirituality",
   FAMILY = <any>"Family & Education",
   SEASONAL = <any>"Seasonal & Holiday",
   GOV = <any>"Government & Politics",
