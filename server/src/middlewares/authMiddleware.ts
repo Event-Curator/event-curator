@@ -1,24 +1,26 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
 import { cert } from "firebase-admin/app";
-// import serviceAccountRaw from "./serviceAccountKey.json";
+// import serviceAccountRaw from "../serviceAccountKey.json";
+import serviceAccountRaw from "../../../serviceAccountKey.json" with {type: "json"};
 import type { ServiceAccount } from "firebase-admin";
 import dotenv from "dotenv";
 dotenv.config();
 
-// const serviceAccount = serviceAccountRaw as ServiceAccount;
-const serviceAccount = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+const serviceAccount = serviceAccountRaw as ServiceAccount;
+// // const serviceAccount: ServiceAccount | undefined = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+// const serviceAccount: ServiceAccount | undefined | string = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 // const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 admin.initializeApp({
-  // credential: admin.credential.cert(serviceAccount),
-  credential: cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount),
+  // credential: cert(serviceAccount),
 });
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
-    // credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
-    credential: cert(serviceAccount),
+    credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
+    // credential: cert(serviceAccount),
   });
 }
 
