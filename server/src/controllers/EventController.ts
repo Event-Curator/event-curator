@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import config from '../utils/Config.js'
-import { log } from '../utils/Logger.js'
+import config from '../utils/config.js'
+import { log } from '../utils/logger.js'
 import { MeetupEventSource } from './MeetupEventSource.js';
 import { EventbriteEventSource } from './EventbriteEventSource.js';
 // import * as pe from "../models/Event.js"
