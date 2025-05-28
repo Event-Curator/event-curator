@@ -1,7 +1,7 @@
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
-import * as pe from "../models/Event.js"
-
+// import * as pe from "../models/Event.js"
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 
 class EventbriteEventSource extends DefaultEventSource {
 
@@ -11,7 +11,7 @@ class EventbriteEventSource extends DefaultEventSource {
     return this.id;
   };
 
-  searchEvent(query: string): Promise<Array<pe.EventType>> {
+  searchEvent(query: string): Promise<Array<EventType>> {
     log.debug("got query: ", query);
     let events = new Array();
     events.push("EVENTBRITE event test 1");

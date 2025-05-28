@@ -3,14 +3,15 @@ import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
 import { MeetupEventSource } from './MeetupEventSource.js';
 import { EventbriteEventSource } from './EventbriteEventSource.js';
-import * as pe from "../models/Event.js"
+// import * as pe from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { JapancheapoEventSource } from './JapancheapoEventSource.js';
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 
 const getEvents = async function (req: Request, res: Response, next: NextFunction) {
     
-    let result: Array<pe.EventType> = [];
-    let providers: Array<Promise<Array<pe.EventType>>> = [];
+    let result: Array<EventType> = [];
+    let providers: Array<Promise<Array<EventType>>> = [];
 
     let eventbriteES = new EventbriteEventSource();
     let meetupES = new MeetupEventSource();

@@ -1,6 +1,7 @@
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
-import * as pe from '../models/Event.js'
+// import * as pe from '../models/Event.js'
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 import dummyData from '../../data/dummy.js'
 
 class LocalEventSource extends DefaultEventSource {
@@ -15,7 +16,7 @@ class LocalEventSource extends DefaultEventSource {
     return this.id;
   };
 
-  searchEvent(query: string): Promise<Array<pe.EventType>> {
+  searchEvent(query: string): Promise<Array<EventType>> {
     log.debug("got query: ", query);
     
     // example

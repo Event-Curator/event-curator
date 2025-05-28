@@ -1,6 +1,6 @@
 import { IEventSource } from "../models/EventSource.js"
-import * as pe from "../models/Event.js"
-
+// import * as pe from "../models/Event.js"
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 
 class DefaultEventSource implements IEventSource {
   id = "default-event-source";
@@ -13,7 +13,7 @@ class DefaultEventSource implements IEventSource {
     return this.id
   };
 
-  searchEvent(query: string): Promise<Array<pe.EventType>>  {
+  searchEvent(query: string): Promise<Array<EventType>>  {
     let events = new Array()
     events.push("event test 1")
     events.push("event test 2")

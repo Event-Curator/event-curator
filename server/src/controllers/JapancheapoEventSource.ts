@@ -1,5 +1,6 @@
 import { DefaultEventSource } from "./DefaultEventSource.js";
-import * as pe from "../models/Event.js";
+// import * as pe from "../models/Event.js";
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 import axios from "axios";
 import * as cheerio from "cheerio";
 
@@ -11,7 +12,7 @@ class JapancheapoEventSource extends DefaultEventSource {
         return this.id
     };
 
-  async searchEvent(query: string): Promise<Array<pe.EventType>> {
+  async searchEvent(query: string): Promise<Array<EventType>> {
     let events = new Array();
 
     // console.log(cheerio);

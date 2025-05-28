@@ -1,5 +1,6 @@
 import { DefaultEventSource } from "./DefaultEventSource.js";
-import * as pe from "../models/Event.js";
+// import * as pe from "../models/Event.js";
+import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
 
 class MeetupEventSource extends DefaultEventSource {
 
@@ -9,7 +10,7 @@ class MeetupEventSource extends DefaultEventSource {
         return this.id
     };
 
-  async searchEvent(query: string): Promise<Array<pe.EventType>> {
+  async searchEvent(query: string): Promise<Array<EventType>> {
     let events = new Array();
 
     events.push("MEETUP event test 1")
