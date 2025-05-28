@@ -1,6 +1,7 @@
+// import { EventType } from "../models/event.js";
 import { IEventSource } from "../models/EventSource.js"
 // import * as pe from "../models/Event.js"
-import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
+import { EventType } from "../models/event.js"
 
 class DefaultEventSource implements IEventSource {
   id = "default-event-source";

@@ -6,7 +6,7 @@ import { EventbriteEventSource } from './EventbriteEventSource.js';
 // import * as pe from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { JapancheapoEventSource } from './JapancheapoEventSource.js';
-import { EventCategoryEnum, Event, EventSizeEnum, EventType } from "../models/Event.js"
+import { EventType } from "../models/event.js"
 
 const getEvents = async function (req: Request, res: Response, next: NextFunction) {
     
