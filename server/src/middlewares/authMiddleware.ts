@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
-import config from "../utils/config.js";
+import config from "../utils/Config.js";
 import type { ServiceAccount } from "firebase-admin";
 const serviceAccount = config.firebase as ServiceAccount;
 admin.initializeApp({

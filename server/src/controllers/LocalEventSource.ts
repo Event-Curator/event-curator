@@ -1,4 +1,4 @@
-import { log } from '../utils/logger.js';
+import { log } from '../utils/Logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
 // import * as pe from '../models/Event.js'
 import { EventType } from "../models/Event.js"
