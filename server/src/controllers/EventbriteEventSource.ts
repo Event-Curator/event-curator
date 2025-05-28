@@ -2,6 +2,7 @@ import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
 import * as pe from "../models/Event.js"
 
+
 class EventbriteEventSource extends DefaultEventSource {
 
   id = "eventbrite";

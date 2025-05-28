@@ -1,6 +1,7 @@
 import { IEventSource } from "../models/EventSource.js"
 import * as pe from "../models/Event.js"
 
+
 class DefaultEventSource implements IEventSource {
   id = "default-event-source";
 
