@@ -1,7 +1,7 @@
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
 // import * as pe from '../models/Event.js'
-import { EventType } from "../models/event.js"
+import { EventType } from "../models/Event.js"
 import dummyData from '../../data/dummy.js'
 
 class LocalEventSource extends DefaultEventSource {

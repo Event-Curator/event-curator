@@ -1,4 +1,5 @@
-import * as pe from './event.js'
+// import * as pe from './event.js'
+import { EventType } from "../models/Event.js"
 
 /**
  * every event source must implement this interface
@@ -7,5 +8,5 @@ import * as pe from './event.js'
 export interface IEventSource {
   getId: () => string   // must return the lowercase key that can be found in the sources.json config file
 
-  searchEvent: (query: string) => Promise<Array<pe.EventType>>
+  searchEvent: (query: string) => Promise<Array<EventType>>
 }
