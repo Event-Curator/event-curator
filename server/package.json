@@ -17,9 +17,8 @@
     "md5": "^2.3.0",
     "ts-node-dev": "^2.0.0",
     "winston": "^3.17.0",
-    "x-ray-scraper": "^3.0.6"
-    "firebase-admin": "^13.4.0",
-
+    "x-ray-scraper": "^3.0.6",
+    "firebase-admin": "^13.4.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.18",
