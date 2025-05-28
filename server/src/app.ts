@@ -10,9 +10,9 @@ const result = dotenv.config();
 if (result.error) {
   throw result.error
 }
-console.log("------------------");
-console.log(result);
-console.log("------------------");
+// console.log("------------------");
+// console.log(result);
+// console.log("------------------");
 
 
 const app = express();
@@ -24,8 +24,8 @@ app.use(errorHandler);
 
 app.listen(config.port, () => {
   log.info(`Server listening on port ${config.port}.`);
-  console.log(config);
-  console.log(Object.keys(config));
+  // console.log(config);
+  // console.log(Object.keys(config));
   console.log(`Firebase config is: ` + config.firebase.private_key);
-  console.log("test" + process.env);
+  // console.log("test" + process.env);
 });
