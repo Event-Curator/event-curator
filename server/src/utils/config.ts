@@ -51,7 +51,7 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || "development",
     // FIXME: have a json file instead ?
     sources: _source,
-    firebase: JSON.parse(getFirebaseConfig())
+    firebase: JSON.parse(getFirebaseConfig().split("'").join('"').split('£').join('\\n'))
 }
 
 export default config;

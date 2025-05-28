@@ -6,7 +6,14 @@ import config from "./utils/config.js";
 import eventRoute from "./routes/eventRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 
-dotenv.config();
+const result = dotenv.config();
+if (result.error) {
+  throw result.error
+}
+console.log("------------------");
+console.log(result);
+console.log("------------------");
+
 
 const app = express();
 app.use(express.json());
@@ -17,4 +24,8 @@ app.use(errorHandler);
 
 app.listen(config.port, () => {
   log.info(`Server listening on port ${config.port}.`);
+  console.log(config);
+  console.log(Object.keys(config));
+  console.log(`Firebase config is: ` + config.firebase.private_key);
+  console.log("test" + process.env);
 });
