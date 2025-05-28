@@ -1,11 +1,13 @@
 import dotenv from 'dotenv'
+import { log } from '../utils/logger.js';
 
-dotenv.config()
+dotenv.config();
 
 interface Config {
     port: number;
     nodeEnv: string;
     sources: Array<any>;
+    firebase: any;
 }
 
 let _source = [
@@ -28,15 +30,28 @@ let _source = [
        id: "local",
         enabled: true,
        endpoint: "file:///data/dummy.json"
+    },
+    {
+       id: "japancheapo",
+        enabled: true,
+       endpoint: "https://japancheapo.com/events/"
     }
-]
+];
+
+let getFirebaseConfig = () => {
+    if (!process.env.FIREBASE_CONFIG) {
+        log.error("value of FIREBASE_CONFIG value is empty");
+        return "{}";
+    }
+    return process.env.FIREBASE_CONFIG;
+}
 
 const config: Config = {
     port: Number(process.env.PORT) || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
     // FIXME: have a json file instead ?
-    sources: _source
+    sources: _source,
+    firebase: JSON.parse(getFirebaseConfig())
 }
-
 
 export default config;

@@ -1,18 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
-import serviceAccountRaw from "./serviceAccountKey.json";
+import config from "../utils/config.js";
 import type { ServiceAccount } from "firebase-admin";
-const serviceAccount = serviceAccountRaw as ServiceAccount;
+const serviceAccount = config.firebase as ServiceAccount;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
+    credential: admin.credential.cert(config.firebase as ServiceAccount),
   });
 }
-
 
 declare module "express-serve-static-core" {
   interface Request {
