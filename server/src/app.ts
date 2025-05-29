@@ -11,7 +11,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static("../client/dist"));
+app.use(express.static("./client/dist"));
 app.use("/api", eventRoute);
 app.use(errorHandler);
 
