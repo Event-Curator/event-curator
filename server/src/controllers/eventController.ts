@@ -27,11 +27,11 @@ const getEvents = async function (req: Request, res: Response, next: NextFunctio
             // providers.push(meetupES.searchEvent("test"));
 
             providers.push(japancheapoES.searchEvent("test"));
-            providers.push(localES.searchEvent("test"));
+            // providers.push(localES.searchEvent("test"));
             let [_result1, _result2] = await Promise.all(providers);
             result = _result1.concat(_result2)
 
-            console.log("====result>", result[0]);
+            // console.log("====result>", result[0]);
 
         }
     }
