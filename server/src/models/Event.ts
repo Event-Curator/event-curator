@@ -31,12 +31,13 @@ export enum EventCategoryEnum {
 export class Event implements EventType {
 
   // private properties (setter usage mandatory)
-  #originUrl: string; 
+  // #originUrl: string; 
 
   // public properties
   id: number;
   externalId: string;
   originId: string;
+  originUrl: string;
   name: string;
   description: string;
   placeLattitude: number;
@@ -49,11 +50,11 @@ export class Event implements EventType {
   category: EventCategoryEnum;
   size: EventSizeEnum;
     
-  public constructor () {
+  public constructor (url: string) {
     this.id = 0;
     this.externalId = ""; 
-    this.originId = "";
-    this.#originUrl = "";
+    this.originId = md5(url.toLocaleLowerCase());
+    this.originUrl = url;
     this.name = "";
     this.description = "";
     this.placeLattitude = 0;
@@ -65,11 +66,6 @@ export class Event implements EventType {
     this.datetimeEnd = new Date();
     this.category = EventCategoryEnum.OTHER;
     this.size = EventSizeEnum.M;
-  }
-
-  public set originUrl(value: string) {
-    this.#originUrl = value;
-    this.originId = md5(this.#originUrl.toLocaleLowerCase())
   }
 }
 

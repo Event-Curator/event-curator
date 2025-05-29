@@ -5,6 +5,7 @@ import { MeetupEventSource } from './MeetupEventSource.js';
 import { EventbriteEventSource } from './EventbriteEventSource.js';
 import * as pe from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
+import { JapancheapoEventSource } from './JapancheapoEventSource.js';
 
 const getEvents = async function (req: Request, res: Response, next: NextFunction) {
     
@@ -13,6 +14,7 @@ const getEvents = async function (req: Request, res: Response, next: NextFunctio
 
     let eventbriteES = new EventbriteEventSource();
     let meetupES = new MeetupEventSource();
+    let japancheapoES = new JapancheapoEventSource();
     let localES = new LocalEventSource();
 
     for (let source of config.sources) {
@@ -23,11 +25,12 @@ const getEvents = async function (req: Request, res: Response, next: NextFunctio
             // FIXME: when they will be ready
             // providers.push(eventbriteES.searchEvent("test"));
             // providers.push(meetupES.searchEvent("test"));
-            // let [_result1, _result2] = await Promise.all(providers);
-            // result = _result1.concat(_result2)
 
+            providers.push(japancheapoES.searchEvent("test"));
             providers.push(localES.searchEvent("test"));
-            [ result ] = await Promise.all(providers);
+            let [_result1, _result2] = await Promise.all(providers);
+            result = _result1.concat(_result2)
+
             console.log("====result>", result[0]);
 
         }

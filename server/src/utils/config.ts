@@ -26,8 +26,13 @@ let _source = [
     },
     {
        id: "local",
-        enabled: true,
+        enabled: false,
        endpoint: "file:///data/dummy.json"
+    },
+    {
+        id: "japancheapo",
+        enabled: true,
+        endpoint: "https://japancheapo.com/events"
     }
 ]
 
