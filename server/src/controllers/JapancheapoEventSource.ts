@@ -2,11 +2,12 @@ import { DefaultEventSource } from "./DefaultEventSource.js";
 import { EventType, Event } from "../models/Event.js";
 import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
+import { log } from "../utils/logger.js";
 moment().format();
 
 class JapancheapoEventSource extends DefaultEventSource {
 
-    id = "meetup";
+    id = "japancheapo";
     CURRENCY = 'YEN';
     
     public getId(): string {
@@ -14,12 +15,20 @@ class JapancheapoEventSource extends DefaultEventSource {
     };
 
     async searchEvent(query: string): Promise<Array<EventType>> {
+      let events = [];
+      console.log("QUERY !!");
+      return new Promise((resolve, reject) => resolve(events));
+    }
+    
+    async scrapEvent(): Promise<Array<EventType>> {
       let events = new Array();
 
-      for (let i = 1; i<2; i++) {
-        console.log("page: ", i);
-        // const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
-        const res = await fetch(`https://japancheapo.com/events/`);
+      log.info(`${this.id}: scrapping started`);
+
+      for (let i = 1; i<18; i++) {
+        log.info(`${this.id}: scrapping ongoing. page ${i}`);
+
+        const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
         const html = await res.text();
 
         const $ = cheerio.load(html);
@@ -121,10 +130,8 @@ class JapancheapoEventSource extends DefaultEventSource {
           // SCHEDULE time
           val = $(element).find('[title*="end time"]').next().text().toLocaleLowerCase() || "";
           anEvent.datetimeFreeform = val.trim();
-          console.log("TIME: " + val);
           if (val.length > 0) {
             // format is like "9:00am – 5:00pm"
-            console.log(val);
             let cmp = val.split(' ');
             let beginCmp: string, endCmp: string;
             if (cmp.length === 1) {
@@ -142,20 +149,16 @@ class JapancheapoEventSource extends DefaultEventSource {
             begin.minute(startTime.minute());
             end.hour(endTime.hour());
             end.minute(endTime.minute());
-
-            // console.log(startTime);
-            // console.log(endTime);
           }
 
           // SCHEDULE time and date are saved in combo
           anEvent.datetimeStart = begin.toDate();
           anEvent.datetimeEnd = end.toDate();
 
-
           // FEE
           val = $(element).find('[title*="Entry"]').parent().text() || "";
           anEvent.budgetFreeform = val.trim();
-          if (val.trim().toLowerCase() === "free") {
+          if (val.trim().toLowerCase() === "free" || val.trim().length === 0) {
             anEvent.budgetMin = 0
             anEvent.budgetMax = 0
           } else {
@@ -186,11 +189,11 @@ class JapancheapoEventSource extends DefaultEventSource {
           val = $(element).find('.card__category').text() || "";
           anEvent.placeFreeform = val.trim();
 
-          console.log(anEvent);
-
           events.push(anEvent);
         });
+
       }
+      log.info(`${this.id}: scrapping done. ${events.length} found.`);
 
       return new Promise((resolve, reject) => resolve(events));
     }

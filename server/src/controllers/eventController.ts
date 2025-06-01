@@ -6,38 +6,144 @@ import { EventbriteEventSource } from './EventbriteEventSource.js';
 import * as pe from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { JapancheapoEventSource } from './JapancheapoEventSource.js';
+import { eaCache } from '../middlewares/apiGateway.js';
 
-const getEvents = async function (req: Request, res: Response, next: NextFunction) {
+// FIXME: scrap: find a way to avoid // runs
+const scrapEvent = async function (req: Request, res: Response, next: NextFunction) {
     
     let result: Array<pe.EventType> = [];
     let providers: Array<Promise<Array<pe.EventType>>> = [];
 
-    let eventbriteES = new EventbriteEventSource();
-    let meetupES = new MeetupEventSource();
-    let japancheapoES = new JapancheapoEventSource();
-    let localES = new LocalEventSource();
+    const sourceId = req.params.sourceId || 'default';
 
-    for (let source of config.sources) {
-        
-        if (source.enabled) {
+    let [controllerConfig] = config.sources.filter( c => c.id === sourceId );
 
-            log.info('executing getEvent for source: ' + source.id)
-            // FIXME: when they will be ready
-            // providers.push(eventbriteES.searchEvent("test"));
-            // providers.push(meetupES.searchEvent("test"));
+    if (controllerConfig === undefined) {
+        res.status(404);
+        res.send(`the requested datasource is not found [${sourceId}]`);
+        return;
+    }
+    
+    if (!controllerConfig.enabled) {
+        res.status(300);
+        res.send(`the requested datasource is not enabled [${sourceId}]`);
+        return;
+    }
 
-            providers.push(japancheapoES.searchEvent("test"));
-            // providers.push(localES.searchEvent("test"));
-            let [_result1, _result2] = await Promise.all(providers);
-            result = _result1.concat(_result2)
+    console.log(`scraping of datasource [${sourceId}] started`);
 
-            // console.log("====result>", result[0]);
-
+    result = await controllerConfig.controller.scrapEvent();
+    
+    log.info(`caching objects ...`);
+    for (let event of result) {
+        if (await findEvent(event.originId)) {
+            log.warn(`Oops: duplicate on ${event.originId}`);
+            // FIXME: do an update
+            continue;
         }
+
+        await eaCache.events.insert({
+            id: event.originId,
+            name: event.name,
+            description: event.description,
+            start: new Date().toISOString(),
+            // finish: event.datetimeEnd,
+        });
+
+    }
+
+    res.status(200)
+    res.send("scrapping done");
+};
+
+const findEvent = async function (id) {
+    let result = await eaCache.events.find({
+        selector: {
+            "id": {
+                $eq: id
+            }
+        }
+    }).exec();
+    return result.length > 0 ? true : false;
+}
+
+const searchEvent = async function (req: Request, res: Response, next: NextFunction) {
+    
+    let result: Array<pe.EventType> = [];
+    let providers: Array<Promise<Array<pe.EventType>>> = [];
+
+    const query = req.params.query || 'default';
+
+    for (let source of config.sources) {        
+        if (source.enabled) {
+            log.info(`delegating search for datasource [${source.id}]`);
+
+            // scraping sources query are handling directly from cache
+            if (source.id === "japancheapo") {
+                providers.push(
+                    eaCache.events.find({
+                        selector: {
+                            description: { $regex: query, $options: 'i' } // Case-insensitive regex
+                        }
+                    }).exec()
+                );
+            }
+            // } else {
+            //     // push the search Promise into the providers queue
+            //     providers.push(source.controller.searchEvent("test"));            
+            // }
+        }
+        
+        for (let providerResult of await Promise.all(providers)) {
+            result = result.concat(providerResult);
+        }
+        log.info(`found ${result.length} events`);
     }
 
     res.status(200)
     res.send(result)
 };
 
-export { getEvents }
+const getEvent = async function (req: Request, res: Response, next: NextFunction) {
+//    const getEvent = async function (id) {
+    
+    let id = req.params.eventId;
+    let result = await eaCache.events.find({
+        selector: {
+            "id": {
+                $eq: id
+            }
+        }
+    }).exec();
+
+    if (result.length === 0) {
+        res.status(404);
+        res.send("the requested ressource is not found");
+    }
+    // return result.length === 1 ? result[0] : undefined;
+
+
+    // let result: Array<pe.EventType> = [];
+    // let providers: Array<Promise<Array<pe.EventType>>> = [];
+
+    // const sourceId = req.params.sourceId || 'default';
+
+    // for (let source of config.sources) {        
+    //     if (source.enabled) {
+
+    //         log.info(`delegating search for datasource [${source.id}]`);
+            
+    //         // push the search Promise into the providers queue
+    //         providers.push(source.controller.searchEvent("test"));            
+    //     }
+        
+    //     for (let providerResult of await Promise.all(providers)) {
+    //         result = result.concat(providerResult);
+    //     }
+    //     log.info(`found ${result.length} events`);
+    // }
+    res.status(200);
+    res.send(result);
+};
+
+export { scrapEvent, searchEvent, getEvent }

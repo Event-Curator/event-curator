@@ -29,12 +29,10 @@ export enum EventCategoryEnum {
 }
 
 export class Event implements EventType {
-
   // private properties (setter usage mandatory)
   // #originUrl: string; 
 
   // public properties
-  id: number;
   externalId: string;
   originId: string;
   originUrl: string;
@@ -59,8 +57,7 @@ export class Event implements EventType {
   sizeFreeform: string;
     
   public constructor (url: string) {
-    this.id = 0;
-    this.externalId = ""; 
+    this.externalId = md5(url.toLocaleLowerCase()); 
     this.originId = md5(url.toLocaleLowerCase());
     this.originUrl = url;
     this.name = "";
@@ -86,7 +83,6 @@ export class Event implements EventType {
 }
 
 export type EventType = {
-  id: number;
   externalId: string;
   originId: string;
   originUrl: string;           // this should point to a working page on the source website giving all the event details
