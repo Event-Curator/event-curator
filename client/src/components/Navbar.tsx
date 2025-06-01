@@ -147,74 +147,148 @@ export default function Navbar() {
   );
 
   return (
-    <div className="navbar bg-base-100 shadow-md px-4 md:px-6">
-      {/* LEFT: DROPDOWN MENU (restored) */}
-      <div className="navbar-start">
-        <div className="dropdown">
-          <label tabIndex={0} className="btn btn-ghost btn-circle">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </label>
-          <ul
-            tabIndex={0}
-            className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-          >
-            <li>
-              <a>Categories</a>
-            </li>
-            <li>
-              <a>Locations</a>
-            </li>
-            <li>
-              <a>Prices</a>
-            </li>
+  <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
+    {/* Desktop Navbar */}
+    <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-4 h-16">
+      {/* Logo & Title */}
+      <div className="flex items-center gap-3">
+        <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
+        <span className="text-2xl font-bold text-blue-700 tracking-wide">Event Curator</span>
+      </div>
+      {/* Main Navigation */}
+      <div className="flex items-center gap-4">
+        <a className="btn btn-ghost btn-sm text-blue-700">Events</a>
+        <div className="dropdown dropdown-hover">
+          <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Categories</label>
+          <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-56 max-h-60 overflow-y-auto border border-blue-100 z-50">
+            {[
+              "Music","Business & Professional","Food & Drink","Community & Culture","Performing & Visual Arts",
+              "Film, Media & Entertainment","Sports & Fitness","Health & Wellness","Science & Technology",
+              "Travel & Outdoor","Charity & Causes","Religion & Spirituality","Family & Education",
+              "Seasonal & Holiday","Government & Politics","Fashion & Beauty","Home & Lifestyle",
+              "Auto, Boat & Air","Hobbies & Special Interest","School Activities","Other"
+            ].map(cat => (
+              <li key={cat}><a>{cat}</a></li>
+            ))}
           </ul>
         </div>
+        <div className="dropdown dropdown-hover">
+          <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Location</label>
+          <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-44 border border-blue-100 z-50">
+            {[
+              "Adachi","Arakawa","Bunkyō","Chiyoda","Chūō","Edogawa","Itabashi","Katsushika","Kita","Kōtō",
+              "Meguro","Minato","Nakano","Nerima","Ōta","Setagaya","Shibuya","Shinagawa","Shinjuku","Suginami",
+              "Sumida","Taitō","Toshima"
+            ].map(ward => (
+              <li key={ward}><a>{ward} Ward</a></li>
+            ))}
+          </ul>
+        </div>
+        <div className="dropdown dropdown-hover">
+          <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Price</label>
+          <div tabIndex={0} className="dropdown-content bg-white p-4 shadow rounded-box w-56 border border-blue-100 z-50">
+            <input type="number" placeholder="Max price (¥)" className="input input-bordered w-full max-w-xs mb-2" />
+            <button className="btn btn-primary btn-sm w-full">Apply</button>
+          </div>
+        </div>
+        <a className="btn btn-ghost btn-sm text-blue-700">Event Calendar</a>
       </div>
-      {/* CENTER */}
-      <div className="navbar-center flex items-center space-x-2">
-        <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-8 w-8" />
-        <span className="text-xl font-bold tracking-widest whitespace-nowrap">EventCurator</span>
-      </div>
-      {/* RIGHT */}
-      <div className="navbar-end">
+      {/* Auth */}
+      <div>
         {user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm">Hi, {user.email || user.displayName}</span>
             <button className="btn btn-outline btn-sm" onClick={handleLogout}>Logout</button>
           </div>
         ) : (
-          <>
-            {/* Desktop: show login */}
-            <form className="hidden lg:flex items-center gap-2" onSubmit={e => e.preventDefault()}>
-              {LoginForm}
-            </form>
-            {/* Mobile: collapse login */}
-            <div className="lg:hidden dropdown dropdown-end">
-              <label tabIndex={0} className="btn btn-primary btn-sm btn-circle m-1">
-                <svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" fill="none" viewBox="0 0 24 24">
-                  <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0zM4.5 20.25v-.75A4.5 4.5 0 0 1 9 15h6a4.5 4.5 0 0 1 4.5 4.5v.75"/>
-                </svg>
-              </label>
-              <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-80 p-4 shadow bg-base-100">
-                <form className="flex flex-col gap-2" onSubmit={e => e.preventDefault()}>
-                  {LoginForm}
-                </form>
-              </div>
+          // Desktop: login in dropdown (just like mobile)
+          <div className="dropdown dropdown-end">
+            <label tabIndex={0} className="btn btn-primary btn-sm">
+              Sign In
+            </label>
+            <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-80 p-4 shadow bg-base-100 mt-4">
+              <form className="flex flex-col gap-2" onSubmit={e => e.preventDefault()}>
+                {LoginForm}
+              </form>
             </div>
-          </>
+          </div>
         )}
       </div>
-      {/* Show error or loading */}
-      {error && <div className="fixed top-16 right-4 alert alert-error shadow-lg">{error}</div>}
-      {loading && <div className="fixed top-16 right-4 alert alert-info shadow-lg">Loading...</div>}
     </div>
-  );
+    {/* Mobile Navbar */}
+    <div className="md:hidden flex items-center justify-between px-4 h-14 w-full">
+      <div className="dropdown">
+        <label tabIndex={0} className="btn btn-ghost btn-circle">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </label>
+        <ul tabIndex={0} className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50">
+          <li><a>Events</a></li>
+          <li tabIndex={0}>
+            <details>
+              <summary>Categories</summary>
+              <ul className="p-2">
+                {[
+                  "Music","Business & Professional","Food & Drink","Community & Culture","Performing & Visual Arts",
+                  "Film, Media & Entertainment","Sports & Fitness","Health & Wellness","Science & Technology",
+                  "Travel & Outdoor","Charity & Causes","Religion & Spirituality","Family & Education",
+                  "Seasonal & Holiday","Government & Politics","Fashion & Beauty","Home & Lifestyle",
+                  "Auto, Boat & Air","Hobbies & Special Interest","School Activities","Other"
+                ].map(cat => (
+                  <li key={cat}><a>{cat}</a></li>
+                ))}
+              </ul>
+            </details>
+          </li>
+          <li tabIndex={0}>
+            <details>
+              <summary>Location</summary>
+              <ul className="p-2">
+                {[
+                  "Adachi","Arakawa","Bunkyō","Chiyoda","Chūō","Edogawa","Itabashi","Katsushika","Kita","Kōtō",
+                  "Meguro","Minato","Nakano","Nerima","Ōta","Setagaya","Shibuya","Shinagawa","Shinjuku","Suginami",
+                  "Sumida","Taitō","Toshima"
+                ].map(ward => (
+                  <li key={ward}><a>{ward} Ward</a></li>
+                ))}
+              </ul>
+            </details>
+          </li>
+          <li tabIndex={0}>
+            <details>
+              <summary>Price</summary>
+              <ul className="p-2">
+                <li>
+                  <input type="number" placeholder="Max price (¥)" className="input input-bordered w-full max-w-xs mb-2" />
+                  <button className="btn btn-primary btn-sm w-full">Apply</button>
+                </li>
+              </ul>
+            </details>
+          </li>
+          <li><a>Event Calendar</a></li>
+          <li className="mt-2">
+            {/* Mobile login form */}
+            {!user && (
+              <form className="flex flex-col gap-2" onSubmit={e => e.preventDefault()}>
+                {LoginForm}
+              </form>
+            )}
+            {user && (
+              <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>Logout</button>
+            )}
+          </li>
+        </ul>
+      </div>
+      <div className="flex items-center space-x-2">
+        <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
+        <span className="text-lg font-bold text-blue-700">Event Curator</span>
+      </div>
+      <div /> {/* Space for symmetry */}
+    </div>
+    {/* Show error or loading */}
+    {error && <div className="fixed top-16 right-4 alert alert-error shadow-lg">{error}</div>}
+    {loading && <div className="fixed top-16 right-4 alert alert-info shadow-lg">Loading...</div>}
+  </nav>
+);
 }
