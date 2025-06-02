@@ -72,7 +72,7 @@ class JapancheapoEventSource extends DefaultEventSource {
                 return true;
               }
             )
-          
+
           // try to guess the year. only futur event are displayed on the website.
           // ! 0 based
           let currentMonth = moment().month();
@@ -90,6 +90,13 @@ class JapancheapoEventSource extends DefaultEventSource {
 
             begin = moment([eventYear, eventMonthIndex]);
             end = moment(begin).endOf('month');
+
+          } else if (dates.length === 2 
+            && monthList.indexOf(dates[0]) >= 0
+            && monthList.indexOf(dates[1]) >= 0) {
+            // 2 months long (ex: nov - dec)  
+            begin = moment([eventYear, monthList.indexOf(dates[0])]);
+            end = moment([eventYear, monthList.indexOf(dates[1])]).endOf('month');
 
           } else if (dates.length === 2) {
             // one day event
@@ -152,9 +159,9 @@ class JapancheapoEventSource extends DefaultEventSource {
           }
 
           // SCHEDULE time and date are saved in combo
-          anEvent.datetimeStart = begin.toDate();
-          anEvent.datetimeEnd = end.toDate();
-
+          anEvent.datetimeFrom = begin.toDate();
+          anEvent.datetimeTo = end.toDate();
+          
           // FEE
           val = $(element).find('[title*="Entry"]').parent().text() || "";
           anEvent.budgetFreeform = val.trim();

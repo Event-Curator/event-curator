@@ -1,18 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
-import { MeetupEventSource } from './MeetupEventSource.js';
-import { EventbriteEventSource } from './EventbriteEventSource.js';
-import * as pe from "../models/Event.js"
+import { ES_SEARCH_IN_CACHE, EventType } from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
-import { JapancheapoEventSource } from './JapancheapoEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 
 // FIXME: scrap: find a way to avoid // runs
 const scrapEvent = async function (req: Request, res: Response, next: NextFunction) {
     
-    let result: Array<pe.EventType> = [];
-    let providers: Array<Promise<Array<pe.EventType>>> = [];
+    let result: Array<EventType> = [];
+    let providers: Array<Promise<Array<EventType>>> = [];
 
     const sourceId = req.params.sourceId || 'default';
 
@@ -25,7 +22,7 @@ const scrapEvent = async function (req: Request, res: Response, next: NextFuncti
     }
     
     if (!controllerConfig.enabled) {
-        res.status(300);
+        res.status(404);
         res.send(`the requested datasource is not enabled [${sourceId}]`);
         return;
     }
@@ -36,18 +33,45 @@ const scrapEvent = async function (req: Request, res: Response, next: NextFuncti
     
     log.info(`caching objects ...`);
     for (let event of result) {
-        if (await findEvent(event.originId)) {
-            log.warn(`Oops: duplicate on ${event.originId}`);
+        if (await findEvent(event.externalId)) {
+            log.warn(`Oops: duplicate on ${event.externalId}`);
             // FIXME: do an update
             continue;
         }
 
+        // console.log(event);
+
         await eaCache.events.insert({
-            id: event.originId,
+            // FIXME: shoud be something, not 0
+            id: event.externalId,
+            externalId: event.externalId,
+            originId: event.originId,
+            originUrl: event.originUrl,
             name: event.name,
             description: event.description,
-            start: new Date().toISOString(),
-            // finish: event.datetimeEnd,
+
+            teaserText: event.teaserText,
+            teaserMedia: event.teaserMedia,
+            teaserFreeform: event.teaserFreeform,
+
+            placeLattitude: event.placeLattitude,
+            placeLongitude: event.placeLongitude,
+            placeFreeform: event.placeFreeform,
+
+            budgetMin: event.budgetMin,
+            budgetMax: event.budgetMax,
+            budgetCurrency: event.budgetCurrency,
+            budgetFreeform: event.budgetFreeform,
+
+            datetimeFrom: event.datetimeFrom.toISOString(),
+            datetimeTo: event.datetimeTo.toISOString(),
+            datetimeFreeform: event.datetimeFreeform,
+
+            category: event.category,
+            categoryFreeform: event.categoryFreeform,
+
+            size: event.size,
+            sizeFreeform: event.sizeFreeform,
         });
 
     }
@@ -56,11 +80,11 @@ const scrapEvent = async function (req: Request, res: Response, next: NextFuncti
     res.send("scrapping done");
 };
 
-const findEvent = async function (id) {
+const findEvent = async function (externalId) {
     let result = await eaCache.events.find({
         selector: {
-            "id": {
-                $eq: id
+            "externalId": {
+                $eq: externalId
             }
         }
     }).exec();
@@ -69,17 +93,17 @@ const findEvent = async function (id) {
 
 const searchEvent = async function (req: Request, res: Response, next: NextFunction) {
     
-    let result: Array<pe.EventType> = [];
-    let providers: Array<Promise<Array<pe.EventType>>> = [];
+    let result: Array<EventType> = [];
+    let providers: Array<Promise<Array<EventType>>> = [];
 
-    const query = req.params.query || 'default';
+    const query = req.params.query || '.*';
 
     for (let source of config.sources) {        
         if (source.enabled) {
             log.info(`delegating search for datasource [${source.id}]`);
 
             // scraping sources query are handling directly from cache
-            if (source.id === "japancheapo") {
+            if (source.searchTye === ES_SEARCH_IN_CACHE) {
                 providers.push(
                     eaCache.events.find({
                         selector: {
@@ -104,14 +128,26 @@ const searchEvent = async function (req: Request, res: Response, next: NextFunct
     res.send(result)
 };
 
-const getEvent = async function (req: Request, res: Response, next: NextFunction) {
-//    const getEvent = async function (id) {
-    
-    let id = req.params.eventId;
+const getAllEvent = async function (req: Request, res: Response, next: NextFunction) {
     let result = await eaCache.events.find({
         selector: {
-            "id": {
-                $eq: id
+            "externalId": {
+                $regex: '.*'
+            }
+        }
+    }).exec();
+
+    res.status(200);
+    res.send(result);
+}
+
+const getEventById = async function (req: Request, res: Response, next: NextFunction) {
+    
+    let externalId = req.params.eventId;
+    let result = await eaCache.events.find({
+        selector: {
+            "externalId": {
+                $eq: externalId
             }
         }
     }).exec();
@@ -146,4 +182,4 @@ const getEvent = async function (req: Request, res: Response, next: NextFunction
     res.send(result);
 };
 
-export { scrapEvent, searchEvent, getEvent }
+export { scrapEvent, searchEvent, getEventById, getAllEvent }

@@ -2,8 +2,9 @@ import dotenv from 'dotenv'
 import { LocalEventSource } from '../controllers/LocalEventSource.js';
 import { JapancheapoEventSource } from '../controllers/JapancheapoEventSource.js';
 import { DefaultEventSource } from '../controllers/DefaultEventSource.js';
-import { EventbriteEventSource } from '../controllers/EventbriteEventSource.js';
+import { AllsportdbEventSource } from '../controllers/AllsportdbEventSource.js';
 import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
+import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 
 dotenv.config()
 
@@ -18,33 +19,36 @@ let _source = [
         id: "default",
         enabled: false,
         endpoint: "https://ceciestundefaut.com/",
-        controller: new DefaultEventSource()
-
+        controller: new DefaultEventSource(),
+        searchTye: ES_SEARCH_IN_CACHE
     },
     {
-        id: "eventbrite",
-        enabled: false,
-        endpoint: "https://www.eventbriteapi.com/v3",
-        controller: new EventbriteEventSource()
+        id: "allsportdb",
+        enabled: true,
+        endpoint: "https://api.allsportdb.com/v3",
+        controller: new AllsportdbEventSource(),
+        searchTye: ES_SEARCH_IN_CACHE
     },
     {
         id: "meetup",
         enabled: false,
         endpoint: "https://meetup.brol/xxxx",
-        controller: new MeetupEventSource()
-
+        controller: new MeetupEventSource(),
+        searchTye: ES_SEARCH_IN_CACHE
     },
     {
         id: "local",
         enabled: false,
         endpoint: "file:///data/dummy.json",
-        controller: new LocalEventSource()
+        controller: new LocalEventSource(),
+        searchTye: ES_SEARCH_IN_CACHE
     },
     {
         id: "japancheapo",
         enabled: true,
         endpoint: "https://japancheapo.com/events",
-        controller: new JapancheapoEventSource()
+        controller: new JapancheapoEventSource(),
+        searchTye: ES_SEARCH_IN_CACHE
     }
 ]
 

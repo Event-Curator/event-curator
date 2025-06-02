@@ -17,34 +17,97 @@ async function initCache() {
     });
 
     await eaCache.addCollections({
-        // name of the collection
         events: {
-            // we use the JSON-schema standard
             schema: {
                 version: 0,
-                primaryKey: 'id',
+                primaryKey: 'externalId',
                 type: 'object',
                 properties: {
+                    // FIXME: should be something else
                     id: {
-                        type: 'string',
-                        maxLength: 100 // <- the primary key must have maxLength
+                        type: 'string'
                     },
+                    externalId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+
+                    originId: {
+                        type: 'string'
+                    },
+                    originUrl: {
+                        type: 'string'
+                    },
+
                     name: {
                         type: 'string'
                     },
                     description: {
                         type: 'string'
                     },
-                    start: {
+                    
+                    teaserText: {
+                        type: 'string'
+                    },
+                    teaserMedia: {
+                        type: 'string'
+                    },
+                    teaserFreeform: {
+                        type: 'string'
+                    },
+
+                    placeLattitude: {
+                        type: 'number'
+                    },
+                    placeLongitude: {
+                        type: 'number'
+                    },
+                    placeFreeform: {
+                        type: 'string'
+                    },
+
+                    budgetMin: {
+                        type: 'number'
+                    },
+                    budgetMax: {
+                        type: 'number'
+                    },
+                    budgetCurrency: {
+                        type: 'string'
+                    },
+                    budgetFreeform: {
+                        type: 'string'
+                    },
+
+                    datetimeFrom: {
                         type: 'string',
+                        // FIXME:
                         // format: 'date-time'
                     },
-                    finish: {
+                    datetimeTo: {
                         type: 'string',
+                        // FIXME:
                         // format: 'date-time'
-                    }
+                    },
+                    datetimeFreeform: {
+                        type: 'string',
+                    },
+
+                    category: {
+                        type: 'string'
+                    },
+                    categoryFreeform: {
+                        type: 'string'
+                    },
+
+                    size: {
+                        type: 'string'
+                    },
+                    sizeFreeform: {
+                        type: 'string'
+                    },
                 },
-                required: ['id', 'name']
+                required: ['id', 'externalId', 'name']
             }
         }
     });

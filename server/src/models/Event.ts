@@ -1,7 +1,14 @@
 import md5 from 'md5';
 
+export const ES_SEARCH_IN_CACHE = 0x1;    // this event source will use the local cache for search query
+export const ES_SEARCH_REMOTE = 0x2;      // this event source will make a remote api query for search
+
 export enum EventSizeEnum {
-  "XS", "S", "M", "L", "XL" 
+  XS = <any> "XS",
+  S = <any> "S",
+  M = <any> "M", 
+  L = <any> "L", 
+  XL = <any> "XL" 
 }
 
 export enum EventCategoryEnum {
@@ -48,8 +55,8 @@ export class Event implements EventType {
   budgetMax: number;
   budgetCurrency: string;
   budgetFreeform: string;
-  datetimeStart: Date;
-  datetimeEnd: Date;
+  datetimeFrom: Date;
+  datetimeTo: Date;
   datetimeFreeform
   category: EventCategoryEnum;
   categoryFreeform: string;
@@ -72,8 +79,8 @@ export class Event implements EventType {
     this.budgetMax = 0;
     this.budgetCurrency = "USD";
     this.budgetFreeform = "";
-    this.datetimeStart = new Date();
-    this.datetimeEnd = new Date();
+    this.datetimeFrom = new Date();
+    this.datetimeTo = new Date();
     this.datetimeFreeform = "";
     this.category = EventCategoryEnum.OTHER;
     this.categoryFreeform = "";
@@ -111,8 +118,8 @@ export type EventType = {
 
   // schedule stuff
   // GMT
-  datetimeStart: Date;
-  datetimeEnd: Date;
+  datetimeFrom: Date;
+  datetimeTo: Date;
   datetimeFreeform: string;
   
   // category of this event
