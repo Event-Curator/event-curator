@@ -1,14 +1,13 @@
 import { Router } from "express";
-import { scrapEvent, searchEvent, getEventById, getAllEvent } from "../controllers/eventController.js";
+import { scrapEvent, searchEvent, getEventById } from "../controllers/eventController.js";
 import apicache from "apicache";
 
 const router = Router();
 let cache = apicache.middleware;
 
 // router.get('/event', cache('5 minutes'), searchEvent);
-router.get('/event/search/:query', searchEvent);
-router.get('/event/:eventId', getEventById);
-router.get('/event', getAllEvent);
+router.get('/events', searchEvent);
+router.get('/events/:eventId', getEventById);
 
 
 // ------------ INTERNAL ------------- //

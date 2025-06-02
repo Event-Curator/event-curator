@@ -96,50 +96,36 @@ const searchEvent = async function (req: Request, res: Response, next: NextFunct
     let result: Array<EventType> = [];
     let providers: Array<Promise<Array<EventType>>> = [];
 
-    const query = req.params.query || '.*';
+    const query = req.query.query || '.*';
 
-    for (let source of config.sources) {        
-        if (source.enabled) {
-            log.info(`delegating search for datasource [${source.id}]`);
-
-            // scraping sources query are handling directly from cache
-            if (source.searchTye === ES_SEARCH_IN_CACHE) {
-                providers.push(
-                    eaCache.events.find({
-                        selector: {
-                            description: { $regex: query, $options: 'i' } // Case-insensitive regex
-                        }
-                    }).exec()
-                );
+    // first send out the promise to search against the internal cach
+    log.debug(`query string is: [${query}]`);
+    log.info(`searching against internal cache`);
+    providers.push(
+        eaCache.events.find({
+            selector: {
+                description: { $regex: query, $options: 'i' } // Case-insensitive regex
             }
-            // } else {
-            //     // push the search Promise into the providers queue
-            //     providers.push(source.controller.searchEvent("test"));            
-            // }
+        }).exec()
+    );
+
+    // then send out the promise to search directly from remote source
+    for (let source of config.sources) {        
+        if (source.enabled && source.searchType !== ES_SEARCH_IN_CACHE) {
+            log.info(`delegating search for datasource [${source.id}]`);
+            providers.push(source.controller.searchEvent(query));            
         }
-        
-        for (let providerResult of await Promise.all(providers)) {
-            result = result.concat(providerResult);
-        }
-        log.info(`found ${result.length} events`);
     }
+
+    // wait for all results and merge them
+    for (let providerResult of await Promise.all(providers)) {
+        result = result.concat(providerResult);
+    }
+    log.info(`found ${result.length} events`);
 
     res.status(200)
     res.send(result)
 };
-
-const getAllEvent = async function (req: Request, res: Response, next: NextFunction) {
-    let result = await eaCache.events.find({
-        selector: {
-            "externalId": {
-                $regex: '.*'
-            }
-        }
-    }).exec();
-
-    res.status(200);
-    res.send(result);
-}
 
 const getEventById = async function (req: Request, res: Response, next: NextFunction) {
     
@@ -182,4 +168,4 @@ const getEventById = async function (req: Request, res: Response, next: NextFunc
     res.send(result);
 };
 
-export { scrapEvent, searchEvent, getEventById, getAllEvent }
+export { scrapEvent, searchEvent, getEventById }

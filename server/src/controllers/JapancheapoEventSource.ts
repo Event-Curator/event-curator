@@ -16,7 +16,7 @@ class JapancheapoEventSource extends DefaultEventSource {
 
     async searchEvent(query: string): Promise<Array<EventType>> {
       let events = [];
-      console.log("QUERY !!");
+      // console.log("QUERY !!");
       return new Promise((resolve, reject) => resolve(events));
     }
     

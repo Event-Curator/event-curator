@@ -20,35 +20,35 @@ let _source = [
         enabled: false,
         endpoint: "https://ceciestundefaut.com/",
         controller: new DefaultEventSource(),
-        searchTye: ES_SEARCH_IN_CACHE
+        searchType: ES_SEARCH_IN_CACHE
     },
     {
         id: "allsportdb",
         enabled: true,
         endpoint: "https://api.allsportdb.com/v3",
         controller: new AllsportdbEventSource(),
-        searchTye: ES_SEARCH_IN_CACHE
+        searchType: ES_SEARCH_IN_CACHE
     },
     {
         id: "meetup",
         enabled: false,
         endpoint: "https://meetup.brol/xxxx",
         controller: new MeetupEventSource(),
-        searchTye: ES_SEARCH_IN_CACHE
+        searchType: ES_SEARCH_IN_CACHE
     },
     {
         id: "local",
         enabled: false,
         endpoint: "file:///data/dummy.json",
         controller: new LocalEventSource(),
-        searchTye: ES_SEARCH_IN_CACHE
+        searchType: ES_SEARCH_IN_CACHE
     },
     {
         id: "japancheapo",
         enabled: true,
         endpoint: "https://japancheapo.com/events",
         controller: new JapancheapoEventSource(),
-        searchTye: ES_SEARCH_IN_CACHE
+        searchType: ES_SEARCH_IN_CACHE
     }
 ]
 
