@@ -1,43 +1,47 @@
-import { Request, Response, NextFunction } from 'express';
-import config from '../utils/config.js'
-import { log } from '../utils/logger.js'
-import { MeetupEventSource } from './MeetupEventSource.js';
-import { EventbriteEventSource } from './EventbriteEventSource.js';
-import * as pe from "../models/Event.js"
-import { LocalEventSource } from './LocalEventSource.js';
-import { JapancheapoEventSource } from './JapancheapoEventSource.js';
+import { Request, Response, NextFunction } from "express";
+import config from "../utils/config.js";
+import { log } from "../utils/logger.js";
+import { MeetupEventSource } from "./MeetupEventSource.js";
+import { EventbriteEventSource } from "./EventbriteEventSource.js";
+import * as pe from "../models/Event.js";
+import { LocalEventSource } from "./LocalEventSource.js";
+import { JapancheapoEventSource } from "./JapancheapoEventSource.js";
+import DummyDataSource from "./dummyDataSource.js";
 
-const getEvents = async function (req: Request, res: Response, next: NextFunction) {
-    
-    let result: Array<pe.EventType> = [];
-    let providers: Array<Promise<Array<pe.EventType>>> = [];
+const getEvents = async function (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  let result: Array<pe.EventType> = [];
+  let providers: Array<Promise<Array<pe.EventType>>> = [];
 
-    let eventbriteES = new EventbriteEventSource();
-    let meetupES = new MeetupEventSource();
-    let japancheapoES = new JapancheapoEventSource();
-    let localES = new LocalEventSource();
+  let eventbriteES = new EventbriteEventSource();
+  let meetupES = new MeetupEventSource();
+  let japancheapoES = new JapancheapoEventSource();
+  let localES = new LocalEventSource();
+  let dummyDataES = new DummyDataSource();
 
-    for (let source of config.sources) {
-        
-        if (source.enabled) {
+  for (let source of config.sources) {
+    if (source.enabled) {
+      log.info("executing getEvent for source: " + source.id);
+      // FIXME: when they will be ready
+      // providers.push(eventbriteES.searchEvent("test"));
+      // providers.push(meetupES.searchEvent("test"));
 
-            log.info('executing getEvent for source: ' + source.id)
-            // FIXME: when they will be ready
-            // providers.push(eventbriteES.searchEvent("test"));
-            // providers.push(meetupES.searchEvent("test"));
+      providers.push(japancheapoES.searchEvent("test"));
+      providers.push(dummyDataES.provideEvents(100));
+      //   }
+      // providers.push(localES.searchEvent("test"));
+      let [_result1, _result2] = await Promise.all(providers);
+      result = _result1.concat(_result2);
 
-            providers.push(japancheapoES.searchEvent("test"));
-            // providers.push(localES.searchEvent("test"));
-            let [_result1, _result2] = await Promise.all(providers);
-            result = _result1.concat(_result2)
-
-            // console.log("====result>", result[0]);
-
-        }
+      // console.log("====result>", result[0]);
     }
+  }
 
-    res.status(200)
-    res.send(result)
+  res.status(200);
+  res.send(result);
 };
 
-export { getEvents }
+export { getEvents };
