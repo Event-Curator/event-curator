@@ -1,20 +1,10 @@
 import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-// TypeScript + ES Module compatible `__dirname`
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load service account key
-const serviceAccount = JSON.parse(
-  readFileSync(path.join(__dirname, '../serviceAccountKey.json'), 'utf8')
-);
+import serviceAccountRaw from "../../../serviceAccountKey.json" with {type: "json"};
+import type { ServiceAccount } from "firebase-admin";
 
 // Initialize Firebase Admin
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
 });
 
 const auth = admin.auth();
