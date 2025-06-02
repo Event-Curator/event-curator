@@ -5,17 +5,26 @@ there, you will find the list of possible datasource, you can enable/disable the
 
 ## REST endpoint
 
-```GET /api/events```
+### Initialisation / warmup of cache
 
-will return an unfiltered, merged, list of all event from all enabled source.
+first thing to do after application startup, is to populate the cache.
+this call must be done for each sourceid (as seen in config.ts) or their content
+won't be inside the query result.
 
-```GET /api/events?query=firework```
-
-will return an filtered, merged, list of all event from all enabled source.
+launch a resync from the given source id (ex: japanscheapo)
 
 ```GET /api/internal/scrap/${sourceid}```
 
-launch a resync from the given source id (ex: japanscheapo)
+### Usage
+
+when the cache has been loaded, you can make query against the content.
+it will return an unfiltered, merged, list of all event from all enabled source.
+
+```GET /api/events```
+
+also, you can add a query (as for now, only the description field is checked against)
+
+```GET /api/events?query=firework```
 
 ## logging
 

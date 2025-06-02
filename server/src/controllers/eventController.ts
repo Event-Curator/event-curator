@@ -6,7 +6,7 @@ import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 
 // FIXME: scrap: find a way to avoid // runs
-const scrapEvent = async function (req: Request, res: Response, next: NextFunction) {
+const scrapEvent = async function (req: Request, res: Response) {
     
     let result: Array<EventType> = [];
     let providers: Array<Promise<Array<EventType>>> = [];
@@ -91,7 +91,7 @@ const findEvent = async function (externalId) {
     return result.length > 0 ? true : false;
 }
 
-const searchEvent = async function (req: Request, res: Response, next: NextFunction) {
+const searchEvent = async function (req: Request, res: Response) {
     
     let result: Array<EventType> = [];
     let providers: Array<Promise<Array<EventType>>> = [];
@@ -127,7 +127,7 @@ const searchEvent = async function (req: Request, res: Response, next: NextFunct
     res.send(result)
 };
 
-const getEventById = async function (req: Request, res: Response, next: NextFunction) {
+const getEventById = async function (req: Request, res: Response) {
     
     let externalId = req.params.eventId;
     let result = await eaCache.events.find({
@@ -142,28 +142,7 @@ const getEventById = async function (req: Request, res: Response, next: NextFunc
         res.status(404);
         res.send("the requested ressource is not found");
     }
-    // return result.length === 1 ? result[0] : undefined;
 
-
-    // let result: Array<pe.EventType> = [];
-    // let providers: Array<Promise<Array<pe.EventType>>> = [];
-
-    // const sourceId = req.params.sourceId || 'default';
-
-    // for (let source of config.sources) {        
-    //     if (source.enabled) {
-
-    //         log.info(`delegating search for datasource [${source.id}]`);
-            
-    //         // push the search Promise into the providers queue
-    //         providers.push(source.controller.searchEvent("test"));            
-    //     }
-        
-    //     for (let providerResult of await Promise.all(providers)) {
-    //         result = result.concat(providerResult);
-    //     }
-    //     log.info(`found ${result.length} events`);
-    // }
     res.status(200);
     res.send(result);
 };
