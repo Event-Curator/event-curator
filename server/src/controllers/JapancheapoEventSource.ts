@@ -1,5 +1,5 @@
 import { DefaultEventSource } from "./DefaultEventSource.js";
-import { EventType, Event } from "../models/Event.js";
+import { EventType, Event, EventCategoryEnum } from "../models/Event.js";
 import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
 import { log } from "../utils/logger.js";
@@ -190,6 +190,15 @@ class JapancheapoEventSource extends DefaultEventSource {
 
           // CATEGORY
           val = $(element).find('[title*="Category"]').parent().text() || "";
+          for (let c in EventCategoryEnum) {
+            let normalizedCategoryName = EventCategoryEnum[c];
+            for (let word of val.toLocaleLowerCase().trim().split(' ')) {
+              if (normalizedCategoryName.toLowerCase().indexOf(word) >= 0) {
+                anEvent.category = EventCategoryEnum[c];
+                break;
+              }
+            }
+          }
           anEvent.categoryFreeform = val.trim();
 
           // LOCATION
