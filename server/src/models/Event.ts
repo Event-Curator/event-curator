@@ -1,37 +1,40 @@
-import md5 from 'md5';
+import md5 from "md5";
 
 export enum EventSizeEnum {
-  "XS", "S", "M", "L", "XL" 
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
 }
 
 export enum EventCategoryEnum {
-  MUSIC = <any>"Music",
-  BUSINESS = <any>"Business & Professional",
-  FOOD = <any>"Food & Drink",
-  COMMUNITY = <any>"Community & Culture",
-  PERFORMANCE = <any>"Performing & Visual Arts",
-  MEDIA = <any>"Film, Media & Entertainment",
-  SPORT = <any>"Sports & Fitness",
-  HEALTH = <any>"Health & Wellness",
-  SCIENCE = <any>"Science & Technology",
-  TRAVEL = <any>"Travel & Outdoor",
-  CHARITY = <any>"Charity & Causes",
-  RELIGION = <any>"Religion & Spirituality",
-  FAMILY = <any>"Family & Education",
-  SEASONAL = <any>"Seasonal & Holiday",
-  GOV = <any>"Government & Politics",
-  FASHION = <any>"Fashion & Beauty",
-  HOME = <any>"Home & Lifestyle",
-  AUTO = <any>"Auto, Boat & Air",
-  HOBBIES = <any>"Hobbies & Special Interest",
-  SCHOOL = <any>"School Activities",
-  OTHER = <any>"Other",
+  MUSIC = "Music",
+  BUSINESS = "Business & Professional",
+  FOOD = "Food & Drink",
+  COMMUNITY = "Community & Culture",
+  PERFORMANCE = "Performing & Visual Arts",
+  MEDIA = "Film, Media & Entertainment",
+  SPORT = "Sports & Fitness",
+  HEALTH = "Health & Wellness",
+  SCIENCE = "Science & Technology",
+  TRAVEL = "Travel & Outdoor",
+  CHARITY = "Charity & Causes",
+  RELIGION = "Religion & Spirituality",
+  FAMILY = "Family & Education",
+  SEASONAL = "Seasonal & Holiday",
+  GOV = "Government & Politics",
+  FASHION = "Fashion & Beauty",
+  HOME = "Home & Lifestyle",
+  AUTO = "Auto, Boat & Air",
+  HOBBIES = "Hobbies & Special Interest",
+  SCHOOL = "School Activities",
+  OTHER = "Other",
 }
 
 export class Event implements EventType {
-
   // private properties (setter usage mandatory)
-  // #originUrl: string; 
+  // #originUrl: string;
 
   // public properties
   id: number;
@@ -52,15 +55,15 @@ export class Event implements EventType {
   budgetFreeform: string;
   datetimeStart: Date;
   datetimeEnd: Date;
-  datetimeFreeform
+  datetimeFreeform;
   category: EventCategoryEnum;
   categoryFreeform: string;
   size: EventSizeEnum;
   sizeFreeform: string;
-    
-  public constructor (url: string) {
+
+  public constructor(url: string) {
     this.id = 0;
-    this.externalId = ""; 
+    this.externalId = "";
     this.originId = md5(url.toLocaleLowerCase());
     this.originUrl = url;
     this.name = "";
@@ -81,7 +84,7 @@ export class Event implements EventType {
     this.category = EventCategoryEnum.OTHER;
     this.categoryFreeform = "";
     this.size = EventSizeEnum.M;
-    this.sizeFreeform = ""
+    this.sizeFreeform = "";
   }
 }
 
@@ -89,10 +92,10 @@ export type EventType = {
   id: number;
   externalId: string;
   originId: string;
-  originUrl: string;           // this should point to a working page on the source website giving all the event details
+  originUrl: string; // this should point to a working page on the source website giving all the event details
 
-  name: string;                // name in one line
-  description: string;         // multi line html content
+  name: string; // name in one line
+  description: string; // multi line html content
 
   teaserText: string;
   teaserMedia: string;
@@ -110,7 +113,7 @@ export type EventType = {
   // all is in Yen. o means free
   budgetMin: number;
   budgetMax: number;
-  budgetCurrency: string;    // USD, EUR, ...
+  budgetCurrency: string; // USD, EUR, ...
   budgetFreeform: string;
 
   // schedule stuff
@@ -118,7 +121,7 @@ export type EventType = {
   datetimeStart: Date;
   datetimeEnd: Date;
   datetimeFreeform: string;
-  
+
   // category of this event
   category: EventCategoryEnum;
   categoryFreeform: string;
@@ -128,4 +131,4 @@ export type EventType = {
   sizeFreeform: string;
 
   // getOriginId: () => {};
-}
+};
