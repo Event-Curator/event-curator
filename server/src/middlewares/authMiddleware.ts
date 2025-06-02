@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import admin from "firebase-admin";
-import serviceAccountRaw from "./serviceAccountKey.json";
+import serviceAccountRaw from "../serviceAccountKey.json";
 import type { ServiceAccount } from "firebase-admin";
 const serviceAccount = serviceAccountRaw as ServiceAccount;
 admin.initializeApp({
