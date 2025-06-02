@@ -4,6 +4,7 @@ import "./index.css";
 import Layout from "./layouts/Layout";
 import Home from "./pages/Home";
 import EventDetails from "./pages/EventDetails";
+import EventTimeline from "./pages/EventTimeline"; 
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
@@ -13,6 +14,7 @@ createRoot(document.getElementById("root")!).render(
         <Route path="event">
           <Route path=":id" element={<EventDetails />} />
         </Route>
+        <Route path="timeline" element={<EventTimeline />} /> 
       </Route>
     </Routes>
   </BrowserRouter>

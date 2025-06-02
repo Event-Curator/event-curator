@@ -1,4 +1,3 @@
-
 import heroImg from "../assets/Matsuri.jpg";
 
 export default function Hero() {
@@ -16,14 +15,6 @@ export default function Hero() {
         <p className="text-sm md:text-lg drop-shadow mb-3">
           Discover & Share Festivals, Art, Concerts, Sports, Anime Events & More
         </p>
-        <div className="flex justify-center mt-4">
-          <input
-            type="text"
-            placeholder="Search events by keyword or tag"
-            className="input input-bordered w-64 md:w-96"
-          />
-          <button className="btn btn-primary ml-2">Search</button>
-        </div>
       </div>
     </section>
   );

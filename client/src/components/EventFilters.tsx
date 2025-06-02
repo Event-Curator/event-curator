@@ -1,9 +1,28 @@
-import { tokyoWards } from "./constants";
+import { useState } from "react";
+import { eventCategories, prefectures } from "./constants";
 
-export default function EventFilters() {
+type EventFiltersProps = {
+  onFilter: (filters: { search: string; category: string; location: string; price: string }) => void;
+};
+
+export default function EventFilters({ onFilter }: EventFiltersProps) {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [location, setLocation] = useState("");
+  const [price, setPrice] = useState("");
+
+  const handleSearch = () => {
+    onFilter({ search, category, location, price });
+  };
+
+  // Only allow numbers in price
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, "");
+    setPrice(val);
+  };
+
   return (
     <aside className="bg-white p-4 rounded shadow-md w-full">
-      {/* Search */}
       <div className="mb-4">
         <label className="font-bold text-sm text-gray-700 mb-2 block">Search</label>
         <div className="flex">
@@ -11,34 +30,59 @@ export default function EventFilters() {
             type="text"
             placeholder="Search by keyword or tag"
             className="input input-bordered w-full rounded-r-none"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
           />
-          <button className="btn btn-primary rounded-l-none">🔍</button>
+          <button className="btn btn-primary rounded-l-none" onClick={handleSearch}>🔍</button>
         </div>
       </div>
-      {/* Filters */}
       <div className="flex gap-2 mb-4">
-        <button className="btn btn-outline btn-sm text-blue-700 border-blue-200 flex-1">Categories</button>
-        <button className="btn btn-outline btn-sm text-blue-700 border-blue-200 flex-1">Location</button>
-        <button className="btn btn-outline btn-sm text-blue-700 border-blue-200 flex-1">Price</button>
-      </div>
-      {/* Date Range */}
-      <div className="mb-4 flex items-center gap-2">
-        <span className="font-medium">From</span>
-        <input type="date" className="input input-bordered input-xs" />
-        <span className="font-medium">To</span>
-        <input type="date" className="input input-bordered input-xs" />
-      </div>
-      {/* Ward Select */}
-      <div className="mb-4">
-        <select className="select select-bordered w-full">
-          <option>All wards</option>
-          {tokyoWards.map(ward => (
-            <option key={ward}>{ward} Ward</option>
-          ))}
+        <select className="select select-bordered w-full" value={category} onChange={e => setCategory(e.target.value)}>
+          <option value="">Categories</option>
+          {eventCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
         </select>
+        <select className="select select-bordered w-full" value={location} onChange={e => setLocation(e.target.value)}>
+          <option value="">All prefectures</option>
+          {prefectures.map(prefectures => <option key={prefectures} value={prefectures}>{prefectures} Prefecture</option>)}
+        </select>
+        <div className="relative w-full">
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="Max Price"
+            className="input input-bordered w-full pr-8 text-right"
+            value={price}
+            onChange={handlePriceChange}
+            // removes spinners on Chrome/Edge/Safari, not needed but safe
+            style={{
+              MozAppearance: "textfield",
+            }}
+          />
+          {/* Right-aligned Yen symbol */}
+          <span
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none select-none"
+            style={{ userSelect: "none" }}
+          >
+            ¥
+          </span>
+        </div>
       </div>
-      {/* Event Calendar Button */}
-      <button className="btn btn-primary w-full mb-2">Event Calendar</button>
+      <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>Apply Filters</button>
+      <style>
+        {`
+          /* Remove number input spinners Chrome/Safari/Edge */
+          input[type="number"]::-webkit-inner-spin-button, 
+          input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+          }
+          /* Remove number input spinners Firefox */
+          input[type="number"] {
+            -moz-appearance: textfield;
+          }
+        `}
+      </style>
     </aside>
   );
 }

@@ -1,22 +1,22 @@
+import { useState } from "react";
 import Hero from "../components/Hero";
 import EventSection from "../components/EventSection";
 import EventFilters from "../components/EventFilters";
-import Top10Events from "../components/Top10Events";
 
 export default function Home() {
+  const [filters, setFilters] = useState<{ search?: string; category?: string; location?: string; price?: string }>({});
+
   return (
     <>
       <Hero />
-      <div className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
-        {/* Left: Upcoming Events */}
-        <section>
-          <EventSection />
-        </section>
-        {/* Right: Sidebar */}
-        <aside className="space-y-8">
-          <EventFilters />
-          <Top10Events />
-        </aside>
+      <div className="w-full flex flex-col items-center px-2 py-8">
+        <div className="w-full max-w-3xl mb-6">
+          <EventFilters onFilter={setFilters} />
+        </div>
+        <div className="w-full max-w-3xl">
+          <h2 className="text-2xl font-bold mb-4 text-blue-700">Upcoming Events</h2>
+          <EventSection filters={filters} />
+        </div>
       </div>
     </>
   );

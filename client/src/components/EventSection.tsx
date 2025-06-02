@@ -1,6 +1,5 @@
 import EventPreviewCard from "./EventPreviewCard";
 
-
 const dummyData = [
   {
     id: 1,
@@ -76,9 +75,12 @@ const dummyData = [
   },
 ];
 
-//const dummyData = [/* ... */];
+type EventSectionProps = {
+  filters?: { search?: string; category?: string; location?: string; price?: string };
+};
 
-export default function EventSection() {
+export default function EventSection({ filters }: EventSectionProps) {
+  // For now, just display some dummy data. I will add backend filtering soon
   return (
     <div className="flex flex-col gap-5">
       {dummyData.map((event) => (
