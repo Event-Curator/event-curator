@@ -24,7 +24,7 @@ const befriendUser = async (req: Request, res: Response, next: NextFunction) => 
       { user_uid: friend_uid, friend_uid: user_uid }
     ]).onConflict(['user_uid', 'friend_uid']).ignore();
 
-    res.status(201).json({ message: 'Friendship established' });
+     res.status(201).json({ message: 'Friendship established' });
   } catch (error) {
     log.error('Error creating friendship:', error);
     res.status(500).json({ error: 'Failed to create friendship' });
