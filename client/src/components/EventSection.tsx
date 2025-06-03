@@ -1,43 +1,49 @@
 import EventPreviewCard from "./EventPreviewCard";
 
-const dummyData = [
-  {
-    id: 1,
-    name: "Beer Night",
-    location: "Tokyo",
-    date: "2025/5/27",
-    link: 1,
-  },
-  {
-    id: 2,
-    name: "Karaoke Death Match",
-    location: "Tokyo",
-    date: "2025/5/28",
-    link: 2,
-  },
-  {
-    id: 3,
-    name: "Bowling",
-    location: "Yokohama",
-    date: "2025/5/29",
-    link: 3,
-  },
-];
+type Event = {
+  id: string | number;
+  name: string;
+  category: string;
+  location: string;
+  date: string;
+  price: number;
+  image: string;
+};
 
-export default function EventSection() {
+type EventSectionProps = {
+  filters?: { search?: string; category?: string; location?: string; price?: string };
+  events?: Event[];
+};
+
+export default function EventSection({ filters, events = [] }: EventSectionProps) {
+  // Prepare for real server events: always render 9 boxes
+  const displayEvents = events.slice(0, 9);
+  const missing = 9 - displayEvents.length;
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 mb-12">
-      <div className="w-full max-w-4xl min-h-[200px] bg-base-100 rounded-2xl shadow-lg flex flex-row gap-2 p-4 items-center justify-center border border-dashed border-primary/50">
-        {dummyData.map((event) => (
-          <EventPreviewCard
-            key={event.id}
-            name={event.name}
-            location={event.location}
-            date={event.date}
-            link={"./event/" + event.link}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col gap-5">
+      {displayEvents.map((event) => (
+        <EventPreviewCard
+          key={event.id}
+          name={event.name}
+          category={event.category}
+          location={event.location}
+          date={event.date}
+          price={event.price}
+          image={event.image}
+          link={`/event/${event.id}`}
+        />
+      ))}
+      {/* Fill remaining slots with placeholders */}
+      {Array.from({ length: missing }).map((_, i) => (
+        <div
+          key={`placeholder-${i}`}
+          className="rounded-xl h-24 bg-white border border-dashed border-blue-200 flex items-center justify-center text-gray-300"
+        >
+          Upcoming event
+        </div>
+      ))}
     </div>
   );
 }
+

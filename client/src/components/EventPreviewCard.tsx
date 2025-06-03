@@ -1,36 +1,43 @@
-import { Link } from "react-router";
-
-interface EventPreviewCardProps {
+type Props = {
   name: string;
+  category: string;
   location: string;
   date: string;
+  price: number;
+  image: string;
   link: string;
-}
+};
 
 export default function EventPreviewCard({
   name,
+  category,
   location,
   date,
+  price,
+  image,
   link,
-}: EventPreviewCardProps) {
+}: Props) {
   return (
-    <div className="card w-96 bg-base-100 card-md shadow-sm">
-      <div className="card-body">
-        <h2 className="text-2xl underline">{name}</h2>
-        <p className="text-xl flex flex-row gap-2">
-          <span className="font-bold">Where:</span>
-          {location}
-        </p>
-        <p className="text-xl flex flex-row gap-2">
-          <span className="font-bold">When:</span>
-          {date}
-        </p>
-        <div className="justify-end card-actions">
-          <Link to={link}>
-            <button className="btn btn-primary">Learn More</button>
-          </Link>
+    <a
+      href={link}
+      className="flex bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden border border-blue-50"
+      style={{ minHeight: 120 }}
+    >
+      <div className="w-32 h-28 flex-shrink-0">
+        <img src={image} alt={name} className="w-full h-full object-cover" />
+      </div>
+      <div className="flex flex-col justify-between flex-1 p-4">
+        <span className="uppercase text-xs font-semibold text-blue-600 mb-1">{category}</span>
+        <h3 className="text-lg font-bold text-gray-800 mb-1">{name}</h3>
+        <div className="text-gray-500 text-xs mb-2">{date}</div>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <span>{location}</span>
+          <span>•</span>
+          <span className={price === 0 ? "font-bold text-blue-700" : ""}>
+            {price === 0 ? "Free Entry" : `¥${price}`}
+          </span>
         </div>
       </div>
-    </div>
+    </a>
   );
 }
