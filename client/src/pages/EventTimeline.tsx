@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-
-// Placeholder for real event data from server
-// Example shape of event object:
-// const favoriteEvents = [
-//   { id: 1, name: "Event Name", location: "Place", date: "2025-06-03", time: "19:00", price: 1000 },
-//   ...
-// ];
+import { useEventContext } from "../context/EventContext";
 
 function getPriceLabel(price: number) {
   return price === 0 ? (
@@ -30,7 +24,6 @@ function getWeekDates(baseDate = new Date()) {
   });
 }
 
-// Main timeline UI
 type Event = {
   id: number;
   name: string;
@@ -40,11 +33,14 @@ type Event = {
   price: number;
 };
 
-export default function EventTimeline({ events = [] }: { events?: Event[] }) {
+export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
+  const { filters } = useEventContext();
 
-  // For demo: calculate current week starting Monday, apply offset
+  // Placeholder for server integration
+  const events: Event[] = []; // Will be replaced with real fetch based on filters
+
   const today = new Date();
   const baseDate = new Date(today);
   baseDate.setDate(today.getDate() + weekOffset * 7);
@@ -56,7 +52,6 @@ export default function EventTimeline({ events = [] }: { events?: Event[] }) {
     const key = date.toISOString().slice(0, 10);
     eventsByDay[key] = [];
   });
-  // Real data expected as props or via fetch
   events.forEach((ev) => {
     if (eventsByDay[ev.date]) {
       eventsByDay[ev.date].push(ev);
@@ -132,7 +127,6 @@ export default function EventTimeline({ events = [] }: { events?: Event[] }) {
                         className="absolute top-1 right-1 btn btn-ghost btn-xs text-red-500"
                         title="Remove from timeline"
                         tabIndex={-1}
-                        // onClick={() => ...}
                       >
                         &#10006;
                       </button>

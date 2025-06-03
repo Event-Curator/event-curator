@@ -1,18 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { eventCategories, prefectures } from "./constants";
+import { useEventContext } from "../context/EventContext"; 
 
-type EventFiltersProps = {
-  onFilter: (filters: { search: string; category: string; location: string; price: string }) => void;
-};
-
-export default function EventFilters({ onFilter }: EventFiltersProps) {
+export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
+  const { setFilters } = useEventContext();
+  const navigate = useNavigate();
 
   const handleSearch = () => {
-    onFilter({ search, category, location, price });
+    // Require at least a category or prefecture
+    if (!category && !location) {
+      alert("Please select at least a category or a prefecture!");
+      return;
+    }
+    setFilters({ search, category, location, price });
+    navigate("/timeline");
   };
 
   // Only allow numbers in price
@@ -43,7 +49,7 @@ export default function EventFilters({ onFilter }: EventFiltersProps) {
         </select>
         <select className="select select-bordered w-full" value={location} onChange={e => setLocation(e.target.value)}>
           <option value="">All prefectures</option>
-          {prefectures.map(prefectures => <option key={prefectures} value={prefectures}>{prefectures} Prefecture</option>)}
+          {prefectures.map(pref => <option key={pref} value={pref}>{pref} Prefecture</option>)}
         </select>
         <div className="relative w-full">
           <input
@@ -54,12 +60,10 @@ export default function EventFilters({ onFilter }: EventFiltersProps) {
             className="input input-bordered w-full pr-8 text-right"
             value={price}
             onChange={handlePriceChange}
-            // removes spinners on Chrome/Edge/Safari, not needed but safe
             style={{
               MozAppearance: "textfield",
             }}
           />
-          {/* Right-aligned Yen symbol */}
           <span
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none select-none"
             style={{ userSelect: "none" }}
@@ -68,16 +72,14 @@ export default function EventFilters({ onFilter }: EventFiltersProps) {
           </span>
         </div>
       </div>
-      <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>Apply Filters</button>
+      <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>Find Events</button>
       <style>
         {`
-          /* Remove number input spinners Chrome/Safari/Edge */
           input[type="number"]::-webkit-inner-spin-button, 
           input[type="number"]::-webkit-outer-spin-button { 
             -webkit-appearance: none; 
             margin: 0; 
           }
-          /* Remove number input spinners Firefox */
           input[type="number"] {
             -moz-appearance: textfield;
           }

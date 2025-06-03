@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { auth, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -133,7 +134,9 @@ export default function Navbar() {
             <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Categories</label>
             <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-56 max-h-60 overflow-y-auto border border-blue-100 z-50">
               {eventCategories.map(cat => (
-                <li key={cat}><a>{cat}</a></li>
+                <li key={cat}>
+                  <Link to={`/category/${encodeURIComponent(cat)}`}>{cat}</Link>
+                </li>
               ))}
             </ul>
           </div>
@@ -141,19 +144,13 @@ export default function Navbar() {
             <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Location</label>
             <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-44 border border-blue-100 z-50">
               {prefectures.map(pref => (
-                <li key={pref}><a>{pref} Prefecture</a></li>
+                <li key={pref}>
+                  <Link to={`/location/${encodeURIComponent(pref)}`}>{pref} Prefecture</Link>
+                </li>
               ))}
             </ul>
           </div>
-          <div className="dropdown dropdown-hover">
-            <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Price</label>
-            <div tabIndex={0} className="dropdown-content bg-white p-4 shadow rounded-box w-56 border border-blue-100 z-50">
-              <input type="number" placeholder="Max price (¥)" className="input input-bordered w-full max-w-xs mb-2" />
-              <button className="btn btn-primary btn-sm w-full">Apply</button>
-            </div>
-          </div>
-          {/* MAKE THIS BUTTON WORK */}
-          <a href="/timeline" className="btn btn-ghost btn-sm text-blue-700">Event Timeline</a>
+          <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">My Event Timeline</Link>
         </div>
         {/* Auth */}
         <div className="flex gap-2">
@@ -183,13 +180,15 @@ export default function Navbar() {
             </svg>
           </label>
           <ul tabIndex={0} className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50">
-            <li><a>Events</a></li>
+            <li><Link to="/events">Events</Link></li>
             <li tabIndex={0}>
               <details>
                 <summary>Categories</summary>
                 <ul className="p-2">
                   {eventCategories.map(cat => (
-                    <li key={cat}><a>{cat}</a></li>
+                    <li key={cat}>
+                      <Link to={`/category/${encodeURIComponent(cat)}`}>{cat}</Link>
+                    </li>
                   ))}
                 </ul>
               </details>
@@ -199,24 +198,15 @@ export default function Navbar() {
                 <summary>Location</summary>
                 <ul className="p-2">
                   {prefectures.map(pref => (
-                    <li key={pref}><a>{pref} Prefecture</a></li>
+                    <li key={pref}>
+                      <Link to={`/location/${encodeURIComponent(pref)}`}>{pref} Prefecture</Link>
+                    </li>
                   ))}
                 </ul>
               </details>
             </li>
-            <li tabIndex={0}>
-              <details>
-                <summary>Price</summary>
-                <ul className="p-2">
-                  <li>
-                    <input type="number" placeholder="Max price (¥)" className="input input-bordered w-full max-w-xs mb-2" />
-                    <button className="btn btn-primary btn-sm w-full">Apply</button>
-                  </li>
-                </ul>
-              </details>
-            </li>
             {/* MOBILE EVENT TIMELINE BUTTON */}
-            <li><a href="/timeline">Event Timeline</a></li>
+            <li><Link to="/timeline">Event Timeline</Link></li>
             {/* Mobile login/register buttons */}
             {!user && MobileAuthButtons}
             {user && (
