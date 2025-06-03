@@ -6,7 +6,6 @@ import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
 
-// FIXME: scrap: find a way to avoid // runs
 const scrapEvent = async function (req: Request, res: Response) {
     
     let result: Array<EventType> = [];
@@ -39,8 +38,6 @@ const scrapEvent = async function (req: Request, res: Response) {
             // FIXME: do an update
             continue;
         }
-
-        // console.log(event);
 
         await eaCache.events.insert({
             // FIXME: shoud be something, not 0
@@ -101,8 +98,11 @@ const searchEvent = async function (req: Request, res: Response) {
     const name = req.query.name || '.*';
     const description = req.query.description || '.*';
     const category = req.query.category || '.*';
-    let datetimeFrom = req.query.datetimeFrom || '.*';
-    let datetimeTo = req.query.datetimeTo || '.*';
+    const budgetMax = req.query.budgetMax || '999999';
+    let datetimeFrom = req.query.datetimeFrom
+        || moment().subtract(10, "year").toISOString();
+    let datetimeTo = req.query.datetimeTo
+        || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
 
     // if we provide a datetimeRange, it will takes precedance over From/to
@@ -137,15 +137,15 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"name": name});
     searchTerms.push({"description": description});
     searchTerms.push({"category": category});
-    searchTerms.push({"datetimeFrom": _datetimeFrom});
-    searchTerms.push({"datetimeTo": _datetimeTo});
+    searchTerms.push({"budgetMax": budgetMax});
+    searchTerms.push({"datetimeFrom": datetimeFrom});
+    searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
     for (let term of Object.keys(searchTerms)) {
         log.debug(`searchTerm: ${JSON.stringify(searchTerms[term])}`);
     }
 
     // first send out the promise to search against the internal cache
-    // log.debug(`query string is: [${query}]`);
     log.info(`searching against internal cache`);
     providers.push(
         eaCache.events.find({
@@ -154,6 +154,8 @@ const searchEvent = async function (req: Request, res: Response) {
                     { name: { $regex: name, $options: 'i' } },
                     { description: { $regex: description, $options: 'i' } },
                     { category: { $regex: category, $options: 'i' } },
+
+                    { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
                     { datetimeFrom: { $lt: datetimeTo } }
