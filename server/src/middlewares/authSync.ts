@@ -1,5 +1,5 @@
 //This controller implements and exports a function,syncFirebaseUsers,to sync users data between local and remote
-
+//Perhaps call it every couple minutes or upon new user registration?
 import type { Request, Response, NextFunction } from 'express';
 import admin from 'firebase-admin';
 import knex from '../knex.js';
