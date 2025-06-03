@@ -1,22 +1,51 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { eventCategories, prefectures } from "./constants";
-//import { useEventContext } from "../context/EventContext"; 
+import EventContext from "../context/EventContext";
+import { useContext } from "react";
 
 export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
-  //const { setFilters } = useEventContext();
+  const { events, setEvents } = useContext(EventContext);
+
+  const api = import.meta.env.VITE_API;
+
   const navigate = useNavigate();
+
+  async function getEvents() {
+    try {
+      const response = await fetch(`${api}?query=${search}`);
+      if (!response.ok) {
+        console.error(response);
+        return;
+      }
+      const data = await response.json();
+      console.log("response:", response);
+      setEvents(data);
+      console.log(events);
+
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   const handleSearch = () => {
     // Allow search if there is text in the search bar, or a category, or a location
     if (!search && !category && !location) {
-      alert("Please enter a search term, select a category, or select a prefecture!");
+      alert(
+        "Please enter a search term, select a category, or select a prefecture!"
+      );
       return;
+    } else {
+      getEvents();
     }
+
+    // useEventSearch(`${api}/query=${search}`, search);
+
     //setFilters({ search, category, location, price });
     navigate("/timeline");
   };
@@ -30,31 +59,54 @@ export default function EventFilters() {
   return (
     <aside className="bg-white p-4 rounded shadow-md w-full">
       <div className="mb-4">
-        <label className="font-bold text-sm text-gray-700 mb-2 block">Search</label>
+        <label className="font-bold text-sm text-gray-700 mb-2 block">
+          Search
+        </label>
         <div className="flex">
           <input
             type="text"
             placeholder="Search by keyword or tag"
             className="input input-bordered w-full rounded-r-none"
             value={search}
-            onChange={e => setSearch(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleSearch();
               }
             }}
           />
-          <button className="btn btn-primary rounded-l-none" onClick={handleSearch}>🔍</button>
+          <button
+            className="btn btn-primary rounded-l-none"
+            onClick={handleSearch}
+          >
+            🔍
+          </button>
         </div>
       </div>
       <div className="flex gap-2 mb-4">
-        <select className="select select-bordered w-full" value={category} onChange={e => setCategory(e.target.value)}>
+        <select
+          className="select select-bordered w-full"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="">Categories</option>
-          {eventCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          {eventCategories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
         </select>
-        <select className="select select-bordered w-full" value={location} onChange={e => setLocation(e.target.value)}>
+        <select
+          className="select select-bordered w-full"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        >
           <option value="">All prefectures</option>
-          {prefectures.map(pref => <option key={pref} value={pref}>{pref} Prefecture</option>)}
+          {prefectures.map((pref) => (
+            <option key={pref} value={pref}>
+              {pref} Prefecture
+            </option>
+          ))}
         </select>
         <div className="relative w-full">
           <input
@@ -77,7 +129,9 @@ export default function EventFilters() {
           </span>
         </div>
       </div>
-      <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>Find Events</button>
+      <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>
+        Find Events
+      </button>
       <style>
         {`
           input[type="number"]::-webkit-inner-spin-button, 
