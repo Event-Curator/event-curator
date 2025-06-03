@@ -3,7 +3,7 @@
 - [ ] PR title follows [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) specifications
 - [ ] PR assignee has been selected
 
-## For assingee
+## For assignee
 
 ### 🔧 What changed
 
