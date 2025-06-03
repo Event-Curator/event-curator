@@ -12,9 +12,9 @@ export default function EventFilters() {
   const navigate = useNavigate();
 
   const handleSearch = () => {
-    // Require at least a category or prefecture
-    if (!category && !location) {
-      alert("Please select at least a category or a prefecture!");
+    // Allow search if there is text in the search bar, or a category, or a location
+    if (!search && !category && !location) {
+      alert("Please enter a search term, select a category, or select a prefecture!");
       return;
     }
     setFilters({ search, category, location, price });
@@ -38,6 +38,11 @@ export default function EventFilters() {
             className="input input-bordered w-full rounded-r-none"
             value={search}
             onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
           <button className="btn btn-primary rounded-l-none" onClick={handleSearch}>🔍</button>
         </div>

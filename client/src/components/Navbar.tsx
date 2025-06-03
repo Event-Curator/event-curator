@@ -206,7 +206,7 @@ export default function Navbar() {
               </details>
             </li>
             {/* MOBILE EVENT TIMELINE BUTTON */}
-            <li><Link to="/timeline">Event Timeline</Link></li>
+            <li><Link to="/timeline">My Event Timeline</Link></li>
             {/* Mobile login/register buttons */}
             {!user && MobileAuthButtons}
             {user && (

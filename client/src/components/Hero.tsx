@@ -9,13 +9,15 @@ export default function Hero() {
         className="absolute inset-0 w-full h-full object-cover opacity-70"
         draggable={false}
       />
-      <div className="absolute inset-0 bg-blue-900 opacity-70"></div>
+      
       <div className="relative z-10 text-white text-center px-4">
-        <h1 className="text-2xl md:text-4xl font-bold drop-shadow mb-2">Events in Japan</h1>
-        <p className="text-sm md:text-lg drop-shadow mb-3">
-          Discover & Share Festivals, Art, Concerts, Sports, Anime Events & More
-        </p>
-      </div>
+        <h1 className="text-3xl md:text-6xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-red-outline">
+          Events in Japan
+          </h1>
+          <p className="text-base md:text-2xl drop-shadow mb-3 font-sans tracking-tight text-red-outline">
+            Discover & Share Festivals, Art, Concerts, Sports, Anime Events & More
+            </p>
+            </div>
     </section>
   );
 }
