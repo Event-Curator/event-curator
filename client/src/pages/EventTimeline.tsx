@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useEventContext } from "../context/EventContext";
+//import { useEventContext } from "../context/EventContext";
 
 function getPriceLabel(price: number) {
   return price === 0 ? (
@@ -36,7 +36,7 @@ type Event = {
 export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
-  const { filters } = useEventContext();
+  //const { filters } = useEventContext();
 
   // Placeholder for server integration
   const events: Event[] = []; // Will be replaced with real fetch based on filters

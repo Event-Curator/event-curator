@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { eventCategories, prefectures } from "./constants";
-import { useEventContext } from "../context/EventContext"; 
+//import { useEventContext } from "../context/EventContext"; 
 
 export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
-  const { setFilters } = useEventContext();
+  //const { setFilters } = useEventContext();
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -17,7 +17,7 @@ export default function EventFilters() {
       alert("Please enter a search term, select a category, or select a prefecture!");
       return;
     }
-    setFilters({ search, category, location, price });
+    //setFilters({ search, category, location, price });
     navigate("/timeline");
   };
 

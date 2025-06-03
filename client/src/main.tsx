@@ -5,10 +5,10 @@ import Layout from "./layouts/Layout";
 import Home from "./pages/Home";
 import EventDetails from "./pages/EventDetails";
 import EventTimeline from "./pages/EventTimeline";
-import { EventProvider } from "./context/EventContext";
+//import { EventProvider } from "./context/EventContext";
 
 createRoot(document.getElementById("root")!).render(
-  <EventProvider>
+  //<EventProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -20,5 +20,5 @@ createRoot(document.getElementById("root")!).render(
         </Route>
       </Routes>
     </BrowserRouter>
-  </EventProvider>
+  //</EventProvider>
 );
