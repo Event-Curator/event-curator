@@ -1,33 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-
-const demoEvents = [
-  {
-    id: 1,
-    name: "Beer Night",
-    location: "Shibuya",
-    date: "2025-06-03",
-    time: "19:00",
-    price: 0,
-  },
-  {
-    id: 2,
-    name: "Karaoke Death Match",
-    location: "Shinjuku",
-    date: "2025-06-05",
-    time: "20:30",
-    price: 2000,
-  },
-  {
-    id: 3,
-    name: "Startup Pitch Night",
-    location: "Roppongi",
-    date: "2025-06-05",
-    time: "18:00",
-    price: 500,
-  },
-];
+// Placeholder for real event data from server
+// Example shape of event object:
+// const favoriteEvents = [
+//   { id: 1, name: "Event Name", location: "Place", date: "2025-06-03", time: "19:00", price: 1000 },
+//   ...
+// ];
 
 function getPriceLabel(price: number) {
   return price === 0 ? (
@@ -35,14 +14,13 @@ function getPriceLabel(price: number) {
   ) : (
     <>
       <span className="text-gray-600">¥</span>
-      {price.toLocaleString()}
+      {price?.toLocaleString()}
     </>
   );
 }
 
 // Helpers
 function getWeekDates(baseDate = new Date()) {
-  // Find Monday of current week
   const monday = new Date(baseDate);
   monday.setDate(baseDate.getDate() - ((baseDate.getDay() + 6) % 7));
   return Array.from({ length: 7 }).map((_, i) => {
@@ -53,7 +31,16 @@ function getWeekDates(baseDate = new Date()) {
 }
 
 // Main timeline UI
-export default function EventTimeline() {
+type Event = {
+  id: number;
+  name: string;
+  location: string;
+  date: string;
+  time: string;
+  price: number;
+};
+
+export default function EventTimeline({ events = [] }: { events?: Event[] }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
 
@@ -63,13 +50,14 @@ export default function EventTimeline() {
   baseDate.setDate(today.getDate() + weekOffset * 7);
   const weekDates = getWeekDates(baseDate);
 
-  // Dummy filter for the demo
-  const eventsByDay: { [k: string]: typeof demoEvents } = {};
+  // Group events by day (ready for real data)
+  const eventsByDay: { [k: string]: Event[] } = {};
   weekDates.forEach((date) => {
     const key = date.toISOString().slice(0, 10);
     eventsByDay[key] = [];
   });
-  demoEvents.forEach((ev) => {
+  // Real data expected as props or via fetch
+  events.forEach((ev) => {
     if (eventsByDay[ev.date]) {
       eventsByDay[ev.date].push(ev);
     }
@@ -88,7 +76,6 @@ export default function EventTimeline() {
         Back to Home
       </button>
 
-      {/* Title & Fill Demo */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl md:text-3xl font-bold text-blue-700">My Event Timeline</h1>
         <button

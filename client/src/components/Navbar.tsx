@@ -129,7 +129,6 @@ export default function Navbar() {
         </div>
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
-          <a className="btn btn-ghost btn-sm text-blue-700">Events</a>
           <div className="dropdown dropdown-hover">
             <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Categories</label>
             <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-56 max-h-60 overflow-y-auto border border-blue-100 z-50">
