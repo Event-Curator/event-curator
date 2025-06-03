@@ -11,11 +11,11 @@ export default function Hero() {
       />
       
       <div className="relative z-10 text-white text-center px-4">
-        <h1 className="text-3xl md:text-6xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-red-outline">
+        <h1 className="text-6xl md:text-6xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-red-outline">
           Events in Japan
           </h1>
-          <p className="text-base md:text-2xl drop-shadow mb-3 font-sans tracking-tight text-red-outline">
-            Discover & Share Festivals, Art, Concerts, Sports, Anime Events & More
+          <p className="text-2xl md:text-2xl drop-shadow mb-3 font-sans tracking-tight text-red-outline">
+            Discover & Share Festivals, Art, Concerts, Sports & More!
             </p>
             </div>
     </section>
