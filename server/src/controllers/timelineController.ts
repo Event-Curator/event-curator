@@ -35,5 +35,27 @@ const createTimelineEntry = async (req: Request, res: Response, next: NextFuncti
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+// Get all events for a user
+const getEventsForUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { user_uid } = req.params;
 
-export { createTimelineEntry };
+  if (!user_uid) {
+    res.status(400).json({ error: 'Missing user_uid in URL params' });
+    return;
+  }
+
+  try {
+    log.info(`Fetching events for user: ${user_uid}`);
+
+    const events = await knex('user_events')
+      .join('events', 'user_events.event_id', '=', 'events.id')
+      .select('events.*')
+      .where('user_events.user_uid', user_uid);
+
+    res.status(200).json({ user_uid, events });
+  } catch (error) {
+    log.error(`Error fetching events for user ${user_uid}:`, error);
+    res.status(500).json({ error: 'Failed to retrieve events' });
+  }
+};
+export { createTimelineEntry,getEventsForUser };
