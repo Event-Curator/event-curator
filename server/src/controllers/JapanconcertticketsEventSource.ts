@@ -111,7 +111,7 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
       log.info(`${this.id}: scrapping started`);
 
       // see eventfeed_current_pagination_page parameter in the body payload
-      for (let currentPage = 1; currentPage<3; currentPage++) {
+      for (let currentPage = 1; currentPage<=100; currentPage++) {
         log.info(`${this.id}: scrapping ongoing. page ${currentPage}`);
 
         const res = await fetch("https://www.japanconcerttickets.com/wp-admin/admin-ajax.php", {
