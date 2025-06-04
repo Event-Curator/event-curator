@@ -11,11 +11,16 @@ type Event = {
 };
 
 type EventSectionProps = {
-  filters?: { search?: string; category?: string; location?: string; price?: string };
+  filters?: {
+    search?: string;
+    category?: string;
+    location?: string;
+    price?: string;
+  };
   events?: Event[];
 };
 
-export default function EventSection({ filters, events = [] }: EventSectionProps) {
+export default function EventSection({ events = [] }: EventSectionProps) {
   // Prepare for real server events: always render 9 boxes
   const displayEvents = events.slice(0, 9);
   const missing = 9 - displayEvents.length;
@@ -46,4 +51,3 @@ export default function EventSection({ filters, events = [] }: EventSectionProps
     </div>
   );
 }
-

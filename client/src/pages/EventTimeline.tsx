@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-//import { useEventContext } from "../context/EventContext";
+import { useContext } from "react";
+import EventContext from "../context/EventContext";
+import type { FullEventType } from "../types";
 
 function getPriceLabel(price: number) {
   return price === 0 ? (
@@ -13,6 +15,7 @@ function getPriceLabel(price: number) {
   );
 }
 
+////
 // Helpers
 function getWeekDates(baseDate = new Date()) {
   const monday = new Date(baseDate);
@@ -24,37 +27,32 @@ function getWeekDates(baseDate = new Date()) {
   });
 }
 
-type Event = {
-  id: number;
-  name: string;
-  location: string;
-  date: string;
-  time: string;
-  price: number;
-};
-
 export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
-  //const { filters } = useEventContext();
-
-  // Placeholder for server integration
-  const events: Event[] = []; // Will be replaced with real fetch based on filters
-
+  const { events } = useContext(EventContext);
+  
   const today = new Date();
   const baseDate = new Date(today);
   baseDate.setDate(today.getDate() + weekOffset * 7);
   const weekDates = getWeekDates(baseDate);
 
+  // == TODO == This should be refactored to use the FullEventType type from the types.ts
+  // file. This is because the interface needs to match the data coming in from the server.
+
   // Group events by day (ready for real data)
-  const eventsByDay: { [k: string]: Event[] } = {};
+  const eventsByDay: { [k: string]: FullEventType[] } = {};
   weekDates.forEach((date) => {
     const key = date.toISOString().slice(0, 10);
     eventsByDay[key] = [];
   });
+
   events.forEach((ev) => {
-    if (eventsByDay[ev.date]) {
-      eventsByDay[ev.date].push(ev);
+    // FIXME: it should be a Date, not a string ...
+    let key = ev.datetimeFrom.toString().slice(0, 10);
+    
+    if (eventsByDay[key]) {
+      eventsByDay[key].push(ev);
     }
   });
 
@@ -65,14 +63,26 @@ export default function EventTimeline() {
         className="mb-6 flex items-center gap-2 text-blue-700 hover:underline font-semibold"
         onClick={() => navigate("/")}
       >
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+        <svg
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path
+            d="M15 19l-7-7 7-7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
         Back to Home
       </button>
 
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-blue-700">My Event Timeline</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
+          My Event Timeline
+        </h1>
         <button
           className="btn btn-outline btn-xs md:btn-sm"
           disabled
@@ -84,14 +94,28 @@ export default function EventTimeline() {
 
       {/* Week Navigation */}
       <div className="flex items-center justify-center mb-3 gap-3">
-        <button className="btn btn-circle btn-xs md:btn-sm" onClick={() => setWeekOffset((w) => w - 1)}>
+        <button
+          className="btn btn-circle btn-xs md:btn-sm"
+          onClick={() => setWeekOffset((w) => w - 1)}
+        >
           <span className="material-symbols-outlined">&#8592;</span>
         </button>
         <span className="font-semibold text-lg md:text-xl text-gray-700">
-          {weekDates[0].toLocaleDateString(undefined, { month: "short", day: "numeric" })} –{" "}
-          {weekDates[6].toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+          {weekDates[0].toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          })}{" "}
+          –{" "}
+          {weekDates[6].toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
         </span>
-        <button className="btn btn-circle btn-xs md:btn-sm" onClick={() => setWeekOffset((w) => w + 1)}>
+        <button
+          className="btn btn-circle btn-xs md:btn-sm"
+          onClick={() => setWeekOffset((w) => w + 1)}
+        >
           <span className="material-symbols-outlined">&#8594;</span>
         </button>
       </div>
@@ -100,8 +124,10 @@ export default function EventTimeline() {
       <div className="overflow-x-auto">
         <div className="grid grid-cols-7 gap-2 bg-blue-50 rounded-xl p-4">
           {weekDates.map((date) => {
+
             const key = date.toISOString().slice(0, 10);
             const events = eventsByDay[key] || [];
+
             return (
               <div key={key} className="flex flex-col">
                 {/* Day Header */}
@@ -117,12 +143,17 @@ export default function EventTimeline() {
                     </div>
                   )}
                   {events.map((ev) => (
-                    <div key={ev.id} className="relative bg-white border rounded-md shadow-sm p-2 flex flex-col gap-1 pr-8">
-                      <div className="font-semibold text-blue-800">{ev.name}</div>
-                      <div className="text-xs text-gray-500">
-                        {ev.location} ・ {ev.time}
+                    <div
+                      key={ev.externalId}
+                      className="relative bg-white border rounded-md shadow-sm p-2 flex flex-col gap-1 pr-8"
+                    >
+                      <div className="font-semibold text-blue-800">
+                        {ev.name}
                       </div>
-                      <div className="text-xs">{getPriceLabel(ev.price)}</div>
+                      <div className="text-xs text-gray-500">
+                        {ev.placeFreeform} ・ {ev.datetimeFrom.toString()}
+                      </div>
+                      <div className="text-xs">{getPriceLabel(ev.budgetMax)}</div>
                       <button
                         className="absolute top-1 right-1 btn btn-ghost btn-xs text-red-500"
                         title="Remove from timeline"
