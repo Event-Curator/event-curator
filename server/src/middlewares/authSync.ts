@@ -15,14 +15,12 @@ admin.initializeApp({
 const auth = admin.auth();
 
 // Controller function
-export const syncFirebaseUsers = async (req: Request, res: Response, next: NextFunction) => {
+export const syncFirebaseUsers = async () => {
   try {
     log.info('Starting Firebase user sync...');
     const inserted: any[] = [];
-
     async function listAndInsertUsers(nextPageToken?: string): Promise<void> {
       const result = await auth.listUsers(1000, nextPageToken);
-
       const usersToInsert = result.users.map((user) => ({
         uid: user.uid,
         email: user.email || '',
@@ -48,10 +46,7 @@ export const syncFirebaseUsers = async (req: Request, res: Response, next: NextF
     }
 
     await listAndInsertUsers();
-
-    res.status(200).json({ message: 'Sync complete', count: inserted.length, users: inserted });
   } catch (error) {
     log.error('Error syncing Firebase users:', error);
-    res.status(500).json({ error: 'Failed to sync users from Firebase' });
   }
 };

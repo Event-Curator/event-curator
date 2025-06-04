@@ -8,6 +8,5 @@ let cache = apicache.middleware();
 
 // router.get('/events', cache('5 minutes'), getEvents);
 router.get("/events", getEvents);
-router.post("/events/addToUserTimeline", createTimelineEntry);
-router.post("/events/befriendUsers",befriendUser)
+
 export default router;
