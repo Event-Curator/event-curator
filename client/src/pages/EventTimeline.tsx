@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useContext } from "react";
 import EventContext from "../context/EventContext";
+import type { FullEventType } from "../types";
+// import moment from "moment";
 //  import type { FullEventType } from "../types"; <-- use this for data from server
 
 function getPriceLabel(price: number) {
@@ -32,6 +34,8 @@ export default function EventTimeline() {
   const { events } = useContext(EventContext);
   console.log(events); // for testing
 
+  // const today = moment();
+  
   const today = new Date();
   const baseDate = new Date(today);
   baseDate.setDate(today.getDate() + weekOffset * 7);
@@ -41,16 +45,26 @@ export default function EventTimeline() {
   // file. This is because the interface needs to match the data coming in from the server.
 
   // Group events by day (ready for real data)
-  const eventsByDay: { [k: string]: Event[] } = {};
+  const eventsByDay: { [k: string]: FullEventType[] } = {};
   weekDates.forEach((date) => {
     const key = date.toISOString().slice(0, 10);
     eventsByDay[key] = [];
   });
+
   events.forEach((ev) => {
-    if (eventsByDay[ev.date]) {
-      eventsByDay[ev.date].push(ev);
+    // FIXME: it should be a Date, not a string ...
+    let key = ev.datetimeFrom.toString().slice(0, 10);
+    
+    // console.log(ev.datetimeFrom);
+    // console.log(eventsByDay);
+    // console.log(key);
+    if (eventsByDay[key]) {
+      eventsByDay[key].push(ev);
     }
   });
+
+  console.log("DATES before JSX: ");
+  console.log(eventsByDay);
 
   return (
     <main className="max-w-5xl mx-auto px-2 py-10 min-h-[80vh]">
@@ -120,8 +134,12 @@ export default function EventTimeline() {
       <div className="overflow-x-auto">
         <div className="grid grid-cols-7 gap-2 bg-blue-50 rounded-xl p-4">
           {weekDates.map((date) => {
+            console.log("DATES IN JSX: ");
+            console.log(weekDates);
+            console.log("--------------");
             const key = date.toISOString().slice(0, 10);
             const events = eventsByDay[key] || [];
+            console.log("events for date: " + key + ": " + events);
             return (
               <div key={key} className="flex flex-col">
                 {/* Day Header */}
@@ -138,16 +156,16 @@ export default function EventTimeline() {
                   )}
                   {events.map((ev) => (
                     <div
-                      key={ev.id}
+                      key={ev.externalId}
                       className="relative bg-white border rounded-md shadow-sm p-2 flex flex-col gap-1 pr-8"
                     >
                       <div className="font-semibold text-blue-800">
                         {ev.name}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {ev.location} ・ {ev.time}
+                        {ev.placeFreeform} ・ {ev.datetimeFrom.toString()}
                       </div>
-                      <div className="text-xs">{getPriceLabel(ev.price)}</div>
+                      <div className="text-xs">{getPriceLabel(ev.budgetMax)}</div>
                       <button
                         className="absolute top-1 right-1 btn btn-ghost btn-xs text-red-500"
                         title="Remove from timeline"

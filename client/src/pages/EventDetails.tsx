@@ -1,17 +1,7 @@
 import { useParams, useNavigate } from "react-router";
+import type { FullEventType } from "../types";
 
-interface Event {
-  id: string | number;
-  name: string;
-  image: string;
-  category: string;
-  location: string;
-  date: string;
-  price?: number;
-  description: string;
-}
-
-export default function EventDetails({ event }: { event?: Event }) {
+export default function EventDetails({ event }: { event?: FullEventType }) {
   const { id } = useParams();
   console.log("data for id:", id);
 
@@ -69,7 +59,7 @@ export default function EventDetails({ event }: { event?: Event }) {
           {/* Image */}
           <div className="mb-6">
             <img
-              src={event.image}
+              src={event.teaserMedia}
               alt={event.name}
               className="rounded-xl w-full object-cover h-60 md:h-80 shadow"
               draggable={false}
@@ -85,13 +75,13 @@ export default function EventDetails({ event }: { event?: Event }) {
               <b>Category:</b> {event.category}
             </span>
             <span>
-              <b>Location:</b> {event.location}
+              <b>Location:</b> {event.placeFreeform}
             </span>
             <span>
-              <b>Date:</b> {event.date}
+              <b>Date:</b> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
             </span>
             <span>
-              <b>Price:</b> {getPriceLabel(event.price)}
+              <b>Price:</b> {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
             </span>
           </div>
           {/* Share / Favorite */}
@@ -121,14 +111,14 @@ export default function EventDetails({ event }: { event?: Event }) {
             </h2>
             <ul className="text-sm space-y-1">
               <li>
-                <span className="font-medium">Place:</span> {event.location}
+                <span className="font-medium">Place:</span> {event.placeFreeform}
               </li>
               <li>
-                <span className="font-medium">Date:</span> {event.date}
+                <span className="font-medium">Date:</span> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
               </li>
               <li>
                 <span className="font-medium">Price:</span>{" "}
-                {getPriceLabel(event.price)}
+                {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
               </li>
               <li>
                 <span className="font-medium">Access:</span> (Map coming soon)
