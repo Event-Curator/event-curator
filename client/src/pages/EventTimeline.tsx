@@ -14,7 +14,7 @@ function getPriceLabel(price: number) {
     </>
   );
 }
-
+////
 // Helpers
 function getWeekDates(baseDate = new Date()) {
   const monday = new Date(baseDate);
