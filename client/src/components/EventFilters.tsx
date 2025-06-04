@@ -17,7 +17,9 @@ export default function EventFilters() {
 
   async function getEvents() {
     try {
-      const response = await fetch(`${api}?query=${search}`);
+      const response = await fetch(
+        `${api}?name=${search}&category=${category}&budgetMax=${price}`
+      );
       if (!response.ok) {
         console.error(response);
         return;
@@ -34,19 +36,14 @@ export default function EventFilters() {
   }
 
   const handleSearch = () => {
-    // Allow search if there is text in the search bar, or a category, or a location
-    if (!search && !category && !location) {
-      alert(
-        "Please enter a search term, select a category, or select a prefecture!"
-      );
+    // Allow search if there is text in the search bar, or a category, price, or a location
+    if (!search && !category && !location && !price) {
+      alert("Please enter a search term, price, category, or location!");
       return;
     } else {
       getEvents();
     }
 
-    // useEventSearch(`${api}/query=${search}`, search);
-
-    //setFilters({ search, category, location, price });
     navigate("/timeline");
   };
 
