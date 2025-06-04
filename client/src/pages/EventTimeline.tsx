@@ -3,8 +3,6 @@ import { useNavigate } from "react-router";
 import { useContext } from "react";
 import EventContext from "../context/EventContext";
 import type { FullEventType } from "../types";
-// import moment from "moment";
-//  import type { FullEventType } from "../types"; <-- use this for data from server
 
 function getPriceLabel(price: number) {
   return price === 0 ? (
@@ -16,6 +14,7 @@ function getPriceLabel(price: number) {
     </>
   );
 }
+
 ////
 // Helpers
 function getWeekDates(baseDate = new Date()) {
@@ -32,9 +31,6 @@ export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
   const { events } = useContext(EventContext);
-  console.log(events); // for testing
-
-  // const today = moment();
   
   const today = new Date();
   const baseDate = new Date(today);
@@ -55,16 +51,10 @@ export default function EventTimeline() {
     // FIXME: it should be a Date, not a string ...
     let key = ev.datetimeFrom.toString().slice(0, 10);
     
-    // console.log(ev.datetimeFrom);
-    // console.log(eventsByDay);
-    // console.log(key);
     if (eventsByDay[key]) {
       eventsByDay[key].push(ev);
     }
   });
-
-  console.log("DATES before JSX: ");
-  console.log(eventsByDay);
 
   return (
     <main className="max-w-5xl mx-auto px-2 py-10 min-h-[80vh]">
@@ -134,12 +124,10 @@ export default function EventTimeline() {
       <div className="overflow-x-auto">
         <div className="grid grid-cols-7 gap-2 bg-blue-50 rounded-xl p-4">
           {weekDates.map((date) => {
-            console.log("DATES IN JSX: ");
-            console.log(weekDates);
-            console.log("--------------");
+
             const key = date.toISOString().slice(0, 10);
             const events = eventsByDay[key] || [];
-            console.log("events for date: " + key + ": " + events);
+
             return (
               <div key={key} className="flex flex-col">
                 {/* Day Header */}
