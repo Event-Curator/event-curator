@@ -11,6 +11,13 @@ export enum EventSizeEnum {
   XL = <any> "XL" 
 }
 
+export enum datetimeRangeEnum {
+  NEXT7DAYS = "NEXT7DAYS",
+  NEXTWEEK = "NEXTWEEK",
+  THISMONTH = "THISMONTH",
+  NEXTMONTH = "NEXTMONTH",
+}
+
 export enum EventCategoryEnum {
   MUSIC = "Music",
   BUSINESS = "Business & Professional",

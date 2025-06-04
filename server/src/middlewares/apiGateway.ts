@@ -3,6 +3,7 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import { getAjv } from 'rxdb/plugins/validate-ajv';
 
 let eaCache;
 
@@ -14,6 +15,21 @@ async function initCache() {
         storage: wrappedValidateAjvStorage({
             storage: getRxStorageMemory()
         })
+    });
+
+    const ajv = getAjv();
+
+    // ajv.addFormat('email', {
+    //     type: 'string',
+    //     validate: v => v.includes('@') // ensure email fields contain the @ symbol
+    // });
+
+    ajv.addFormat('custom-date-time', function(dateTimeString: string): boolean {
+        if (typeof dateTimeString === 'object') {
+            dateTimeString = new Date(dateTimeString).toISOString();
+        }
+
+        return !isNaN(Date.parse(dateTimeString));  // any test that returns true/false 
     });
 
     await eaCache.addCollections({
@@ -81,13 +97,11 @@ async function initCache() {
 
                     datetimeFrom: {
                         type: 'string',
-                        // FIXME:
-                        // format: 'date-time'
+                        format: 'custom-date-time'
                     },
                     datetimeTo: {
                         type: 'string',
-                        // FIXME:
-                        // format: 'date-time'
+                        format: 'custom-date-time'
                     },
                     datetimeFreeform: {
                         type: 'string',

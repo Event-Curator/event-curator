@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
-import { ES_SEARCH_IN_CACHE, EventType } from "../models/Event.js"
+import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType } from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
+import moment from 'moment';
 
-// FIXME: scrap: find a way to avoid // runs
 const scrapEvent = async function (req: Request, res: Response) {
     
     let result: Array<EventType> = [];
@@ -38,8 +38,6 @@ const scrapEvent = async function (req: Request, res: Response) {
             // FIXME: do an update
             continue;
         }
-
-        // console.log(event);
 
         await eaCache.events.insert({
             // FIXME: shoud be something, not 0
@@ -95,16 +93,73 @@ const searchEvent = async function (req: Request, res: Response) {
     
     let result: Array<EventType> = [];
     let providers: Array<Promise<Array<EventType>>> = [];
+    let searchTerms: Array<Object> = [];
 
-    const query = req.query.query || '.*';
+    const name = req.query.name || '.*';
+    const description = req.query.description || '.*';
+    const category = req.query.category || '.*';
+    const budgetMax = req.query.budgetMax || '999999';
+    let datetimeFrom = req.query.datetimeFrom
+        || moment().subtract(10, "year").toISOString();
+    let datetimeTo = req.query.datetimeTo
+        || moment().add(10, "years").toISOString();
+    const datetimeRange = req.query.datetimeRange || '.*';
 
-    // first send out the promise to search against the internal cach
-    log.debug(`query string is: [${query}]`);
+    // if we provide a datetimeRange, it will takes precedance over From/to
+    let _datetimeFrom = moment();
+    let _datetimeTo = moment();
+    if (datetimeRange === datetimeRangeEnum.NEXT7DAYS) {
+        _datetimeFrom.add(1, 'day').startOf('day');
+        _datetimeTo.add(1, 'day').startOf('day').add(8, 'days').endOf('day');
+        datetimeFrom = _datetimeFrom.toISOString();
+        datetimeTo = _datetimeTo.toISOString();
+
+    } else if (datetimeRange === datetimeRangeEnum.NEXTWEEK) {
+        _datetimeFrom.add(1, 'weeks').startOf('isoWeek');
+        _datetimeTo.add(1, 'weeks').startOf('isoWeek').add(7, 'days').endOf('day');
+        datetimeFrom = _datetimeFrom.toISOString();
+        datetimeTo = _datetimeTo.toISOString();
+
+    } else if (datetimeRange === datetimeRangeEnum.NEXTMONTH) {
+        _datetimeFrom = _datetimeFrom.add(1, 'month').startOf('month');
+        _datetimeTo = _datetimeTo.add(1, 'month').endOf('month');
+        datetimeFrom = _datetimeFrom.toISOString();
+        datetimeTo = _datetimeTo.toISOString();
+
+    } else if (datetimeRange === datetimeRangeEnum.THISMONTH) {
+        _datetimeFrom = _datetimeFrom.startOf('month');
+        _datetimeTo = _datetimeTo.endOf('month');
+        datetimeFrom = _datetimeFrom.toISOString();
+        datetimeTo = _datetimeTo.toISOString();
+    }
+
+    // save all the terms to delegate them for remote search
+    searchTerms.push({"name": name});
+    searchTerms.push({"description": description});
+    searchTerms.push({"category": category});
+    searchTerms.push({"budgetMax": budgetMax});
+    searchTerms.push({"datetimeFrom": datetimeFrom});
+    searchTerms.push({"datetimeTo": datetimeTo});
+    searchTerms.push({"datetimeRange": datetimeRange});
+    for (let term of Object.keys(searchTerms)) {
+        log.debug(`searchTerm: ${JSON.stringify(searchTerms[term])}`);
+    }
+
+    // first send out the promise to search against the internal cache
     log.info(`searching against internal cache`);
     providers.push(
         eaCache.events.find({
             selector: {
-                description: { $regex: query, $options: 'i' } // Case-insensitive regex
+                $and: [
+                    { name: { $regex: name, $options: 'i' } },
+                    { description: { $regex: description, $options: 'i' } },
+                    { category: { $regex: category, $options: 'i' } },
+
+                    { budgetMax: { $lt: Number(budgetMax) } },
+
+                    { datetimeFrom: { $gt: datetimeFrom } },
+                    { datetimeFrom: { $lt: datetimeTo } }
+                ]
             }
         }).exec()
     );
@@ -113,7 +168,7 @@ const searchEvent = async function (req: Request, res: Response) {
     for (let source of config.sources) {        
         if (source.enabled && source.searchType !== ES_SEARCH_IN_CACHE) {
             log.info(`delegating search for datasource [${source.id}]`);
-            providers.push(source.controller.searchEvent(query));            
+            providers.push(source.controller.searchEvent(searchTerms));
         }
     }
 

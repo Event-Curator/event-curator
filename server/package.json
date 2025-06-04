@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "ajv-formats": "^3.0.1",
     "apicache": "^1.6.3",
     "cheerio": "^1.0.0",
     "cors": "^2.8.5",
