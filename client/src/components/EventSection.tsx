@@ -1,48 +1,33 @@
 import { useContext } from "react";
+import moment from "moment";
 import EventContext from "../context/EventContext";
-import EventPreviewCard from "./EventPreviewCard";
-
-// type Event = {
-//   id: string | number;
-//   name: string;
-//   category: string;
-//   location: string;
-//   date: string;
-//   price: number;
-//   image: string;
-// };
-
-// type EventSectionProps = {
-//   filters?: {
-//     search?: string;
-//     category?: string;
-//     location?: string;
-//     price?: string;
-//   };
-//   events?: Event[];
-// };
+import getUniqueDates from "../utils/getUniqueDates";
+import EventDateGroupCard from "./EventDateGroupCard";
+import type { EventsByDateGroup } from "../types";
 
 export default function EventSection() {
   const { events } = useContext(EventContext);
-  console.log(events);
+  const uniqueDates = getUniqueDates(events);
 
-  // Prepare for real server events: always render 9 boxes
-  // const displayEvents = events.slice(0, 9);
-  // const missing = 9 - displayEvents.length;
+  const eventGroups: EventsByDateGroup[] = uniqueDates.map((date) => {
+    const group: EventsByDateGroup = {
+      date: date,
+      events: [],
+    };
+    for (const event of events) {
+      const fmtDate = moment(event.datetimeFrom).format("LL");
+      if (fmtDate === group.date) {
+        group.events.push(event);
+      }
+    }
+    return group;
+  });
+  console.log(eventGroups);
 
   return (
     <div className="flex flex-col gap-5">
-      {events.map((event) => (
-        <EventPreviewCard
-          name={event.name}
-          category={event.category}
-          categoryFreeform={event.categoryFreeform}
-          location={event.placeFreeform}
-          date={event.datetimeFrom}
-          price={event.budgetMax}
-          image={event.teaserMedia}
-          link={event.originUrl}
-        />
+      {eventGroups.map((eventGrp) => (
+        <EventDateGroupCard date={eventGrp.date} events={eventGrp.events} />
       ))}
     </div>
   );

@@ -3,9 +3,8 @@ interface EventPreviewCardProps {
   category: string;
   categoryFreeform: string;
   location: string;
-  date: Date;
+  date: string;
   price: number;
-  image: string;
   link: string;
 }
 
@@ -16,7 +15,6 @@ export default function EventPreviewCard({
   location,
   date,
   price,
-  image,
   link,
 }: EventPreviewCardProps) {
   if (category === "Other" && categoryFreeform) {
@@ -30,7 +28,7 @@ export default function EventPreviewCard({
       style={{ minHeight: 120 }}
     >
       <div className="w-32 h-28 flex-shrink-0">
-        <img src={image} alt={name} className="w-full h-full object-cover" />
+        {/* <img src="" alt={name} className="w-full h-full object-cover" /> */}
       </div>
       <div className="flex flex-col justify-between flex-1 p-4">
         <span className="uppercase text-xs font-semibold text-blue-600 mb-1">

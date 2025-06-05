@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import { useNavigate } from "react-router";
 import { eventCategories, prefectures } from "./constants";
 import EventContext from "../context/EventContext";
 import { useContext } from "react";
@@ -9,11 +8,9 @@ export default function EventFilters() {
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
-  const { events, setEvents } = useContext(EventContext);
+  const { setEvents } = useContext(EventContext);
 
   const api = import.meta.env.VITE_API;
-
-  // const navigate = useNavigate();
 
   async function getEvents() {
     try {
@@ -27,9 +24,6 @@ export default function EventFilters() {
       const data = await response.json();
       console.log("response:", response);
       setEvents(data);
-      console.log(events);
-
-      console.log(data);
     } catch (error) {
       console.error(error);
     }
@@ -43,8 +37,6 @@ export default function EventFilters() {
     } else {
       getEvents();
     }
-
-    // navigate("/timeline");
   };
 
   // Only allow numbers in price
