@@ -3,6 +3,12 @@
 for now, configuration is static, and in ```util/config.js```.
 there, you will find the list of possible datasource, you can enable/disable them with the named attribute (true/false)
 
+### homeCountry
+
+this is used to add ", {country}" before asking for geocoding. OSM works best if you narrow down the search.
+- if the source website cover multiple countries: use "" (blank value) (it's also the default value)
+- if not, just add whatever works best for the given country (should be country name in english. ex: japan). (it will be converted to lowercase).
+
 ## REST endpoint
 
 ### Initialisation / warmup of cache

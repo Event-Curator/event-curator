@@ -5,6 +5,7 @@ import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType } from "../models/Even
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
+import { geocodeAddress } from '../utils/geo.js';
 
 const scrapEvent = async function (req: Request, res: Response) {
     
@@ -39,6 +40,11 @@ const scrapEvent = async function (req: Request, res: Response) {
             continue;
         }
 
+        log.debug(event.placeFreeform);
+        log.debug(event.placeLattitude);
+        log.debug(event.placeLongitude);
+        await geocodeAddress(sourceId, event);
+        
         await eaCache.events.insert({
             // FIXME: shoud be something, not 0
             id: event.externalId,
