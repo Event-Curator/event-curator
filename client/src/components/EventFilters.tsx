@@ -22,7 +22,6 @@ export default function EventFilters() {
         return;
       }
       const data = await response.json();
-      console.log("response:", response);
       setEvents(data);
     } catch (error) {
       console.error(error);
