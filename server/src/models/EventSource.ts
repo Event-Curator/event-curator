@@ -8,4 +8,7 @@ export interface IEventSource {
   getId: () => string; // must return the lowercase key that can be found in the sources.json config file
 
   searchEvent: (query: string) => Promise<Array<pe.EventType>>;
+  
+  // scrap as much as we can from the remote source
+  scrapEvent: () => Promise<Array<pe.EventType>>;
 }

@@ -1,2 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+.text-red-outline {
+  text-shadow:
+    -1px -1px 0 #ef4444,
+     5px -1px 0 #583c3c,
+    -1px  1px 0 #752a2a,
+     4px  2px 0 #ef4444;
+}
