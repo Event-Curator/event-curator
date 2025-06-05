@@ -22,12 +22,15 @@ export default function EventSection() {
     }
     return group;
   });
-  console.log(eventGroups);
 
   return (
     <div className="flex flex-col gap-5">
       {eventGroups.map((eventGrp) => (
-        <EventDateGroupCard date={eventGrp.date} events={eventGrp.events} />
+        <EventDateGroupCard
+          key={eventGrp.date}
+          date={eventGrp.date}
+          events={eventGrp.events}
+        />
       ))}
     </div>
   );

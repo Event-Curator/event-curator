@@ -17,6 +17,7 @@ export default function EventDateGroupCard({
       {events.map((event) => (
         // const fmtDate = moment(event.datetimeFrom).format("LL");
         <EventPreviewCard
+          key={event.externalId}
           name={event.name}
           category={event.category}
           categoryFreeform={event.categoryFreeform}
