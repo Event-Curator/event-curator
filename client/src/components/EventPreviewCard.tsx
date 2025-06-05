@@ -1,22 +1,28 @@
-type Props = {
+interface EventPreviewCardProps {
   name: string;
   category: string;
+  categoryFreeform: string;
   location: string;
-  date: string;
+  date: Date;
   price: number;
   image: string;
   link: string;
-};
+}
 
 export default function EventPreviewCard({
   name,
   category,
+  categoryFreeform,
   location,
   date,
   price,
   image,
   link,
-}: Props) {
+}: EventPreviewCardProps) {
+  if (category === "Other" && categoryFreeform) {
+    category = categoryFreeform;
+  }
+
   return (
     <a
       href={link}
@@ -27,7 +33,9 @@ export default function EventPreviewCard({
         <img src={image} alt={name} className="w-full h-full object-cover" />
       </div>
       <div className="flex flex-col justify-between flex-1 p-4">
-        <span className="uppercase text-xs font-semibold text-blue-600 mb-1">{category}</span>
+        <span className="uppercase text-xs font-semibold text-blue-600 mb-1">
+          {category}
+        </span>
         <h3 className="text-lg font-bold text-gray-800 mb-1">{name}</h3>
         <div className="text-gray-500 text-xs mb-2">{date}</div>
         <div className="flex items-center gap-2 text-xs text-gray-500">

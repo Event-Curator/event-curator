@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+// import { useNavigate } from "react-router";
 import { eventCategories, prefectures } from "./constants";
 import EventContext from "../context/EventContext";
 import { useContext } from "react";
@@ -13,7 +13,7 @@ export default function EventFilters() {
 
   const api = import.meta.env.VITE_API;
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   async function getEvents() {
     try {
@@ -44,7 +44,7 @@ export default function EventFilters() {
       getEvents();
     }
 
-    navigate("/timeline");
+    // navigate("/timeline");
   };
 
   // Only allow numbers in price
