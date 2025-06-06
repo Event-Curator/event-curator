@@ -40,9 +40,6 @@ const scrapEvent = async function (req: Request, res: Response) {
             continue;
         }
 
-        log.debug(event.placeFreeform);
-        log.debug(event.placeLattitude);
-        log.debug(event.placeLongitude);
         await geocodeAddress(sourceId, event);
         
         await eaCache.events.insert({

@@ -3,8 +3,43 @@ import { eaCache } from "../middlewares/apiGateway.js";
 import { Event } from "../models/Event.js";
 import { log } from "./logger.js";
 import { getConfig, sleep } from "./util.js";
+import * as geolib from 'geolib';
 
 const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
+
+
+async function isEventWithinRadius(event: Event, lat: number, long: number, radiusInMeter: number ): Promise<object> {
+    if (lat === 0 || long === 0) return { inRadius: false };
+    if (event.placeLattitude === 0 || event.placeLongitude === 0) return { inRadius: false };
+
+    let isWithinRadius = geolib.isPointWithinRadius({
+        latitude: event.placeLattitude, 
+        longitude: event.placeLongitude
+    }, {
+        latitude: lat, 
+        longitude: long
+    }, radiusInMeter);
+
+    if (isWithinRadius) {
+        let distance = geolib.getDistance(
+            {
+                latitude: event.placeLattitude, 
+                longitude: event.placeLongitude
+            }, {
+                latitude: lat, 
+                longitude: long
+            }
+        );
+
+        return {
+            inRadius: true,
+            distance: distance
+        }
+    }
+    return {
+        inRadius: false
+    }
+}
 
 /* from human readable to lat/long
  * we provide the whole event in case we need some other information to pin point the exact place
@@ -19,9 +54,6 @@ const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
 async function geocodeAddress(eventsourceId: string, event: Event): Promise<Event> {
 
     const cacheKey = md5(event.placeFreeform.toLocaleLowerCase());
-
-    console.log("looking for: " + cacheKey);
-
     let cachedContent = await eaCache.geocoding.find({
         selector: {
             "id": {
@@ -81,8 +113,6 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
             long: event.placeLongitude,
             lat: event.placeLattitude,
         });
-
-        // console.log(cacheResult);
     }
 
     await sleep(2*1000);
