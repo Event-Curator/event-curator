@@ -232,4 +232,41 @@ const getEventById = async function (req: Request, res: Response) {
     res.send(result);
 };
 
-export { scrapEvent, searchEvent, getEventById }
+const getSearchHits = async function (req: Request, resp: Response) {
+    let requestedIndex = req.query.key;
+    let hits: object = {};
+    
+    log.debug(`getting hits for ${requestedIndex}`);
+
+    let result = await eaCache.events.find({
+        selector: {
+            name: { $regex: '.*', $options: 'i' },
+        }
+    }).exec();
+    
+    if (result.length > 0) {
+        for (let event of result) {
+
+            let indexValue = "";
+
+            if (requestedIndex === "categories") {
+                let eventCategory = event.category;
+                let eventCategoryFreeform = event.eventCategoryFreeform;
+
+                if (eventCategory === "") {
+                    hits["unsorted"]++ || 0;
+                } else {
+                    if (hits[eventCategory] === undefined) hits[eventCategory] = 0;
+                    hits[eventCategory]++ || 0;
+                }
+                console.log(hits);
+            // } else if (requestedIndex === "cities")
+            }
+        }
+    }
+
+    resp.status(200);
+    resp.send(hits);
+}
+
+export { scrapEvent, searchEvent, getEventById, getSearchHits }
