@@ -9,7 +9,6 @@ let cache = apicache.middleware;
 router.get('/events', searchEvent);
 router.get('/events/:eventId', getEventById);
 
-
 // ------------ INTERNAL ------------- //
 router.get("/internal/scrap/:sourceId", scrapEvent);
 

@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
-import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType } from "../models/Event.js"
+import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event } from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
-import { geocodeAddress } from '../utils/geo.js';
+import { geocodeAddress, getDistance } from '../utils/geo.js';
+import { isRxDocument, RxDocument } from 'rxdb';
 
 const scrapEvent = async function (req: Request, res: Response) {
     
@@ -94,7 +95,7 @@ const findEvent = async function (externalId) {
 
 const searchEvent = async function (req: Request, res: Response) {
     
-    let result: Array<EventType> = [];
+    let foundEvents: Array<EventType> = [];
     let providers: Array<Promise<Array<EventType>>> = [];
     let searchTerms: Array<Object> = [];
 
@@ -107,6 +108,8 @@ const searchEvent = async function (req: Request, res: Response) {
     let datetimeTo = req.query.datetimeTo
         || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
+    const placeDistanceRange = Number(req.query.placeDistanceRange) || 0;
+
 
     // if we provide a datetimeRange, it will takes precedance over From/to
     let _datetimeFrom = moment();
@@ -144,6 +147,8 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"datetimeFrom": datetimeFrom});
     searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
+    searchTerms.push({"placeDistanceRange": placeDistanceRange});
+
     for (let term of Object.keys(searchTerms)) {
         log.debug(`searchTerm: ${JSON.stringify(searchTerms[term])}`);
     }
@@ -164,7 +169,13 @@ const searchEvent = async function (req: Request, res: Response) {
                     { datetimeFrom: { $lt: datetimeTo } }
                 ]
             }
-        }).exec()
+        }).exec().then( (documents : Array<RxDocument>) => {
+            let events: Array<any> = [];
+            for (let document of documents) {
+                events.push(document.toMutableJSON());
+            }
+            return events;
+        })
     );
 
     // then send out the promise to search directly from remote source
@@ -177,12 +188,25 @@ const searchEvent = async function (req: Request, res: Response) {
 
     // wait for all results and merge them
     for (let providerResult of await Promise.all(providers)) {
-        result = result.concat(providerResult);
+        foundEvents = foundEvents.concat(providerResult);
     }
-    log.info(`found ${result.length} events`);
+
+    // calculate the distance from current location for all found events, and filter them
+    // if a given radius was provided
+    log.debug(`filtering events in the range (meters): ${placeDistanceRange}`);
+    let events: Array<EventType> = [];
+    for (let foundEvent of foundEvents) {
+        foundEvent.placeDistance = await getDistance(foundEvent, 35.59230505, 139.7434009549923);
+        if (
+            placeDistanceRange === 0 ||
+            (placeDistanceRange > 0 && foundEvent.placeDistance <= placeDistanceRange)) {
+            events.push(foundEvent);
+        }
+    }
+    log.info(`found ${events.length} events`);
 
     res.status(200)
-    res.send(result)
+    res.send(events);
 };
 
 const getEventById = async function (req: Request, res: Response) {

@@ -7,38 +7,21 @@ import * as geolib from 'geolib';
 
 const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
 
+async function getDistance(event: Event, lat: number, long: number): Promise<number> {
+    if (lat === 0 || long === 0) return 0;
+    if (event.placeLattitude === 0 || event.placeLongitude === 0) return 0;
 
-async function isEventWithinRadius(event: Event, lat: number, long: number, radiusInMeter: number ): Promise<object> {
-    if (lat === 0 || long === 0) return { inRadius: false };
-    if (event.placeLattitude === 0 || event.placeLongitude === 0) return { inRadius: false };
-
-    let isWithinRadius = geolib.isPointWithinRadius({
-        latitude: event.placeLattitude, 
-        longitude: event.placeLongitude
-    }, {
-        latitude: lat, 
-        longitude: long
-    }, radiusInMeter);
-
-    if (isWithinRadius) {
-        let distance = geolib.getDistance(
-            {
-                latitude: event.placeLattitude, 
-                longitude: event.placeLongitude
-            }, {
-                latitude: lat, 
-                longitude: long
-            }
-        );
-
-        return {
-            inRadius: true,
-            distance: distance
+    let distance = geolib.getDistance(
+        {
+            latitude: event.placeLattitude, 
+            longitude: event.placeLongitude
+        }, {
+            latitude: lat, 
+            longitude: long
         }
-    }
-    return {
-        inRadius: false
-    }
+    );
+
+    return distance;
 }
 
 /* from human readable to lat/long
@@ -66,7 +49,6 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         log.debug(`cache hit for location: ${event.placeFreeform.toLocaleLowerCase()}`);
         event.placeLongitude = cachedContent[0]._data.long;
         event.placeLattitude = cachedContent[0]._data.lat;
-        console.log(event);
         return new Promise((resolve) => resolve(event))
     }
     log.warn(`cache miss for location: ${event.placeFreeform.toLocaleLowerCase()}. querying OSM`);
@@ -120,4 +102,4 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     return event;
 }
 
-export { geocodeAddress };
+export { geocodeAddress, getDistance };

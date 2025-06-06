@@ -32,6 +32,22 @@ also, you can add a query (as for now, only the description field is checked aga
 
 ```GET /api/events?query=firework```
 
+### Location basedsearch
+
+All event will be sent to UI with the "placeDistance" field set with the number of kilometers from:
+- the browser location if the UI has set the *lat* & *long* query field
+- O in all other cases (including the one where we are unable to compute the
+distance since the placeFreeform didn't resolve to something in OSM)
+
+on top of that, the resultset of events will be filtered *before* sent to the UI 
+and only those where the distance is lower than "placeDistanceRange" will be kept.
+As before, if either the browser location OR the event place is not set,
+the resulting distance will be O and the event will NOT be filtered out.
+
+To get all fireworks in a 100km radius, with the browser location as xx.xxx/yy.yyy, use:
+
+```GET /api/events?query=firework&placeDistanceRange=100000&lat=xx.xxx&long=yy.yyy```
+
 ## logging
 
 colorized winston is setup, default send to console 
