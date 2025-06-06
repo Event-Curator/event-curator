@@ -109,7 +109,8 @@ const searchEvent = async function (req: Request, res: Response) {
         || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
     const placeDistanceRange = Number(req.query.placeDistanceRange) || 0;
-
+    const browserLat = Number(req.query.browserLat) || 0;
+    const browserLong = Number(req.query.browserLong) || 0;
 
     // if we provide a datetimeRange, it will takes precedance over From/to
     let _datetimeFrom = moment();
@@ -148,6 +149,8 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
     searchTerms.push({"placeDistanceRange": placeDistanceRange});
+    searchTerms.push({"browserLat": browserLat});
+    searchTerms.push({"browserLong": browserLong});
 
     for (let term of Object.keys(searchTerms)) {
         log.debug(`searchTerm: ${JSON.stringify(searchTerms[term])}`);
@@ -196,7 +199,7 @@ const searchEvent = async function (req: Request, res: Response) {
     log.debug(`filtering events in the range (meters): ${placeDistanceRange}`);
     let events: Array<EventType> = [];
     for (let foundEvent of foundEvents) {
-        foundEvent.placeDistance = await getDistance(foundEvent, 35.59230505, 139.7434009549923);
+        foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
         if (
             placeDistanceRange === 0 ||
             (placeDistanceRange > 0 && foundEvent.placeDistance <= placeDistanceRange)) {
