@@ -113,10 +113,12 @@ export default function Navbar() {
       <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-4 h-16">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
-          <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
-          {/* Make title clickable */}
-          <Link to="/" className="text-2xl font-bold text-blue-700 tracking-wide">
-            Event Curator
+          {/* Make whole logo and title clickable */}
+          <Link to="/" className="flex items-center gap-3">
+            <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
+            <span className="text-2xl font-bold text-blue-700 tracking-wide">
+              Event Curator
+            </span>
           </Link>
         </div>
 
@@ -179,10 +181,12 @@ export default function Navbar() {
           </ul>
         </div>
         <div className="flex items-center space-x-2">
-          <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
-          {/* Make title clickable */}
-          <Link to="/" className="text-lg font-bold text-blue-700">
-            Event Curator
+          {/* Make logo and title clickable */}
+          <Link to="/" className="flex items-center space-x-2">
+            <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
+            <span className="text-lg font-bold text-blue-700">
+              Event Curator
+            </span>
           </Link>
         </div>
         <div /> {/* Space for symmetry */}

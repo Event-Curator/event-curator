@@ -6,7 +6,7 @@ import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
 import matsuri from "../assets/Matsuri.jpg";
 
-// LinkIcon component using the provided SVG
+// LinkIcon component
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +16,6 @@ const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
     viewBox="0 0 24 24"
     {...props}
   >
-    {/* Boxicons v3.0 https://boxicons.com | License  https://docs.boxicons.com/free */}
     <path d="M9.88 18.36a3 3 0 0 1-4.24 0 3 3 0 0 1 0-4.24l2.83-2.83-1.41-1.41-2.83 2.83a5.003 5.003 0 0 0 0 7.07c.98.97 2.25 1.46 3.54 1.46s2.56-.49 3.54-1.46l2.83-2.83-1.41-1.41-2.83 2.83ZM12.71 4.22 9.88 7.05l1.41 1.41 2.83-2.83a3 3 0 0 1 4.24 0 3 3 0 0 1 0 4.24l-2.83 2.83 1.41 1.41 2.83-2.83a5.003 5.003 0 0 0 0-7.07 5.003 5.003 0 0 0-7.07 0Z"></path>
     <path d="m16.95 8.46-.71-.7-.7-.71-4.25 4.24-4.24 4.25.71.7.7.71 4.25-4.24z"></path>
   </svg>
@@ -78,23 +77,7 @@ export default function EventDetails() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
-      {/* Flex container for buttons */}
-      <div className="flex justify-between items-center mb-4">
-        <button className="btn btn-outline" onClick={() => navigate("/")}>
-          ⬅ Back to Home
-        </button>
-        {event.originUrl && (
-          <a
-            href={event.originUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-outline flex items-center gap-2"
-          >
-            <LinkIcon />
-            Link to Source
-          </a>
-        )}
-      </div>
+      {/* No Back Button */}
 
       {/* Image Section */}
       <div className="relative mb-6">
@@ -114,7 +97,7 @@ export default function EventDetails() {
             {event.name || "-"}
           </h1>
 
-          <div className="space-y-2 text-gray-700 text-sm mb-8">
+          <div className="space-y-2 text-gray-700 text-sm mb-6">
             <p>
               <b>Category:</b> {event.category || "-"}
             </p>
@@ -132,6 +115,19 @@ export default function EventDetails() {
                 <span> — {<FormattedPrice price={event.budgetMax} />}</span>
               )}
             </p>
+
+            {/* Moved Link to Source here */}
+            {event.originUrl && (
+              <a
+                href={event.originUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline flex items-center gap-2"
+              >
+                <LinkIcon />
+                Link to Source
+              </a>
+            )}
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow prose max-w-none">
