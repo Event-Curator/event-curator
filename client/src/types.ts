@@ -38,4 +38,7 @@ export interface FullEventType {
   sizeFreeform: string;
 }
 
-// export default FullEventType;
+export interface EventsByDateGroup {
+  date: string;
+  events: FullEventType[];
+}

@@ -6,6 +6,7 @@ import { AllsportdbEventSource } from '../controllers/AllsportdbEventSource.js';
 import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
 import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 import { EventSourceConfigType } from '../models/EventSource.js';
+import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
 
 dotenv.config()
 
@@ -54,7 +55,15 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://japancheapo.com/events",
         controller: new JapancheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: 'japan'
+        homeCountry: ""
+    },
+    {
+        id: "japanconcerttickets",
+        enabled: true,
+        endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
+        controller: new JapanconcertticketsEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: ""
     }
 ]
 

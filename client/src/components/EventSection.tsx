@@ -1,52 +1,36 @@
-import EventPreviewCard from "./EventPreviewCard";
+import { useContext } from "react";
+import moment from "moment";
+import EventContext from "../context/EventContext";
+import getUniqueDates from "../utils/getUniqueDates";
+import EventDateGroupCard from "./EventDateGroupCard";
+import type { EventsByDateGroup } from "../types";
 
-type Event = {
-  id: string | number;
-  name: string;
-  category: string;
-  location: string;
-  date: string;
-  price: number;
-  image: string;
-};
+export default function EventSection() {
+  const { events } = useContext(EventContext);
+  const uniqueDates = getUniqueDates(events);
 
-type EventSectionProps = {
-  filters?: {
-    search?: string;
-    category?: string;
-    location?: string;
-    price?: string;
-  };
-  events?: Event[];
-};
-
-export default function EventSection({ events = [] }: EventSectionProps) {
-  // Prepare for real server events: always render 9 boxes
-  const displayEvents = events.slice(0, 9);
-  const missing = 9 - displayEvents.length;
+  const eventGroups: EventsByDateGroup[] = uniqueDates.map((date) => {
+    const group: EventsByDateGroup = {
+      date: date,
+      events: [],
+    };
+    for (const event of events) {
+      const fmtDate = moment(event.datetimeFrom).format("LL");
+      if (fmtDate === group.date) {
+        group.events.push(event);
+      }
+    }
+    return group;
+  });
 
   return (
     <div className="flex flex-col gap-5">
-      {displayEvents.map((event) => (
-        <EventPreviewCard
-          key={event.id}
-          name={event.name}
-          category={event.category}
-          location={event.location}
-          date={event.date}
-          price={event.price}
-          image={event.image}
-          link={`/event/${event.id}`}
+      {eventGroups.map((eventGrp) => (
+        <EventDateGroupCard
+          key={eventGrp.date}
+          date={eventGrp.date}
+          events={eventGrp.events}
         />
-      ))}
-      {/* Fill remaining slots with placeholders */}
-      {Array.from({ length: missing }).map((_, i) => (
-        <div
-          key={`placeholder-${i}`}
-          className="rounded-xl h-24 bg-white border border-dashed border-blue-200 flex items-center justify-center text-gray-300"
-        >
-          Upcoming event
-        </div>
       ))}
     </div>
   );

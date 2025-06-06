@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router"; 
 import { auth, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -9,29 +9,24 @@ import {
   signOut,
 } from "firebase/auth";
 import type { User } from "firebase/auth";
-import { eventCategories, prefectures } from "./constants";
 import AuthModal from "./AuthModal";
 import RegisterModal from "./RegisterModal";
 
 export default function Navbar() {
-  // State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
-  // Modal state
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
 
-  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
 
-  // Auth Handlers
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -90,22 +85,15 @@ export default function Navbar() {
     setUser(null);
   };
 
-  // Menu items for mobile auth
   const MobileAuthButtons = (
     <>
       <li>
-        <button
-          className="btn btn-primary btn-sm w-full mb-2"
-          onClick={() => setShowLogin(true)}
-        >
+        <button className="btn btn-primary btn-sm w-full mb-2" onClick={() => setShowLogin(true)}>
           Sign In
         </button>
       </li>
       <li>
-        <button
-          className="btn btn-outline btn-sm w-full"
-          onClick={() => setShowRegister(true)}
-        >
+        <button className="btn btn-outline btn-sm w-full" onClick={() => setShowRegister(true)}>
           Register
         </button>
       </li>
@@ -126,38 +114,30 @@ export default function Navbar() {
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
           <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
-          <span className="text-2xl font-bold text-blue-700 tracking-wide">Event Curator</span>
+          {/* Make title clickable */}
+          <Link to="/" className="text-2xl font-bold text-blue-700 tracking-wide">
+            Event Curator
+          </Link>
         </div>
+
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
-          <div className="dropdown dropdown-hover">
-            <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Categories</label>
-            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-56 max-h-60 overflow-y-auto border border-blue-100 z-50">
-              {eventCategories.map(cat => (
-                <li key={cat}>
-                  <Link to={`/category/${encodeURIComponent(cat)}`}>{cat}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="dropdown dropdown-hover">
-            <label tabIndex={0} className="btn btn-ghost btn-sm text-blue-700">Location</label>
-            <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-white rounded-box w-44 border border-blue-100 z-50">
-              {prefectures.map(pref => (
-                <li key={pref}>
-                  <Link to={`/location/${encodeURIComponent(pref)}`}>{pref} Prefecture</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">My Event Timeline</Link>
+          {/* Show Timeline only if user is logged in */}
+          {user && (
+            <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">
+              My Event Timeline
+            </Link>
+          )}
         </div>
+
         {/* Auth */}
         <div className="flex gap-2">
           {user ? (
             <div className="flex items-center gap-2">
               <span className="text-sm">Hi, {user.email || user.displayName}</span>
-              <button className="btn btn-outline btn-sm" onClick={handleLogout}>Logout</button>
+              <button className="btn btn-outline btn-sm" onClick={handleLogout}>
+                Logout
+              </button>
             </div>
           ) : (
             <>
@@ -171,6 +151,7 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
       {/* Mobile Navbar */}
       <div className="md:hidden flex items-center justify-between px-4 h-14 w-full">
         <div className="dropdown">
@@ -180,49 +161,34 @@ export default function Navbar() {
             </svg>
           </label>
           <ul tabIndex={0} className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50">
-            <li><Link to="/events">Events</Link></li>
-            <li tabIndex={0}>
-              <details>
-                <summary>Categories</summary>
-                <ul className="p-2">
-                  {eventCategories.map(cat => (
-                    <li key={cat}>
-                      <Link to={`/category/${encodeURIComponent(cat)}`}>{cat}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </li>
-            <li tabIndex={0}>
-              <details>
-                <summary>Location</summary>
-                <ul className="p-2">
-                  {prefectures.map(pref => (
-                    <li key={pref}>
-                      <Link to={`/location/${encodeURIComponent(pref)}`}>{pref} Prefecture</Link>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            </li>
-            {/* MOBILE EVENT TIMELINE BUTTON */}
-            <li><Link to="/timeline">My Event Timeline</Link></li>
+            {/* Show Timeline only if user is logged in */}
+            {user && (
+              <li>
+                <Link to="/timeline">My Event Timeline</Link>
+              </li>
+            )}
             {/* Mobile login/register buttons */}
             {!user && MobileAuthButtons}
             {user && (
               <li>
-                <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>Logout</button>
+                <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>
+                  Logout
+                </button>
               </li>
             )}
           </ul>
         </div>
         <div className="flex items-center space-x-2">
           <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
-          <span className="text-lg font-bold text-blue-700">Event Curator</span>
+          {/* Make title clickable */}
+          <Link to="/" className="text-lg font-bold text-blue-700">
+            Event Curator
+          </Link>
         </div>
         <div /> {/* Space for symmetry */}
       </div>
-      {/* Show modals */}
+
+      {/* Modals */}
       {showLogin && (
         <AuthModal
           mode="login"
@@ -246,7 +212,7 @@ export default function Navbar() {
           setPassword={setPassword}
         />
       )}
-      {/* Show error or loading */}
+      {/* Alerts */}
       {error && <div className="fixed top-16 right-4 alert alert-error shadow-lg">{error}</div>}
       {loading && <div className="fixed top-16 right-4 alert alert-info shadow-lg">Loading...</div>}
     </nav>

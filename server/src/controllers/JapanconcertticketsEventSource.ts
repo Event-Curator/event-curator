@@ -3,6 +3,7 @@ import { EventType, Event, EventCategoryEnum } from "../models/Event.js";
 import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
 import { log } from "../utils/logger.js";
+import config from "../utils/config.js";
 moment().format();
 
 class JapanconcertticketsEventSource extends DefaultEventSource {
@@ -29,19 +30,18 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
       let retryCount = 0;
       let html = "";
 
-      await this.sleep(250);
+      for (let retryCount = 0; retryCount<=3; retryCount++) {
+        await this.sleep(250);
 
-      do {
         const res = await fetch(url);
         html = await res.text();
-        
-        ok = (html.indexOf("Error 1015") < 0 && html.length > 0) ? true : false;
 
-        if (!ok) {
-          retryCount++;
-          log.warn(`looks we are rate limited from cloudflare, pause for 2 seconds before retrying (#${retryCount})`);
-        }
-      } while (!ok || retryCount >= 3);
+        ok = (html.indexOf("Error 1015") < 0 && html.length > 0) ? true : false;
+        if (ok) break;
+
+        retryCount++;
+        log.warn(`looks we are rate limited from cloudflare, pause for 2 seconds before retrying (#${retryCount})`);
+      }
       
       if (!ok) {
         log.error("looks like fetch is still blocked (error 1015) by cloudflare after 3 retry.");
@@ -107,6 +107,7 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
 
     async scrapEvent(): Promise<Array<EventType>> {
       let events = new Array();
+      let [myConfig] = config.sources.filter( c => c.id === this.id );
 
       log.info(`${this.id}: scrapping started`);
 
@@ -114,7 +115,7 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
       for (let currentPage = 1; currentPage<=100; currentPage++) {
         log.info(`${this.id}: scrapping ongoing. page ${currentPage}`);
 
-        const res = await fetch("https://www.japanconcerttickets.com/wp-admin/admin-ajax.php", {
+        const res = await fetch(myConfig.endpoint, {
           "headers": {
             "accept": "*/*",
             "accept-language": "en-US,en;q=0.9,fr-FR;q=0.8,fr;q=0.7",
@@ -139,7 +140,7 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
 
         const html = await res.text();
         const $ = cheerio.load(html);
-
+        
         for (let element of $("article")) {
 
           let originUrl = $(element).find('.entry-title').find('a').attr('href') || "";
