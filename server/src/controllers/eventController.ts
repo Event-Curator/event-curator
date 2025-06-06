@@ -206,10 +206,13 @@ const searchEvent = async function (req: Request, res: Response) {
             events.push(foundEvent);
         }
     }
+
     log.info(`found ${events.length} events`);
 
     res.status(200)
-    res.send(events);
+    res.send(
+        events.sort( (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime() )
+    );
 };
 
 const getEventById = async function (req: Request, res: Response) {
