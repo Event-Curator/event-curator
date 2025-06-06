@@ -11,9 +11,7 @@ export default function Home() {
           <EventFilters />
         </div>
         <div className="w-full max-w-3xl">
-          <h2 className="text-2xl font-bold mb-4 text-blue-700">
-            Upcoming Events
-          </h2>
+          <h2 className="text-2xl font-bold mb-4 text-blue-700">Events</h2>
           <EventSection />
         </div>
       </div>
