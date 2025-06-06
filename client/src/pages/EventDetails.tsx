@@ -122,14 +122,15 @@ export default function EventDetails() {
               <b>Location:</b> {event.placeFreeform || "-"}
             </p>
             <p>
-              <b>Date:</b>
+              <b>Date:&nbsp;</b>
               {startDate ? startDate.toLocaleDateString() : "-"} —{" "}
               {endDate ? endDate.toLocaleDateString() : "-"}
             </p>
             <p>
               <b>Price:</b> <FormattedPrice price={event.budgetMin} />
-              {event.budgetMax > 0 &&
-                "— " + <FormattedPrice price={event.budgetMax} />}
+              {event.budgetMax > 0 && (
+                <span> — {<FormattedPrice price={event.budgetMax} />}</span>
+              )}
             </p>
           </div>
 
