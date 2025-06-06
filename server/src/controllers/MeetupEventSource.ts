@@ -9,7 +9,7 @@ class MeetupEventSource extends DefaultEventSource {
         return this.id
     };
 
-  async searchEvent(query: string): Promise<Array<pe.EventType>> {
+  async searchEvent(query: Object[]): Promise<Array<pe.EventType>> {
     let events = new Array();
 
     events.push("MEETUP event test 1")

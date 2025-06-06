@@ -19,7 +19,7 @@ class DefaultEventSource implements IEventSource {
     return new Promise( () => events )
   }
 
-  searchEvent(query: string): Promise<Array<pe.EventType>>  {
+  searchEvent(query: Object[]): Promise<Array<pe.EventType>>  {
     let events = new Array()
     events.push("event test 1")
     events.push("event test 2")
