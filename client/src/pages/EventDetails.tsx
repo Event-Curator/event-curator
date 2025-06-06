@@ -4,6 +4,7 @@ import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
+import matsuri from "../assets/Matsuri.jpg";
 
 // LinkIcon component using the provided SVG
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -98,10 +99,7 @@ export default function EventDetails() {
       {/* Image Section */}
       <div className="relative mb-6">
         <img
-          src={
-            event.teaserMedia ||
-            "https://via.placeholder.com/600x400?text=No+Image"
-          }
+          src={matsuri}
           alt={event.name}
           className="w-full h-80 object-cover rounded-xl shadow"
           draggable={false}
