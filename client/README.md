@@ -1,12 +1,12 @@
 # EventCurator
 
-Discover, organize, and share the best events in Japan! Festivals, Art, Concerts, Sports, Anime Events & More!
+What is Event Curator?
+A web app to help users discover and organize upcoming events in Japan. It helps solve the problem of event information being scattered across multiple platforms.
 
 ---
 
 ## 🚀 Introduction
 
-**EventCurator**
 Event Curator is web app to help users discover and organize upcoming events in Japan. Information about events in Japan tends to be siloed, and this app helps people discover events and make plans by bringing the scattered information into a single platform.
 
 ---
