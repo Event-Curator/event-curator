@@ -8,17 +8,16 @@ Discover, organize, and share the best events in Japan! Festivals, Art, Concerts
 ## 🚀 Introduction
 
 **EventCurator**
-What is Event Curator?
-A web app to help users discover and organize upcoming events in Japan. It helps solve the problem of event information being scattered across multiple platforms.
+Event Curator is web app to help users discover and organize upcoming events in Japan. Information about events in Japan tends to be siloed, and this app helps people discover events and make plans by bringing the scattered information into a single platform.
 
 ---
 
 ## 🛠️ Tech Stack
 
 - [React.js] (https://react.dev/)
-- [React] (https://reactrouter.com/)
+- [React] [router] (https://reactrouter.com/)
 - [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/)
-- [Firebase Authentication] (https://firebase.google.com/docs/auth)
+- [Firebase] Authentication (https://firebase.google.com/docs/auth)
 - [Node.js/Express] + (Firebase Admin SDK for protected endpoints)
 
 ---
@@ -30,9 +29,7 @@ Age: 27
 Occupation: Junior Marketing Specialist  
 Location: Tokyo, Japan
 
-Yuki loves discovering local events, workshops, and festivals to attend with friends after work or on weekends. 
-She uses the Event Curator app to easily browse, organize, and plan her weekly outings, making sure she never misses a fun or free event in the city. 
-Yuki values a clean, simple interface and appreciates features that help her quickly see what’s happening each week. Her main interest is to be able to easly create her own event timeline.
+Yuki wants to join more events in Japan and share them with her friends, but she finds it difficult sometimes since this information tends to be scattered around the internet in different places.
 
 ---
 
@@ -86,7 +83,7 @@ This project uses free images provided by Unsplash. Below are the image attribut
 - Photo by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999) on [Unsplash](https://unsplash.com/photos/K0E6E0a0R3A)
 
 ### 🛐 Religion
-- Photo by [Aaron Burden](https://unsplash.com/@aaronburden) on [Unsplash](https://unsplash.com/photos/Bj3FvBOH5jA)
+- Photo by [Mick Haupt](https://unsplash.com/@rocinante_11) on [Unsplash](https://unsplash.com/photos/3T1lPpW--_E)
 
 ### 👨‍👩‍👧 Family
 - Photo by [Wyatt Fisher](https://unsplash.com/@wyattfisher) on [Unsplash](https://unsplash.com/photos/M0M-FR2iedk)
