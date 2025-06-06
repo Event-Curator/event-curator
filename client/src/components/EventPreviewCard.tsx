@@ -19,7 +19,6 @@ export default function EventPreviewCard({
   location,
   date,
   price,
-  link,
 }: EventPreviewCardProps) {
   if (category === "Other" && categoryFreeform) {
     category = categoryFreeform;
