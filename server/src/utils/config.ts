@@ -54,7 +54,7 @@ let _source = [
     {
         id: "japanconcerttickets",
         enabled: true,
-        endpoint: "https://japancheapo.com/events",
+        endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
         controller: new JapanconcertticketsEventSource(),
         searchType: ES_SEARCH_IN_CACHE
     }
