@@ -1,7 +1,8 @@
 
 # EventCurator
 
-Discover, organize, and share the best events in Japan! Festivals, Art, Concerts, Sports, Anime Events & More!
+What is Event Curator?
+A web app to help users discover and organize upcoming events in Japan. It helps solve the problem of event information being scattered across multiple platforms.
 
 ---
 
@@ -14,10 +15,10 @@ Event Curator is web app to help users discover and organize upcoming events in 
 
 ## 🛠️ Tech Stack
 
-- [React.js] (https://react.dev/)
-- [React] [router] (https://reactrouter.com/)
+- [React.js](https://react.dev/)
+- [React] [router](https://reactrouter.com/)
 - [Tailwind CSS](https://tailwindcss.com/) + [DaisyUI](https://daisyui.com/)
-- [Firebase] Authentication (https://firebase.google.com/docs/auth)
+- [Firebase] Authentication(https://firebase.google.com/docs/auth)
 - [Node.js/Express] + (Firebase Admin SDK for protected endpoints)
 
 ---
