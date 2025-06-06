@@ -58,6 +58,7 @@ export class Event implements EventType {
   placeLattitude: number;
   placeLongitude: number;
   placeFreeform: string;
+  placeDistance: number;
   budgetMin: number;
   budgetMax: number;
   budgetCurrency: string;
@@ -82,6 +83,7 @@ export class Event implements EventType {
     this.placeLattitude = 0;
     this.placeLongitude = 0;
     this.placeFreeform = "";
+    this.placeDistance = 0;
     this.budgetMin = 0;
     this.budgetMax = 0;
     this.budgetCurrency = "USD";
@@ -115,6 +117,8 @@ export type EventType = {
   placeLattitude: number;
   placeLongitude: number;
   placeFreeform: string;
+  placeDistance: number;        // #meters between the user location and the event's coordinates
+                                // only available in searchResult if includeDistance is set
 
   // princing stuff
   // all is in Yen. o means free

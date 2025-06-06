@@ -29,7 +29,7 @@ async function initCache() {
             dateTimeString = new Date(dateTimeString).toISOString();
         }
 
-        return !isNaN(Date.parse(dateTimeString));  // any test that returns true/false 
+        return !isNaN(Date.parse(dateTimeString));
     });
 
     await eaCache.addCollections({
@@ -122,6 +122,33 @@ async function initCache() {
                     },
                 },
                 required: ['id', 'externalId', 'name']
+            }
+        }
+    });
+
+    // from human-readable address to map coordinate
+    // = MD5(placeFreeform.toLowercase())
+    await eaCache.addCollections({
+        geocoding: {
+            schema: {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 32
+                    },
+
+                    lat: {
+                        type: 'number',
+                    },
+
+                    long: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'lat', 'long']
             }
         }
     });
