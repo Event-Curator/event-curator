@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
+import getDaysInMonth from "../utils/getDaysInMonth";
 
 // LinkIcon component using the provided SVG
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -26,21 +27,6 @@ export default function EventDetails() {
   const [loading, setLoading] = useState(true);
 
   const api = import.meta.env.VITE_API;
-
-  // const formatPrice = (price?: number) => {
-  //   if (price === undefined || price === null) return "-";
-  //   return price === 0 ? (
-  //     <span className="text-green-600 font-semibold">Free Entry</span>
-  //   ) : (
-  //     <>¥{price.toLocaleString()}</>
-  //   );
-  // };
-
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    return new Date(year, month, 0).getDate();
-  };
 
   useEffect(() => {
     if (!id) return;
