@@ -127,8 +127,9 @@ export default function EventDetails() {
               {endDate ? endDate.toLocaleDateString() : "-"}
             </p>
             <p>
-              <b>Price:</b> <FormattedPrice price={event.budgetMin} /> —{" "}
-              <FormattedPrice price={event.budgetMax} />
+              <b>Price:</b> <FormattedPrice price={event.budgetMin} />
+              {event.budgetMax > 0 &&
+                "— " + <FormattedPrice price={event.budgetMax} />}
             </p>
           </div>
 
