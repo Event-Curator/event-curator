@@ -141,26 +141,7 @@ export default function EventDetails() {
         {/* Right Sidebar */}
         <aside className="space-y-6">
           <div className="bg-white p-4 rounded-xl shadow">
-            <h2 className="text-lg font-bold text-blue-700 mb-3">
-              Information
-            </h2>
-            <ul className="text-sm space-y-1">
-              <li>
-                <b>Place:</b> {event.placeFreeform || "-"}
-              </li>
-              <li>
-                <b>Date:</b>
-                {startDate ? startDate.toLocaleDateString() : "-"} —{" "}
-                {endDate ? endDate.toLocaleDateString() : "-"}
-              </li>
-              <li>
-                <b>Price:</b> <FormattedPrice price={event.budgetMin} /> —{" "}
-                <FormattedPrice price={event.budgetMax} />
-              </li>
-              <li>
-                <b>Access:</b> (Map coming soon)
-              </li>
-            </ul>
+            <h2 className="text-lg font-bold text-blue-700 mb-3">Location</h2>
             <div className="mt-4 flex items-center justify-center text-blue-500 text-xs bg-blue-50 border border-blue-100 rounded h-24">
               [Map integration coming soon]
             </div>
