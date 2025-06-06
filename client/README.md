@@ -1,11 +1,6 @@
 # EventCurator
 
-What is Event Curator?
-A web app to help users discover and organize upcoming events in Japan. It helps solve the problem of event information being scattered across multiple platforms.
-
----
-
-## 🚀 Introduction
+### What is Event Curator?
 
 Event Curator is web app to help users discover and organize upcoming events in Japan. Information about events in Japan tends to be siloed, and this app helps people discover events and make plans by bringing the scattered information into a single platform.
 
@@ -136,15 +131,9 @@ This project uses free images provided by Unsplash. Below are the image attribut
 
 ---
 
-# 📜 License
+## 📜 License
 
 All images are used under the [Unsplash License](https://unsplash.com/license) — free to use for commercial and non-commercial purposes, no permission needed but attribution appreciated.
-
----
-
-## 📣 Contributing
-
-PRs welcome! See [issues](https://github.com/your-team/event-curator/issues) for planned features and bugs.
 
 ---
 
