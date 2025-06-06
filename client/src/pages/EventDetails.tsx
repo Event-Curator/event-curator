@@ -1,12 +1,37 @@
 import { useParams, useNavigate } from "react-router";
 import type { FullEventType } from "../types";
+import { useEffect, useState } from "react";
 
-export default function EventDetails({ event }: { event?: FullEventType }) {
+export default function EventDetails() {
+  const [event, setEvent] = useState<FullEventType>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
   const { id } = useParams();
-  console.log("data for id:", id);
-
+  const api = import.meta.env.VITE_API;
   const navigate = useNavigate();
 
+  useEffect(() => {
+    async function getEventDetails() {
+      try {
+        const response = await fetch(`${api}/${id}`);
+        const data = await response.json();
+        if (!response.ok) {
+          console.error(response);
+          setError(true);
+        } else {
+          setEvent(data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error(error);
+        setError(true);
+      }
+    }
+    getEventDetails();
+  }, [id]);
+
+  // TODO refactor this into component
   function getPriceLabel(price?: number) {
     if (price === 0)
       return <span className="text-green-600 font-semibold">Free Entry</span>;
@@ -30,6 +55,7 @@ export default function EventDetails({ event }: { event?: FullEventType }) {
     );
   }
 
+  // TODO refactor this into multiple components
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
       {/* Back Button */}
@@ -58,6 +84,7 @@ export default function EventDetails({ event }: { event?: FullEventType }) {
         <section>
           {/* Image */}
           <div className="mb-6">
+            {/* Delete this (no hot linking) */}
             <img
               src={event.teaserMedia}
               alt={event.name}
@@ -78,10 +105,12 @@ export default function EventDetails({ event }: { event?: FullEventType }) {
               <b>Location:</b> {event.placeFreeform}
             </span>
             <span>
-              <b>Date:</b> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
+              <b>Date:</b> {event.datetimeFrom.toISOString()} -{" "}
+              {event.datetimeTo.toISOString()}
             </span>
             <span>
-              <b>Price:</b> {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
+              <b>Price:</b> {getPriceLabel(event.budgetMin)} -{" "}
+              {getPriceLabel(event.budgetMax)}
             </span>
           </div>
           {/* Share / Favorite */}
@@ -111,14 +140,18 @@ export default function EventDetails({ event }: { event?: FullEventType }) {
             </h2>
             <ul className="text-sm space-y-1">
               <li>
-                <span className="font-medium">Place:</span> {event.placeFreeform}
+                <span className="font-medium">Place:</span>{" "}
+                {event.placeFreeform}
               </li>
               <li>
-                <span className="font-medium">Date:</span> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
+                <span className="font-medium">Date:</span>{" "}
+                {event.datetimeFrom.toISOString()} -{" "}
+                {event.datetimeTo.toISOString()}
               </li>
               <li>
                 <span className="font-medium">Price:</span>{" "}
-                {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
+                {getPriceLabel(event.budgetMin)} -{" "}
+                {getPriceLabel(event.budgetMax)}
               </li>
               <li>
                 <span className="font-medium">Access:</span> (Map coming soon)

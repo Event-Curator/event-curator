@@ -1,4 +1,7 @@
+import { Link } from "react-router";
+
 interface EventPreviewCardProps {
+  id: string;
   name: string;
   category: string;
   categoryFreeform: string;
@@ -9,6 +12,7 @@ interface EventPreviewCardProps {
 }
 
 export default function EventPreviewCard({
+  id,
   name,
   category,
   categoryFreeform,
@@ -22,8 +26,8 @@ export default function EventPreviewCard({
   }
 
   return (
-    <a
-      href={link}
+    <Link
+      to={`/event/${id}`}
       className="flex bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden border border-blue-50"
       style={{ minHeight: 120 }}
     >
@@ -44,6 +48,6 @@ export default function EventPreviewCard({
           </span>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
