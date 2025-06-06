@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
+import Loading from "../components/Loading";
 
 // LinkIcon component using the provided SVG
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -46,11 +47,7 @@ export default function EventDetails() {
   }, [id, api]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-[60vh]">
-        <span className="loading loading-spinner text-blue-500 loading-lg"></span>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (!event) {
