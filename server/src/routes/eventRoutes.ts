@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { scrapEvent, searchEvent, getEventById } from "../controllers/eventController.js";
 import apicache from "apicache";
-
+import { createTimelineEntry } from "../controllers/timelineController.js";
+import { befriendUser } from "../controllers/socialController.js";
 const router = Router();
 let cache = apicache.middleware;
 
