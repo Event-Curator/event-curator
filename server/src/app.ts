@@ -6,6 +6,7 @@ import config from "./utils/config.js";
 import eventRoute from "./routes/eventRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { initCache, eaCache } from "./middlewares/apiGateway.js";
+import { scheduleBackup } from "./utils/persistance.js";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.use(cors());
 app.use(express.static("./client/dist"));
 app.use("/api", eventRoute);
 app.use(errorHandler);
+
+scheduleBackup();
 
 async function testCache() {
   const myDocument = await eaCache.events.insert({

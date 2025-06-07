@@ -13,6 +13,8 @@ interface Config {
     port: number;
     nodeEnv: string;
     sources: Array<any>;
+    backupSchedule: string;
+    backupUrl: string;
 }
 
 let _source = [
@@ -64,7 +66,11 @@ const config: Config = {
     port: Number(process.env.PORT) || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
     // FIXME: have a json file instead ?
-    sources: _source
+    sources: _source,
+    backupSchedule: "*/1 * * * *",
+    // sql:table or file:folder
+    // in all case, the latest file or record will be restored at startup
+    backupUrl: "file://../../data"
 }
 
 
