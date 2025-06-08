@@ -29,7 +29,7 @@ function getWeekDates(baseDate = new Date()) {
 export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
-  const { events } = useContext(EventContext);
+  const { likedEvents } = useContext(EventContext); // Use likedEvents from context
 
   const today = new Date();
   const baseDate = new Date(today);
@@ -43,7 +43,7 @@ export default function EventTimeline() {
     eventsByDay[key] = [];
   });
 
-  events.forEach((ev) => {
+  likedEvents.forEach((ev) => { // Use likedEvents instead of all events
     const key = ev.datetimeFrom.toString().slice(0, 10);
     if (eventsByDay[key]) {
       eventsByDay[key].push(ev);

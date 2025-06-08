@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router";
 import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
+import EventContext from "../context/EventContext"; // ✅ USE CONTEXT
 
 // Import category images
 import musicImg from "../assets/music.jpg";
@@ -53,7 +54,6 @@ const categoryImages: Record<string, string> = {
   "Other": otherImg,
 };
 
-
 // LinkIcon component
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -86,8 +86,10 @@ const AddIcon = (props: React.SVGProps<SVGSVGElement>) => (
 export default function EventDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { likedEvents, setLikedEvents } = useContext(EventContext);
   const [event, setEvent] = useState<FullEventType | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAdded, setIsAdded] = useState(false); // ✅ Added
 
   const api = import.meta.env.VITE_API;
 
@@ -139,6 +141,15 @@ export default function EventDetails() {
 
   const imageSrc = categoryImages[event.category] || otherImg;
 
+  const handleAdd = () => {
+    if (!event) return;
+    const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
+    if (!alreadyLiked) {
+      setLikedEvents((prev) => [...prev, event]);
+      setIsAdded(true); // ✅ Mark as added
+    }
+  };
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
       <div className="relative mb-6">
@@ -150,7 +161,7 @@ export default function EventDetails() {
         />
       </div>
 
-{/* Main Content Grid */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
         {/* Left Content */}
         <section>
@@ -177,13 +188,15 @@ export default function EventDetails() {
               )}
             </p>
 
-            {/* New Add to Timeline Button */}
+            {/* Add to Timeline Button */}
             <button
               type="button"
               className="btn btn-outline flex items-center gap-2"
+              onClick={handleAdd}
+              disabled={isAdded} // ✅ Disabled after adding
             >
               <AddIcon />
-              Add to Timeline
+              {isAdded ? "Added" : "Add to Timeline"}
             </button>
 
             {/* Link to Source Button */}
@@ -233,11 +246,9 @@ export default function EventDetails() {
                 let baseClasses = "rounded py-1 border cursor-default";
 
                 if (isStartDay) {
-                  baseClasses +=
-                    " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
+                  baseClasses += " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
                 } else if (isEndDay) {
-                  baseClasses +=
-                    " bg-orange-400 text-white font-bold border-orange-500 hover:bg-orange-500";
+                  baseClasses += " bg-orange-400 text-white font-bold border-orange-500 hover:bg-orange-500";
                 } else {
                   baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
                 }
