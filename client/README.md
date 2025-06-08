@@ -113,6 +113,10 @@ This project uses free images provided by Unsplash. Below are the image attribut
 
 - Photo by [ShaloM Kay](https://unsplash.com/@shalomk) on [Unsplash](https://unsplash.com/photos/PFKnL2vjOHw)
 
+### 🎨 Hobbies
+- Photo by [Alvaro Reyes](https://unsplash.com/@alvarordesign) on [Unsplash](https://unsplash.com/photos/TE3YSk6VpEA)
+
+
 ### 🏡 Home
 
 - Photo by [Christopher Jolly](https://unsplash.com/@chrisjo) on [Unsplash](https://unsplash.com/photos/LJh8cOsDT_Y)

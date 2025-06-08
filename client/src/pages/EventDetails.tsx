@@ -4,7 +4,55 @@ import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
-import matsuri from "../assets/Matsuri.jpg";
+
+// Import category images
+import musicImg from "../assets/music.jpg";
+import businessImg from "../assets/business.jpg";
+import foodImg from "../assets/food.jpg";
+import communityImg from "../assets/community.jpg";
+import performanceImg from "../assets/performance.jpg";
+import mediaImg from "../assets/media.jpg";
+import sportImg from "../assets/sport.jpg";
+import healthImg from "../assets/health.jpg";
+import scienceImg from "../assets/science.jpg";
+import travelImg from "../assets/travel.jpg";
+import charityImg from "../assets/charity.jpg";
+import religionImg from "../assets/religion.jpg";
+import familyImg from "../assets/family.jpg";
+import seasonalImg from "../assets/seasonal.jpg";
+import governmentImg from "../assets/government.jpg";
+import fashionImg from "../assets/fashion.jpg";
+import homeImg from "../assets/home.jpg";
+import autoImg from "../assets/auto.jpg";
+import hobbiesImg from "../assets/hobbies.jpg";
+import schoolImg from "../assets/school.jpg";
+import otherImg from "../assets/other.jpg";
+
+// Category to image mapping
+const categoryImages: Record<string, string> = {
+  "Music": musicImg,
+  "Business & Professional": businessImg,
+  "Food & Drink": foodImg,
+  "Community & Culture": communityImg,
+  "Performing & Visual Arts": performanceImg,
+  "Film, Media & Entertainment": mediaImg,
+  "Sports & Fitness": sportImg,
+  "Health & Wellness": healthImg,
+  "Science & Technology": scienceImg,
+  "Travel & Outdoor": travelImg,
+  "Charity & Causes": charityImg,
+  "Religion & Spirituality": religionImg,
+  "Family & Education": familyImg,
+  "Seasonal & Holiday": seasonalImg,
+  "Government & Politics": governmentImg,
+  "Fashion & Beauty": fashionImg,
+  "Home & Lifestyle": homeImg,
+  "Auto, Boat & Air": autoImg,
+  "Hobbies & Special Interest": hobbiesImg,
+  "School Activities": schoolImg,
+  "Other": otherImg,
+};
+
 
 // LinkIcon component
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -18,6 +66,20 @@ const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
   >
     <path d="M9.88 18.36a3 3 0 0 1-4.24 0 3 3 0 0 1 0-4.24l2.83-2.83-1.41-1.41-2.83 2.83a5.003 5.003 0 0 0 0 7.07c.98.97 2.25 1.46 3.54 1.46s2.56-.49 3.54-1.46l2.83-2.83-1.41-1.41-2.83 2.83ZM12.71 4.22 9.88 7.05l1.41 1.41 2.83-2.83a3 3 0 0 1 4.24 0 3 3 0 0 1 0 4.24l-2.83 2.83 1.41 1.41 2.83-2.83a5.003 5.003 0 0 0 0-7.07 5.003 5.003 0 0 0-7.07 0Z"></path>
     <path d="m16.95 8.46-.71-.7-.7-.71-4.25 4.24-4.24 4.25.71.7.7.71 4.25-4.24z"></path>
+  </svg>
+);
+
+// AddIcon component (small plus icon)
+const AddIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    fill={"#2761da"}
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M19 11h-6V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2z" />
   </svg>
 );
 
@@ -75,21 +137,20 @@ export default function EventDetails() {
       month: "long",
     }) || "";
 
+  const imageSrc = categoryImages[event.category] || otherImg;
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
-      {/* No Back Button */}
-
-      {/* Image Section */}
       <div className="relative mb-6">
         <img
-          src={matsuri}
+          src={imageSrc}
           alt={event.name}
           className="w-full h-80 object-cover rounded-xl shadow"
           draggable={false}
         />
       </div>
 
-      {/* Main Content Grid */}
+{/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
         {/* Left Content */}
         <section>
@@ -116,7 +177,16 @@ export default function EventDetails() {
               )}
             </p>
 
-            {/* Moved Link to Source here */}
+            {/* New Add to Timeline Button */}
+            <button
+              type="button"
+              className="btn btn-outline flex items-center gap-2"
+            >
+              <AddIcon />
+              Add to Timeline
+            </button>
+
+            {/* Link to Source Button */}
             {event.originUrl && (
               <a
                 href={event.originUrl}
