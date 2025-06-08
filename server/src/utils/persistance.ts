@@ -3,11 +3,8 @@ import { log } from "../utils/logger.js";
 import config from './config.js';
 import { eaCache, restoreEventStream$ } from '../middlewares/apiGateway.js';
 import { Event } from '../models/Event.js';
-import fs from 'fs';
+import fs from 'node:fs';
 
-/*
- * 
- */
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
         log.info("scheduled backup starting in: " + config.backupTarget);
@@ -42,7 +39,7 @@ async function doBackup(): Promise<number> {
         let dir = config.backupTarget;
         let ts = new Date().getTime();
         let fileName = `backup.events.${ts}.json`;
-        log.info(`saving events backup in: ${dir}${fileName}`);
+        log.info(`saving events backup in: ${dir}/${fileName}`);
 
         let result = await eaCache.events.find({
             selector: {
@@ -56,7 +53,7 @@ async function doBackup(): Promise<number> {
             log.warn(`current dataset in rxdb is empty. terminating backup process`);
         }
 
-        fs.writeFileSync(`${dir}${fileName}`, JSON.stringify(result));
+        fs.writeFileSync(`${dir}/${fileName}`, JSON.stringify(result, null, 2));
         log.info(`backup done (${result.length} records)`);
 
         return result.length;
@@ -112,7 +109,7 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
     let dir = config.backupTarget;
     
     log.warn(`current dir is: ${process.cwd()}`);
-    log.warn(`backup folder is: ${dir}`);
+    log.warn(`backup folder is: ${dir}/`);
 
     // account for all filesystem-related erros (ENOENT, ..)
     try {
@@ -120,14 +117,16 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
         let backups: string[] = [];
 
         files.forEach( (file) => {
-            backups.push(file);
+            if (file.startsWith("backup.") && file.endsWith(".json")) {
+                backups.push(file);
+            }
         });
 
         if (backups.length === 0) {
             log.error(`no backup file found`);
             return [];
         }
-
+ 
         let newestFile = backups.map(name => ({ name, ctime: fs.statSync(`${dir}/${name}`).ctimeMs }))
             .sort((a, b) => b.ctime - a.ctime)[0].name;
         log.warn(`latest backup file found is: ${newestFile}`);

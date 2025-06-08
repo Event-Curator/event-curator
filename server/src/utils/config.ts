@@ -67,11 +67,16 @@ const config: Config = {
     nodeEnv: process.env.NODE_ENV || "development",
     // FIXME: have a json file instead ?
     sources: _source,
-    backupSchedule: "*/1 * * * *",
+    backupSchedule: "0 22 * * *",
     // sql:table or file:folder
     // in all case, the latest file or record will be restored at startup
-    backupTarget: "data/"
+    backupTarget: "../backups"
 }
 
+// some sanity checks
+if (config.backupTarget.endsWith('/')) {
+    config.backupTarget = 
+        config.backupTarget.substring(0, config.backupTarget.length - 1);
+}
 
 export default config;

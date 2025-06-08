@@ -49,3 +49,37 @@ https://zetcode.com/javascript/cheerio/
     "price": selector(".price>span").text(),    
     "priceFull": selector(".product-price-full").text(),    
     "description": selector(".product-description").text(),  
+
+## backup/restore
+
+all configs are available inside utils/config.js
+there is two new values:
+
+```
+const config: Config = {
+    backupSchedule: "0 22 * * *",
+    backupTarget: "../backups"
+}
+```
+
+### backup
+
+RxDB events collection, wich contains the events metadata, can be exported inside the ${projectDir}/backups folder by calling
+
+```PUT /api/cache/backup/events```
+
+the backup is also run each day at 23 PM
+
+in all case, the backup file ends up in ${projectdir}/backups with a filename containing the current time.
+
+note: all details are sent to node console.
+
+### restore
+
+a manual restore of this collection can be done by calling
+
+```PUT /api/cache/restore/events```
+
+also, at node startup, the newest backup is took and reloaded inside the engine automatically.
+
+note: all details are sent to node console.
