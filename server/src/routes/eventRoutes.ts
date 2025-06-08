@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { scrapEvent, searchEvent, getEventById } from "../controllers/eventController.js";
 import apicache from "apicache";
+import { doRestore, doBackup } from "../utils/persistance.js";
 
 const router = Router();
 let cache = apicache.middleware;
@@ -9,6 +10,8 @@ let cache = apicache.middleware;
 router.get('/events', searchEvent);
 router.get('/events/:eventId', getEventById);
 
+router.put('/cache/backup/:collectionName', doBackup )
+router.put('/cache/restore/:collectionName', doRestore )
 
 // ------------ INTERNAL ------------- //
 router.get("/internal/scrap/:sourceId", scrapEvent);

@@ -14,7 +14,7 @@ interface Config {
     nodeEnv: string;
     sources: Array<any>;
     backupSchedule: string;
-    backupUrl: string;
+    backupTarget: string;
 }
 
 let _source = [
@@ -70,7 +70,7 @@ const config: Config = {
     backupSchedule: "*/1 * * * *",
     // sql:table or file:folder
     // in all case, the latest file or record will be restored at startup
-    backupUrl: "file://../../data"
+    backupTarget: "data/"
 }
 
 
