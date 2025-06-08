@@ -5,10 +5,8 @@ import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
-import md5 from 'md5';
-import { Event, EventCategoryEnum, EventSizeEnum } from '../models/Event.js';
 import { Subject } from 'rxjs/internal/Subject';
-import { restoreEventHandler } from '../utils/persistance.js';
+import { doRestore } from '../utils/persistance.js';
 
 let eaCache;
 
@@ -141,7 +139,7 @@ async function initCache() {
         pull: {
             stream$: restoreEventStream$.asObservable(),
             batchSize: 10000,
-            handler: restoreEventHandler as any,
+            handler: doRestore as any,
         }
     });
 }

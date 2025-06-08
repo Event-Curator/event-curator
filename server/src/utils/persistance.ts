@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { log } from "../utils/logger.js";
 import config from './config.js';
-import { restoreEventStream$ } from '../middlewares/apiGateway.js';
+import { eaCache, restoreEventStream$ } from '../middlewares/apiGateway.js';
 import { Event } from '../models/Event.js';
 import fs from 'fs';
 
@@ -10,13 +10,66 @@ import fs from 'fs';
  */
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
-        log.info("hi ! will take a backup to: " + config.backupTarget);
+        log.info("scheduled backup starting in: " + config.backupTarget);
+        doBackup();
     });
 };
 
+async function backupEventHandler (req, res) {
+    let collectionName = req.params.collectionName;
+
+    if (!(collectionName === "events")) {
+        res.status(404);
+        res.send("requested collection not found");
+        return;
+    }
+
+    log.info(`executing backup for collection: ${collectionName}`);
+    let backupSize = await doBackup();
+    if (backupSize > 0) {
+        res.status(200);
+        res.send(`backup finished (${backupSize} records).`);
+        return
+    }
+
+    res.status(500);
+    res.send("backup failed. see console logs for details");
+    return
+}
+
+async function doBackup(): Promise<number> {
+    try {
+        let dir = config.backupTarget;
+        let ts = new Date().getTime();
+        let fileName = `backup.events.${ts}.json`;
+        log.info(`saving events backup in: ${dir}${fileName}`);
+
+        let result = await eaCache.events.find({
+            selector: {
+                $and: [
+                    { name: { $regex: ".*", $options: 'i' } },
+                ]
+            }
+        }).exec();
+
+        if (result.length === 0) {
+            log.warn(`current dataset in rxdb is empty. terminating backup process`);
+        }
+
+        fs.writeFileSync(`${dir}${fileName}`, JSON.stringify(result));
+        log.info(`backup done (${result.length} records)`);
+
+        return result.length;
+
+    } catch (e) {
+        log.error(`error while taking backup: ${e}`);
+    }
+
+    return 0;
+}
 
 // instruct the RxDB replication handler to repull from the configured source
-function doRestore (req, res) {
+function restoreEventHandler (req, res) {
     let collectionName = req.params.collectionName;
 
     if (!(collectionName === "events")) {
@@ -32,22 +85,7 @@ function doRestore (req, res) {
     res.send(`restore for ${collectionName} scheduled. see server logs for status`);
 }
 
-function doBackup (req, res) {
-    let collectionName = req.params.collectionName;
-
-    if (!(collectionName === "events")) {
-        res.status(404);
-        res.send("requested collection not found");
-        return;
-    }
-
-    log.debug(`executing restore for collection: ${collectionName}`);
-    // backupEventStream$.next("RESYNC");
-}
-
-async function restoreEventHandler(checkpointOrNull: any, batchSize) {
-    // const data = fakePull("ed399f4d394dddc4e6be424dc43d0617");
-    log.warn("handling an event restore request. checkpoint is: " + checkpointOrNull);
+async function doRestore(checkpointOrNull: any, batchSize) {
     try {
         let events: Event[] = await getLatestBackupContent("events");
 
@@ -68,14 +106,6 @@ async function restoreEventHandler(checkpointOrNull: any, batchSize) {
 
     return [];
 }
-
-// function fakePull(id: string) {
-//     const documents = testEvent;
-//     const newCheckpoint = documents.length === 0 ? { id } : {
-//         id: documents[1].id,
-//     };
-//     return { documents: documents, checkpoint: newCheckpoint };
-// }
 
 async function getLatestBackupContent(backupType: string): Promise<Array<Event>> {
     if (backupType !== "events") return [];    
@@ -116,4 +146,4 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
     return [];
 }
 
-export { scheduleBackup, doBackup, doRestore, restoreEventHandler };
+export { scheduleBackup, backupEventHandler, restoreEventHandler, doRestore};
