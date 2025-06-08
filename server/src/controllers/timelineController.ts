@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import knex from '../knex.js';
+import * as TimelineModel from '../models/timeline.js';
 import { log } from '../utils/logger.js';
 
 interface TimelineRequestBody {
@@ -7,55 +7,55 @@ interface TimelineRequestBody {
   event_id: string;
 }
 
-const createTimelineEntry = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * Controller: create a new timeline entry
+ */
+export const createTimelineEntry = async (
+  req: Request<{}, {}, TimelineRequestBody>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    const { user_uid, event_id } = req.body as TimelineRequestBody;
-
+    const { user_uid, event_id } = req.body;
     if (!user_uid || !event_id) {
       res.status(400).json({ error: 'Missing user_uid or event_id' });
       return;
     }
 
     log.info(`Inserting timeline entry for user: ${user_uid}, event: ${event_id}`);
-
-    const result = await knex('user_events')
-      .insert({
-        user_uid,
-        event_id
-      })
-      .returning(['user_uid', 'event_id', 'joined_at']);
+    const entry = await TimelineModel.addTimelineEntry(user_uid, event_id);
 
     res.status(201).json({
       message: 'Timeline entry created',
-      data: result[0]
+      data: entry
     });
-
   } catch (error) {
     log.error('Error inserting timeline entry', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 };
-// Get all events for a user
-const getEventsForUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { user_uid } = req.params;
 
-  if (!user_uid) {
-    res.status(400).json({ error: 'Missing user_uid in URL params' });
-    return;
-  }
-
+/**
+ * Controller: retrieve all events joined by a user
+ */
+export const getEventsForUser = async (
+  req: Request<{ user_uid: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
-    log.info(`Fetching events for user: ${user_uid}`);
+    const { user_uid } = req.params;
+    if (!user_uid) {
+      res.status(400).json({ error: 'Missing user_uid in URL params' });
+      return;
+    }
 
-    const events = await knex('user_events')
-      .join('events', 'user_events.event_id', '=', 'events.id')
-      .select('events.*')
-      .where('user_events.user_uid', user_uid);
+    log.info(`Fetching events for user: ${user_uid}`);
+    const events = await TimelineModel.fetchEventsForUser(user_uid);
 
     res.status(200).json({ user_uid, events });
   } catch (error) {
-    log.error(`Error fetching events for user ${user_uid}:`, error);
-    res.status(500).json({ error: 'Failed to retrieve events' });
+    log.error(`Error fetching events for user ${req.params.user_uid}:`, error);
+    next(error);
   }
 };
-export { createTimelineEntry,getEventsForUser };

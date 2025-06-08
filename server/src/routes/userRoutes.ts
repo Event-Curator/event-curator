@@ -2,7 +2,7 @@ import { createTimelineEntry,getEventsForUser } from "../controllers/timelineCon
 import { befriendUser } from "../controllers/socialController.js";
 import { Router } from "express";
 const router = Router();
-router.post("/users/addToUserTimeline", createTimelineEntry);
-router.post("/users/befriendUsers",befriendUser)
-router.get("/users/getAllEvents",getEventsForUser)
+router.post("/events/users/friend",befriendUser)
+router.post("/events/users/timeline", createTimelineEntry);
+router.get("/events/users/timeline",getEventsForUser)
 export default router;

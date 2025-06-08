@@ -8,7 +8,7 @@ export async function up(knex) {
     table.foreign('user_uid').references('users.uid').onDelete('CASCADE');
     table.foreign('friend_uid').references('users.uid').onDelete('CASCADE');
 
-    table.timestamp('created_at').defaultTo(knex.fn.now()); // optional: friendship timestamp
+    table.timestamp('friendship_created_at').defaultTo(knex.fn.now()); // optional: friendship timestamp
   });
 }
 

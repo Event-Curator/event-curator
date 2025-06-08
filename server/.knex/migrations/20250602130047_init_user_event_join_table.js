@@ -8,7 +8,7 @@ export async function up(knex) {
     table.foreign('user_uid').references('users.uid').onDelete('CASCADE');
     table.foreign('event_id').references('events.id').onDelete('CASCADE');
 
-    table.timestamp('joined_at').defaultTo(knex.fn.now()); // Optional: when the user joined the event
+    table.timestamp('saved_at').defaultTo(knex.fn.now()); // Optional: when the user joined the event
   });
 }
 
