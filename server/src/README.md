@@ -98,10 +98,19 @@ https://zetcode.com/javascript/cheerio/
 all configs are available inside utils/config.js
 there is two new values:
 
+backup type = file (for local dev)
 ```
 const config: Config = {
     backupSchedule: "0 22 * * *",
-    backupTarget: "../backups"
+    backupTarget: "file:../backups"
+}
+```
+
+backup type = sql (for local dev OR production)
+```
+const config: Config = {
+    backupSchedule: "0 22 * * *",
+    backupTarget: "sql:backups"
 }
 ```
 

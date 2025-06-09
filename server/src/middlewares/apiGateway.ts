@@ -6,7 +6,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
-import { doRestore } from '../utils/persistance.js';
+import { doRestore } from '../utils/persistence.js';
 
 let eaCache;
 

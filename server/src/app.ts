@@ -8,7 +8,7 @@ import userRoute from "./routes/userRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { syncFirebaseUsers } from "./middlewares/authSync.js";
 import { initCache, eaCache } from "./middlewares/apiGateway.js";
-import { scheduleBackup } from "./utils/persistance.js";
+import { scheduleBackup } from "./utils/persistence.js";
 
 dotenv.config();
 

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { scrapEvent, searchEvent, getEventById } from "../controllers/eventController.js";
 import apicache from "apicache";
-import { restoreEventHandler, backupEventHandler } from "../utils/persistance.js";
+import { restoreEventHandler, backupEventHandler } from "../utils/persistence.js";
 
 const router = Router();
 let cache = apicache.middleware;

@@ -69,7 +69,8 @@ const config: Config = {
     backupSchedule: "0 22 * * *",
     // sql:table or file:folder
     // in all case, the latest file or record will be restored at startup
-    backupTarget: "../backups"
+    // backupTarget: "file:../backups",
+    backupTarget: "sql:backups",
 }
 
 // some sanity checks
