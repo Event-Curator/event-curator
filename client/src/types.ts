@@ -42,3 +42,5 @@ export interface EventsByDateGroup {
   date: string;
   events: FullEventType[];
 }
+
+export type LocationSearchType = "latLong" | "prefecture";
