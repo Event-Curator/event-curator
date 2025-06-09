@@ -43,3 +43,14 @@ export async function fetchFriendsForUser(userUid: string): Promise<UserSummary[
     )
     .where('friend.user_uid', userUid);
 }
+
+/**
+ * Verify if two users are friends.
+ * Returns true if a friendship row exists for the given pair.
+ */
+export async function verifyFriendship(userUid: string, friendUid: string): Promise<boolean> {
+  const row = await knex<FriendRow>('friend')
+    .first()
+    .where({ user_uid: userUid, friend_uid: friendUid });
+  return !!row;
+}

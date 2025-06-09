@@ -41,9 +41,11 @@ export const getFriendsForUser = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  if (!req.user) {
+  throw new Error('Auth middleware did not set req.user');
+  }
   try {
-    const { user_uid } = req.params;
-
+    const user_uid = req.user.uid;
     if (!user_uid) {
       res.status(400).json({ error: 'Missing user_uid in URL params' });
       return;
