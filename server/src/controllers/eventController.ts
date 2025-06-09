@@ -206,7 +206,6 @@ const searchEvent = async function (req: Request, res: Response) {
             events.push(foundEvent);
         }
     }
-
     log.info(`found ${events.length} events`);
 
     res.status(200)

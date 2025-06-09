@@ -55,7 +55,7 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://japancheapo.com/events",
         controller: new JapancheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: ""
+        homeCountry: "japan"
     },
     {
         id: "japanconcerttickets",

@@ -140,7 +140,6 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
 
         const html = await res.text();
         const $ = cheerio.load(html);
-        
         for (let element of $("article")) {
 
           let originUrl = $(element).find('.entry-title').find('a').attr('href') || "";
