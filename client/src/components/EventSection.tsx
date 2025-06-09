@@ -1,43 +1,37 @@
-import EventPreviewCard from "./EventPreviewCard";
-
-const dummyData = [
-  {
-    id: 1,
-    name: "Beer Night",
-    location: "Tokyo",
-    date: "2025/5/27",
-    link: 1,
-  },
-  {
-    id: 2,
-    name: "Karaoke Death Match",
-    location: "Tokyo",
-    date: "2025/5/28",
-    link: 2,
-  },
-  {
-    id: 3,
-    name: "Bowling",
-    location: "Yokohama",
-    date: "2025/5/29",
-    link: 3,
-  },
-];
+import { useContext } from "react";
+import moment from "moment";
+import EventContext from "../context/EventContext";
+import getUniqueDates from "../utils/getUniqueDates";
+import EventDateGroupCard from "./EventDateGroupCard";
+import type { EventsByDateGroup } from "../types";
 
 export default function EventSection() {
+  const { events } = useContext(EventContext);
+  const uniqueDates = getUniqueDates(events);
+
+  const eventGroups: EventsByDateGroup[] = uniqueDates.map((date) => {
+    const group: EventsByDateGroup = {
+      date: date,
+      events: [],
+    };
+    for (const event of events) {
+      const fmtDate = moment(event.datetimeFrom).format("LL");
+      if (fmtDate === group.date) {
+        group.events.push(event);
+      }
+    }
+    return group;
+  });
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 mb-12">
-      <div className="w-full max-w-4xl min-h-[200px] bg-base-100 rounded-2xl shadow-lg flex flex-row gap-2 p-4 items-center justify-center border border-dashed border-primary/50">
-        {dummyData.map((event) => (
-          <EventPreviewCard
-            key={event.id}
-            name={event.name}
-            location={event.location}
-            date={event.date}
-            link={"./event/" + event.link}
-          />
-        ))}
-      </div>
+    <div className="flex flex-col gap-5">
+      {eventGroups.map((eventGrp) => (
+        <EventDateGroupCard
+          key={eventGrp.date}
+          date={eventGrp.date}
+          events={eventGrp.events}
+        />
+      ))}
     </div>
   );
 }

@@ -13,7 +13,6 @@ interface FriendRequestBody {
 export const befriendUser = async (
   req: Request<{}, {}, FriendRequestBody>,
   res: Response,
-  next: NextFunction
 ): Promise<void> => {
   try {
     const { user_uid, friend_uid } = req.body;
@@ -30,7 +29,6 @@ export const befriendUser = async (
     return;
   } catch (error) {
     log.error('Error creating friendship:', error);
-    next(error);
     return;
   }
 };
@@ -39,7 +37,6 @@ export const befriendUser = async (
 export const getFriendsForUser = async (
   req: Request<{ user_uid: string }>,
   res: Response,
-  next: NextFunction
 ): Promise<void> => {
   try {
     const { user_uid } = req.params;
@@ -56,7 +53,6 @@ export const getFriendsForUser = async (
     return;
   } catch (error) {
     log.error(`Error fetching friends for user ${req.params.user_uid}:`, error);
-    next(error);
     return;
   }
 };

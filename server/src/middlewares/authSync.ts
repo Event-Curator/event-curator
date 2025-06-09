@@ -40,7 +40,7 @@ export async function syncFirebaseUsers(): Promise<number> {
       photo_url: user.photoURL || null,
       created_at: new Date(user.metadata.creationTime || Date.now())
     }));
-    console.log(rows);
+
     // Bulk insert with conflict ignore on `uid`
     await knex('users')
       .insert(rows)

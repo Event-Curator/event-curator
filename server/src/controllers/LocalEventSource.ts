@@ -15,7 +15,7 @@ class LocalEventSource extends DefaultEventSource {
     return this.id;
   };
 
-  searchEvent(query: string): Promise<Array<pe.EventType>> {
+  searchEvent(query: Object[]): Promise<Array<pe.EventType>> {
     log.debug("got query: ", query);
     
     // example
