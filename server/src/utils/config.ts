@@ -6,6 +6,7 @@ import { AllsportdbEventSource } from '../controllers/AllsportdbEventSource.js';
 import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
 import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 import { EventSourceConfigType } from '../models/EventSource.js';
+import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
 
 dotenv.config()
 

@@ -1,157 +1,197 @@
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import type { FullEventType } from "../types";
+import FormattedPrice from "../components/FormattedPrice";
+import getDaysInMonth from "../utils/getDaysInMonth";
+import Loading from "../components/Loading";
+import matsuri from "../assets/Matsuri.jpg";
 
-export default function EventDetails({ event }: { event?: FullEventType }) {
+// LinkIcon component using the provided SVG
+const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    fill={"#2761da"}
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    {/* Boxicons v3.0 https://boxicons.com | License  https://docs.boxicons.com/free */}
+    <path d="M9.88 18.36a3 3 0 0 1-4.24 0 3 3 0 0 1 0-4.24l2.83-2.83-1.41-1.41-2.83 2.83a5.003 5.003 0 0 0 0 7.07c.98.97 2.25 1.46 3.54 1.46s2.56-.49 3.54-1.46l2.83-2.83-1.41-1.41-2.83 2.83ZM12.71 4.22 9.88 7.05l1.41 1.41 2.83-2.83a3 3 0 0 1 4.24 0 3 3 0 0 1 0 4.24l-2.83 2.83 1.41 1.41 2.83-2.83a5.003 5.003 0 0 0 0-7.07 5.003 5.003 0 0 0-7.07 0Z"></path>
+    <path d="m16.95 8.46-.71-.7-.7-.71-4.25 4.24-4.24 4.25.71.7.7.71 4.25-4.24z"></path>
+  </svg>
+);
+
+export default function EventDetails() {
   const { id } = useParams();
-  console.log("data for id:", id);
-
   const navigate = useNavigate();
+  const [event, setEvent] = useState<FullEventType | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  function getPriceLabel(price?: number) {
-    if (price === 0)
-      return <span className="text-green-600 font-semibold">Free Entry</span>;
-    if (!price) return null;
-    return (
-      <>
-        <span className="text-gray-600">¥</span>
-        {price.toLocaleString()}
-      </>
-    );
+  const api = import.meta.env.VITE_API;
+
+  useEffect(() => {
+    if (!id) return;
+
+    (async () => {
+      try {
+        const res = await fetch(`${api}/${id}`);
+        if (!res.ok) throw new Error("Event not found");
+        const data = await res.json();
+        setEvent(Array.isArray(data) && data.length ? data[0] : null);
+      } catch (err) {
+        console.error("Error fetching event:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id, api]);
+
+  if (loading) {
+    return <Loading />;
   }
 
   if (!event) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-16">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">
-          Event not found
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <h1 className="text-3xl font-bold text-red-500 mb-4">
+          Event Not Found
         </h1>
-        <p>Sorry, we couldn’t find that event.</p>
+        <button className="btn btn-primary" onClick={() => navigate("/")}>
+          Back to Home
+        </button>
       </div>
     );
   }
 
+  const startDate = event.datetimeFrom ? new Date(event.datetimeFrom) : null;
+  const endDate = event.datetimeTo ? new Date(event.datetimeTo) : null;
+  const calendarDays = startDate ? getDaysInMonth(startDate) : 31;
+  const eventStartDay = startDate ? startDate.getDate() : -1;
+  const eventEndDay = endDate ? endDate.getDate() : -1;
+
+  const monthYear =
+    startDate?.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+    }) || "";
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
-      {/* Back Button */}
-      <button
-        className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full shadow bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
-        onClick={() => navigate("/")}
-      >
-        <svg
-          className="w-5 h-5 mr-1"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15 19l-7-7 7-7"
-          />
-        </svg>
-        Back to Home
-      </button>
+      {/* Flex container for buttons */}
+      <div className="flex justify-between items-center mb-4">
+        <button className="btn btn-outline" onClick={() => navigate("/")}>
+          ⬅ Back to Home
+        </button>
+        {event.originUrl && (
+          <a
+            href={event.originUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline flex items-center gap-2"
+          >
+            <LinkIcon />
+            Link to Source
+          </a>
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10 min-h-[70vh]">
-        {/* Left: Main Event Content */}
+      {/* Image Section */}
+      <div className="relative mb-6">
+        <img
+          src={matsuri}
+          alt={event.name}
+          className="w-full h-80 object-cover rounded-xl shadow"
+          draggable={false}
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
+        {/* Left Content */}
         <section>
-          {/* Image */}
-          <div className="mb-6">
-            <img
-              src={event.teaserMedia}
-              alt={event.name}
-              className="rounded-xl w-full object-cover h-60 md:h-80 shadow"
-              draggable={false}
-            />
-          </div>
-          {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-blue-700 mb-2">
-            {event.name}
+          <h1 className="text-4xl font-bold text-blue-700 mb-4">
+            {event.name || "-"}
           </h1>
-          {/* Meta info */}
-          <div className="flex flex-wrap items-center gap-4 mb-5 text-gray-700 text-base">
-            <span>
-              <b>Category:</b> {event.category}
-            </span>
-            <span>
-              <b>Location:</b> {event.placeFreeform}
-            </span>
-            <span>
-              <b>Date:</b> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
-            </span>
-            <span>
-              <b>Price:</b> {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
-            </span>
+
+          <div className="space-y-2 text-gray-700 text-sm mb-8">
+            <p>
+              <b>Category:</b> {event.category || "-"}
+            </p>
+            <p>
+              <b>Location:</b> {event.placeFreeform || "-"}
+            </p>
+            <p>
+              <b>Date:&nbsp;</b>
+              {startDate ? startDate.toLocaleDateString() : "-"} —{" "}
+              {endDate ? endDate.toLocaleDateString() : "-"}
+            </p>
+            <p>
+              <b>Price:</b> <FormattedPrice price={event.budgetMin} />
+              {event.budgetMax > 0 && (
+                <span> — {<FormattedPrice price={event.budgetMax} />}</span>
+              )}
+            </p>
           </div>
-          {/* Share / Favorite */}
-          <div className="flex gap-3 mb-7">
-            <button className="btn btn-outline btn-sm rounded-full gap-2">
-              <span className="material-symbols-outlined">share</span> Share
-            </button>
-            <button className="btn btn-outline btn-sm rounded-full gap-2">
-              <span className="material-symbols-outlined">favorite</span> Add to
-              Favorites
-            </button>
-          </div>
-          {/* Description */}
-          <div className="prose max-w-none bg-white p-5 rounded-xl shadow">
-            <h2 className="text-lg font-bold text-blue-700 mb-2">
-              Event Description
-            </h2>
-            <p>{event.description}</p>
+
+          <div className="bg-white p-6 rounded-xl shadow prose max-w-none">
+            <h2 className="text-blue-700 font-bold mb-2">Event Description</h2>
+            <p>{event.description || "No description available."}</p>
           </div>
         </section>
 
-        {/* Right: Info + Calendar */}
+        {/* Right Sidebar */}
         <aside className="space-y-6">
-          <div className="bg-white rounded-xl shadow p-4">
-            <h2 className="font-bold text-blue-700 mb-3 text-lg">
-              Information
-            </h2>
-            <ul className="text-sm space-y-1">
-              <li>
-                <span className="font-medium">Place:</span> {event.placeFreeform}
-              </li>
-              <li>
-                <span className="font-medium">Date:</span> {event.datetimeFrom.toISOString()} - {event.datetimeTo.toISOString()}
-              </li>
-              <li>
-                <span className="font-medium">Price:</span>{" "}
-                {getPriceLabel(event.budgetMin)} - {getPriceLabel(event.budgetMax)}
-              </li>
-              <li>
-                <span className="font-medium">Access:</span> (Map coming soon)
-              </li>
-            </ul>
-            <div className="mt-4 bg-blue-50 border border-blue-100 rounded p-3 text-blue-500 flex items-center justify-center text-xs h-24">
+          <div className="bg-white p-4 rounded-xl shadow">
+            <h2 className="text-lg font-bold text-blue-700 mb-3">Location</h2>
+            <div className="mt-4 flex items-center justify-center text-blue-500 text-xs bg-blue-50 border border-blue-100 rounded h-24">
               [Map integration coming soon]
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="font-semibold text-blue-700 mb-2">
-              Calendar of Events
+
+          {/* Calendar */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <h3 className="text-lg font-bold text-blue-700 mb-1">
+              {monthYear}
             </h3>
-            <div className="flex flex-col items-center">
-              <div className="text-gray-400 italic text-xs mb-2">
-                [Calendar integration coming soon]
-              </div>
-              {/* Simple calendar grid placeholder */}
-              <div className="grid grid-cols-7 gap-1 w-full text-center text-xs">
-                {["M", "T", "W", "T", "F", "S", "S"].map((day) => (
-                  <div key={day} className="font-bold text-gray-500">
+            <div className="grid grid-cols-7 gap-1 text-center text-xs w-full">
+              {["M", "T1", "W", "T2", "F", "S1", "S2"].map((d, idx) => (
+                <div key={d + idx} className="font-bold text-gray-500">
+                  {d[0]}
+                </div>
+              ))}
+              {Array.from({ length: calendarDays }).map((_, i) => {
+                const day = i + 1;
+                const isStartDay = day === eventStartDay;
+                const isEndDay = day === eventEndDay;
+                let baseClasses = "rounded py-1 border cursor-default";
+
+                if (isStartDay) {
+                  baseClasses +=
+                    " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
+                } else if (isEndDay) {
+                  baseClasses +=
+                    " bg-orange-400 text-white font-bold border-orange-500 hover:bg-orange-500";
+                } else {
+                  baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
+                }
+
+                return (
+                  <div
+                    key={day}
+                    title={
+                      isStartDay
+                        ? "🎉 Event Start Day!"
+                        : isEndDay
+                        ? "🏁 Event End Day!"
+                        : undefined
+                    }
+                    className={baseClasses}
+                  >
                     {day}
                   </div>
-                ))}
-                {Array.from({ length: 31 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="rounded bg-blue-50 border border-blue-100 py-1"
-                  >
-                    {i + 1}
-                  </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           </div>
         </aside>
