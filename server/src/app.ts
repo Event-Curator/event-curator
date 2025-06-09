@@ -8,6 +8,7 @@ import userRoute from "./routes/userRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { syncFirebaseUsers } from "./middlewares/authSync.js";
 import { initCache, eaCache } from "./middlewares/apiGateway.js";
+import { scheduleBackup } from "./utils/persistence.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use("/api", eventRoute);
 app.use("/api", userRoute);
 app.use(errorHandler);
 
+scheduleBackup();
 syncFirebaseUsers();
 
 async function testCache() {
