@@ -43,4 +43,10 @@ export interface EventsByDateGroup {
   events: FullEventType[];
 }
 
+export interface GeolocationData {
+  latitude: number;
+  longitude: number;
+  userRefused: boolean;
+}
+
 export type LocationSearchType = "latLong" | "prefecture";
