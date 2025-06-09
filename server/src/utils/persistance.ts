@@ -4,6 +4,7 @@ import config from './config.js';
 import { eaCache, restoreEventStream$ } from '../middlewares/apiGateway.js';
 import { Event } from '../models/Event.js';
 import fs from 'node:fs';
+import zlib from 'node-gzip';
 
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
@@ -38,7 +39,7 @@ async function doBackup(): Promise<number> {
     try {
         let dir = config.backupTarget;
         let ts = new Date().getTime();
-        let fileName = `backup.events.${ts}.json`;
+        let fileName = `backup.events.${ts}.json.gz`;
         log.info(`saving events backup in: ${dir}/${fileName}`);
 
         let result = await eaCache.events.find({
@@ -53,7 +54,7 @@ async function doBackup(): Promise<number> {
             log.warn(`current dataset in rxdb is empty. terminating backup process`);
         }
 
-        fs.writeFileSync(`${dir}/${fileName}`, JSON.stringify(result, null, 2));
+        fs.writeFileSync(`${dir}/${fileName}`, await zlib.gzip(JSON.stringify(result, null, 2)));
         log.info(`backup done (${result.length} records)`);
 
         return result.length;
@@ -117,7 +118,7 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
         let backups: string[] = [];
 
         files.forEach( (file) => {
-            if (file.startsWith("backup.") && file.endsWith(".json")) {
+            if (file.startsWith("backup.") && file.endsWith(".json.gz")) {
                 backups.push(file);
             }
         });
@@ -131,9 +132,9 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
             .sort((a, b) => b.ctime - a.ctime)[0].name;
         log.warn(`latest backup file found is: ${newestFile}`);
 
-        let data = JSON.parse(
-            fs.readFileSync(`${dir}/${newestFile}`).toString()
-        );
+        let compressed = fs.readFileSync(`${dir}/${newestFile}`).toString();
+        const decompressed = await zlib.ungzip(compressed);
+        let data = JSON.parse(decompressed.toString());
 
         log.warn(`found  ${data.length} records in backup`);
         return data;
