@@ -4,7 +4,9 @@ import cors from "cors";
 import { log } from "./utils/logger.js";
 import config from "./utils/config.js";
 import eventRoute from "./routes/eventRoutes.js";
+import userRoute from "./routes/userRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { syncFirebaseUsers } from "./middlewares/authSync.js";
 import { initCache, eaCache } from "./middlewares/apiGateway.js";
 
 dotenv.config();
@@ -14,7 +16,10 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("./client/dist"));
 app.use("/api", eventRoute);
+app.use("/api", userRoute);
 app.use(errorHandler);
+
+syncFirebaseUsers();
 
 async function testCache() {
   const myDocument = await eaCache.events.insert({

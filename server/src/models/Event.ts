@@ -1,4 +1,5 @@
 import md5 from 'md5';
+import { eaCache } from '../middlewares/apiGateway.js';
 
 export const ES_SEARCH_IN_CACHE = 0x1;    // this event source will use the local cache for search query
 export const ES_SEARCH_REMOTE = 0x2;      // this event source will make a remote api query for search
@@ -143,3 +144,23 @@ export type EventType = {
 
   // getOriginId: () => {};
 }
+
+const getEventById = async function (externalId: string) {
+        
+    let result = await eaCache.events.find({
+        selector: {
+            "externalId": {
+                $eq: externalId
+            }
+        }
+    }).exec();
+
+    if (result && result.length === 1) {
+      return result[0];
+    } else {
+      return [];
+    }
+
+};
+
+export { getEventById }
