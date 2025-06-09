@@ -7,5 +7,17 @@ import * as pe from "./Event.js";
 export interface IEventSource {
   getId: () => string; // must return the lowercase key that can be found in the sources.json config file
 
-  searchEvent: (query: string) => Promise<Array<pe.EventType>>;
+  searchEvent: (query: Array<object>) => Promise<Array<pe.EventType>>;
+  
+  // scrap as much as we can from the remote source
+  scrapEvent: () => Promise<Array<pe.EventType>>;
+}
+
+export type EventSourceConfigType = {
+  id: string,
+  enabled: boolean,
+  endpoint: string
+  controller: IEventSource,
+  searchType: number,
+  homeCountry: string
 }

@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./dist/app.js",
     "dev": "nodemon --exec node --loader ts-node/esm src/app.ts",
-    "build": "cd ../client && npm install && npm run build && cd ../server && npm install && tsc"
+    "build": "cd ../client && npm install && npm run build && cd ../server && npm install && tsc",
+    "migrate": "knex migrate:latest"
   },
   "author": "",
   "license": "ISC",
@@ -19,8 +20,10 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
+    "geolib": "^3.3.4",
     "md5": "^2.3.0",
     "moment": "^2.30.1",
+    "pg": "^8.16.0",
     "rxdb": "^16.13.0",
     "rxjs": "^7.8.2",
     "ts-node-dev": "^2.0.0",
@@ -32,6 +35,7 @@
     "@types/express": "^5.0.2",
     "@types/md5": "^2.3.5",
     "@types/node": "^22.15.21",
+    "knex": "^3.1.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

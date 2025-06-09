@@ -13,7 +13,13 @@ class DefaultEventSource implements IEventSource {
     return this.id
   };
 
-  searchEvent(query: string): Promise<Array<pe.EventType>>  {
+  scrapEvent(): Promise<Array<pe.EventType>>  {
+    // FIXME: set a default implementation here ?
+    let events = new Array()
+    return new Promise( () => events )
+  }
+
+  searchEvent(query: Object[]): Promise<Array<pe.EventType>>  {
     let events = new Array()
     events.push("event test 1")
     events.push("event test 2")
