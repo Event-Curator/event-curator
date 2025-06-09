@@ -58,6 +58,14 @@ let _source: Array<EventSourceConfigType> = [
         controller: new JapancheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: 'japan'
+    },
+    {
+        id: "japanconcerttickets",
+        enabled: true,
+        endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
+        controller: new JapanconcertticketsEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: "japan"
     }
 ]
 
