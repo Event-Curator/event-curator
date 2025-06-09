@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { eventCategories, prefectures } from "./constants";
 import EventContext from "../context/EventContext";
-import { useContext } from "react";
+import useGetPosition from "../hooks/useGetUserLoc";
+import type { LocationSearchType } from "../types";
 
 export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [location, setLocation] = useState("");
+  const [prefecture, setPrefecture] = useState("");
   const [price, setPrice] = useState("");
+  const [locSearchType, setLocSearchType] =
+    useState<LocationSearchType>("latLong");
   const { setEvents } = useContext(EventContext);
+  const { latitude, longitude, userRefused } = useGetPosition();
+  console.log(latitude, longitude, userRefused);
 
   const api = import.meta.env.VITE_API;
 
@@ -44,6 +49,14 @@ export default function EventFilters() {
     setPrice(val);
   };
 
+  const toggleSearchLocType = (): void => {
+    if (locSearchType === "latLong") {
+      setLocSearchType("prefecture");
+    } else {
+      setLocSearchType("latLong");
+    }
+  };
+
   return (
     <aside className="bg-white p-4 rounded shadow-md w-full">
       <div className="mb-4">
@@ -53,7 +66,7 @@ export default function EventFilters() {
         <div className="flex">
           <input
             type="text"
-            placeholder="Search by keyword or tag"
+            placeholder="Search by keyword"
             className="input input-bordered w-full rounded-r-none"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -84,18 +97,7 @@ export default function EventFilters() {
             </option>
           ))}
         </select>
-        <select
-          className="select select-bordered w-full"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-        >
-          <option value="">All prefectures</option>
-          {prefectures.map((pref) => (
-            <option key={pref} value={pref}>
-              {pref} Prefecture
-            </option>
-          ))}
-        </select>
+
         <div className="relative w-full">
           <input
             type="text"
@@ -116,6 +118,31 @@ export default function EventFilters() {
             ¥
           </span>
         </div>
+      </div>
+      <div className="flex flex-row mb-4">
+        <label className="label mr-4">
+          <input
+            type="checkbox"
+            defaultChecked
+            className="toggle"
+            onChange={toggleSearchLocType}
+          />
+          {locSearchType === "latLong"
+            ? "Search near me"
+            : "Search by prefecture"}
+        </label>
+        <select
+          className="select select-bordered w-full"
+          value={prefecture}
+          onChange={(e) => setPrefecture(e.target.value)}
+        >
+          <option value="">All prefectures</option>
+          {prefectures.map((pref) => (
+            <option key={pref} value={pref}>
+              {pref} Prefecture
+            </option>
+          ))}
+        </select>
       </div>
       <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>
         Find Events
