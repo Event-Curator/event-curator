@@ -34,7 +34,7 @@ async function initCache() {
             dateTimeString = new Date(dateTimeString).toISOString();
         }
 
-        return !isNaN(Date.parse(dateTimeString));  // any test that returns true/false 
+        return !isNaN(Date.parse(dateTimeString));
     });
 
     let myCollection = await eaCache.addCollections({
@@ -142,6 +142,34 @@ async function initCache() {
             handler: doRestore as any,
         }
     });
+
+    // from human-readable address to map coordinate
+    // = MD5(placeFreeform.toLowercase())
+    await eaCache.addCollections({
+        geocoding: {
+            schema: {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 32
+                    },
+
+                    lat: {
+                        type: 'number',
+                    },
+
+                    long: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'lat', 'long']
+            }
+        }
+    });
+
 }
 
 export { initCache, eaCache, restoreEventStream$ }
