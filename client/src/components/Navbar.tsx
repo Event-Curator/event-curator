@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router"; 
+import { Link, useNavigate } from "react-router";
 import { auth, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -11,6 +11,7 @@ import {
 import type { User } from "firebase/auth";
 import AuthModal from "./AuthModal";
 import RegisterModal from "./RegisterModal";
+import defaultAvatar from "../assets/default-avatar.webp";
 
 export default function Navbar() {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export default function Navbar() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -85,6 +87,8 @@ export default function Navbar() {
     setUser(null);
   };
 
+  const avatarUrl = user?.photoURL || defaultAvatar;
+
   const MobileAuthButtons = (
     <>
       <li>
@@ -97,13 +101,6 @@ export default function Navbar() {
           Register
         </button>
       </li>
-      {user && (
-        <li>
-          <button className="btn btn-outline btn-sm w-full mt-2" onClick={handleLogout}>
-            Logout
-          </button>
-        </li>
-      )}
     </>
   );
 
@@ -113,7 +110,6 @@ export default function Navbar() {
       <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-4 h-16">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
-          {/* Make whole logo and title clickable */}
           <Link to="/" className="flex items-center gap-3">
             <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
             <span className="text-2xl font-bold text-blue-700 tracking-wide">
@@ -124,7 +120,6 @@ export default function Navbar() {
 
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
-          {/* Show Timeline only if user is logged in */}
           {user && (
             <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">
               My Event Timeline
@@ -135,11 +130,31 @@ export default function Navbar() {
         {/* Auth */}
         <div className="flex gap-2">
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Hi, {user.email || user.displayName}</span>
-              <button className="btn btn-outline btn-sm" onClick={handleLogout}>
-                Logout
-              </button>
+            <div className="dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                <div className="w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <img src={avatarUrl} alt="avatar" />
+                </div>
+              </div>
+              <ul tabIndex={0} className="dropdown-content mt-3 p-4 shadow menu menu-sm bg-white rounded-box w-52 border border-blue-100">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="avatar online">
+                    <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img src={avatarUrl} alt="avatar" />
+                    </div>
+                  </div>
+                  <span className="font-semibold text-sm">{user.displayName || user.email}</span>
+                </div>
+                <li>
+                  <button onClick={() => navigate("/profile")}>Profile Settings</button>
+                </li>
+                <li>
+                  <Link to="/timeline">My Event Timeline</Link>
+                </li>
+                <li>
+                  <button onClick={handleLogout}>Sign Out</button>
+                </li>
+              </ul>
             </div>
           ) : (
             <>
@@ -163,25 +178,38 @@ export default function Navbar() {
             </svg>
           </label>
           <ul tabIndex={0} className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50">
-            {/* Show Timeline only if user is logged in */}
-            {user && (
-              <li>
-                <Link to="/timeline">My Event Timeline</Link>
-              </li>
-            )}
-            {/* Mobile login/register buttons */}
-            {!user && MobileAuthButtons}
-            {user && (
-              <li>
-                <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>
-                  Logout
-                </button>
-              </li>
+            {user ? (
+              <>
+                <li className="flex flex-col items-center justify-center gap-2 py-2">
+                  <div className="avatar online">
+                    <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img src={avatarUrl} alt="avatar" />
+                    </div>
+                  </div>
+                  <span className="text-xs">{user.displayName || user.email}</span>
+                </li>
+                <li>
+                  <button className="btn btn-outline btn-sm mt-2 w-full" onClick={() => navigate("/profile")}>
+                    Profile Settings
+                  </button>
+                </li>
+                <li>
+                  <Link to="/timeline" className="btn btn-outline btn-sm w-full mt-2">
+                    My Event Timeline
+                  </Link>
+                </li>
+                <li>
+                  <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>
+                    Logout
+                  </button>
+                </li>
+              </>
+            ) : (
+              MobileAuthButtons
             )}
           </ul>
         </div>
         <div className="flex items-center space-x-2">
-          {/* Make logo and title clickable */}
           <Link to="/" className="flex items-center space-x-2">
             <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
             <span className="text-lg font-bold text-blue-700">

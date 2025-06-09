@@ -29,7 +29,7 @@ function getWeekDates(baseDate = new Date()) {
 export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
-  const { likedEvents } = useContext(EventContext); // Use likedEvents from context
+  const { likedEvents, setLikedEvents } = useContext(EventContext);
 
   const today = new Date();
   const baseDate = new Date(today);
@@ -43,26 +43,22 @@ export default function EventTimeline() {
     eventsByDay[key] = [];
   });
 
-  likedEvents.forEach((ev) => { // Use likedEvents instead of all events
+  likedEvents.forEach((ev) => {
     const key = ev.datetimeFrom.toString().slice(0, 10);
     if (eventsByDay[key]) {
       eventsByDay[key].push(ev);
     }
   });
 
+  // Handler for removing liked events
+  const handleRemove = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation(); // Prevent navigation
+    setLikedEvents((prev) => prev.filter((event) => event.externalId !== id));
+  };
+
   return (
     <main className="max-w-5xl mx-auto px-2 py-10 min-h-[80vh]">
-      {/* Back to Home */}
-      <button
-        className="mb-6 flex items-center gap-2 text-blue-700 hover:underline font-semibold"
-        onClick={() => navigate("/")}
-      >
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Back to Home
-      </button>
-
+      
       {/* Page Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl md:text-3xl font-bold text-blue-700">
@@ -136,7 +132,8 @@ export default function EventTimeline() {
                           className="absolute top-1 right-1 btn btn-ghost btn-xs text-red-500"
                           title="Remove from timeline"
                           tabIndex={-1}
-                          onClick={(e) => e.stopPropagation()} // 🛑 Prevent navigation on remove click
+                          onClick={(e) => handleRemove(e, ev.externalId)}
+                          
                         >
                           &#10006;
                         </button>

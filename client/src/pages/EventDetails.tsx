@@ -4,9 +4,9 @@ import type { FullEventType } from "../types";
 import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
-import EventContext from "../context/EventContext"; // ✅ USE CONTEXT
+import EventContext from "../context/EventContext";
 
-// Import category images
+
 import musicImg from "../assets/music.jpg";
 import businessImg from "../assets/business.jpg";
 import foodImg from "../assets/food.jpg";
@@ -29,7 +29,7 @@ import hobbiesImg from "../assets/hobbies.jpg";
 import schoolImg from "../assets/school.jpg";
 import otherImg from "../assets/other.jpg";
 
-// Category to image mapping
+
 const categoryImages: Record<string, string> = {
   "Music": musicImg,
   "Business & Professional": businessImg,
