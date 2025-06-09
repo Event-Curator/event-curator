@@ -43,19 +43,21 @@ export const getEventsForUser = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
+  const { user_uid } = req.query;
+
   try {
-    const { user_uid } = req.params;
     if (!user_uid) {
       res.status(400).json({ error: 'Missing user_uid in URL params' });
       return;
     }
 
     log.info(`Fetching events for user: ${user_uid}`);
-    const events = await TimelineModel.fetchEventsForUser(user_uid);
+    const events = await TimelineModel.fetchEventsForUser(user_uid.toString());
 
     res.status(200).json({ user_uid, events });
+
   } catch (error) {
-    log.error(`Error fetching events for user ${req.params.user_uid}:`, error);
+    log.error(`Error fetching events for user ${user_uid}:`, error);
     next(error);
   }
 };

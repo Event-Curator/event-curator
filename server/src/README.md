@@ -25,3 +25,25 @@ will return an unfiltered, merged, list of all event from all enabled source.
 
 colorized winston is setup, default send to console 
 `import { log } from ./utils/logger` then `log.info(...)`
+
+## users and timeline endpoints
+
+### friendship creation
+Send a POST request to ```/events/friend``` with the following body:
+
+{
+  "user_uid": "user-a",
+  "friend_uid": "user-b"
+}
+
+### create a timeline entry (=add favorite)
+Send a POST request to ```/events/timeline``` with the following body:
+
+{
+  "user_uid": "user-a",
+  "event_id": "uuid"
+}
+
+### get user timeline
+send a GET with the userid to ```/events/timeline?user_id={userUid}```
+

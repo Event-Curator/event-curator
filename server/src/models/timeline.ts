@@ -14,8 +14,8 @@ export async function addTimelineEntry(
   eventId: string
 ): Promise<TimelineEntry> {
   const [entry] = await knex('user_events')
-    .insert({ user_uid: userUid, event_id: eventId })
-    .returning(['user_uid', 'event_id', 'joined_at']);
+    .insert({ user_uid: userUid, event_external_id: eventId })
+    .returning(['user_uid', 'event_external_id', 'created_at']);
   return entry;
 }
 
@@ -26,7 +26,6 @@ export async function fetchEventsForUser(
   userUid: string
 ): Promise<any[]> {
   return knex('user_events')
-    .join('events', 'user_events.event_id', '=', 'events.id')
-    .select('events.*')
+    .select('user_events.event_external_id')
     .where('user_events.user_uid', userUid);
 }
