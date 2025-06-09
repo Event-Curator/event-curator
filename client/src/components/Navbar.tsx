@@ -87,7 +87,16 @@ export default function Navbar() {
     setUser(null);
   };
 
-  const avatarUrl = user?.photoURL || defaultAvatar;
+  // Avatar logic: use Google avatar if logged in with Google, otherwise default
+  let avatarUrl = defaultAvatar;
+  if (user) {
+    const isGoogleUser = user.providerData.some(
+      (provider) => provider.providerId === "google.com"
+    );
+    if (isGoogleUser && user.photoURL) {
+      avatarUrl = user.photoURL;
+    }
+  }
 
   const MobileAuthButtons = (
     <>
@@ -107,7 +116,7 @@ export default function Navbar() {
   return (
     <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
       {/* Desktop Navbar */}
-      <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-4 h-16">
+      <div className="hidden md:flex items-center justify-between max-w-7xl mx-auto px-4 h-20">
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3">
@@ -132,15 +141,29 @@ export default function Navbar() {
           {user ? (
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-8 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                  <img src={avatarUrl} alt="avatar" />
+                <div className="w-10 h-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                  <img
+                    src={avatarUrl}
+                    alt="avatar"
+                    className="object-cover w-full h-full"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                    }}
+                  />
                 </div>
               </div>
               <ul tabIndex={0} className="dropdown-content mt-3 p-4 shadow menu menu-sm bg-white rounded-box w-52 border border-blue-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="avatar online">
-                    <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                      <img src={avatarUrl} alt="avatar" />
+                    <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img
+                        src={avatarUrl}
+                        alt="avatar"
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                        }}
+                      />
                     </div>
                   </div>
                   <span className="font-semibold text-sm">{user.displayName || user.email}</span>
@@ -182,8 +205,15 @@ export default function Navbar() {
               <>
                 <li className="flex flex-col items-center justify-center gap-2 py-2">
                   <div className="avatar online">
-                    <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                      <img src={avatarUrl} alt="avatar" />
+                    <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                      <img
+                        src={avatarUrl}
+                        alt="avatar"
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                        }}
+                      />
                     </div>
                   </div>
                   <span className="text-xs">{user.displayName || user.email}</span>
