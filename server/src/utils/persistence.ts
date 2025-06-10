@@ -75,7 +75,7 @@ async function doBackup(cacheName: string): Promise<number> {
         let result = await eaCache[cacheName].find({
                 selector: {
                     $and: [
-                        { name: { $regex: ".*", $options: 'i' } },
+                        { id: { $regex: ".*", $options: 'i' } },
                     ]
                 }
             }).exec();
@@ -112,8 +112,8 @@ function restoreEventHandler (req, res) {
     log.warn(`executing restore for collection: ${collectionName}`);
     if (collectionName === cacheNameEnum.EVENTS) {
         restoreEventStream$.next("RESYNC");
+
     } else if (collectionName === cacheNameEnum.GEOCODING) {
-        // FIXME
         // restoreGeocodingStream$.next("RESYNC");
     }
 
@@ -132,6 +132,29 @@ async function doEventsRestore(checkpointOrNull: any, batchSize) {
         log.warn(`sending data to rxdb engine for restoration`);
         return {
             documents: events,
+            checkpoint: { id: 1 },
+            hasMoreDocuments: false
+        };
+
+    } catch (e) {
+        log.error(`unable to list backup dir content: ${e}`);
+    }
+
+    return [];
+}
+
+
+async function doGeocodingRestore(checkpointOrNull: any, batchSize) {
+    try {
+        let entries: object[] = await getLatestBackupContent(cacheNameEnum.GEOCODING);
+
+        if (entries.length === 0) {
+            log.error(`no backup or empty backup. restore process won't do anything`);
+        }
+
+        log.warn(`sending data to rxdb engine for restoration`);
+        return {
+            documents: entries,
             checkpoint: { id: 1 },
             hasMoreDocuments: false
         };
@@ -192,7 +215,7 @@ async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> 
     } else if (backupTarget.length === 2 && backupTarget[0] === "sql") {
         let compressed = await knex(backupTarget[1])
             .select('content')
-            .where('cache_name','=','cacheName')
+            .where('cache_name','=',cacheName)
             .orderBy('created_at','desc')
             .first();
 
@@ -215,4 +238,4 @@ async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> 
     return [];
 }
 
-export { scheduleBackup, backupEventHandler, restoreEventHandler, doEventsRestore};
+export { scheduleBackup, backupEventHandler, restoreEventHandler, doEventsRestore, doGeocodingRestore};

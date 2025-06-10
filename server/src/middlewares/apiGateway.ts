@@ -6,7 +6,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
-import { doEventsRestore } from '../utils/persistence.js';
+import { doEventsRestore, doGeocodingRestore } from '../utils/persistence.js';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 
 let eaCache;
@@ -15,6 +15,7 @@ addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBUpdatePlugin);
 
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+const restoreGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
 async function initCache() {
     eaCache = await createRxDatabase({
@@ -133,9 +134,9 @@ async function initCache() {
         }
     });
     
-    const replicationState = replicateRxCollection({
+    const eventsReplicationState = replicateRxCollection({
         collection: myCollection.events,
-        replicationIdentifier: 'my-http-replication',
+        replicationIdentifier: 'events-replication',
         autoStart: true,
         retryTime: 10,
         pull: {
@@ -172,6 +173,18 @@ async function initCache() {
         }
     });
 
+    const geocodingReplicationState = replicateRxCollection({
+        collection: myCollection.geocoding,
+        replicationIdentifier: 'geocoding-replication',
+        autoStart: true,
+        retryTime: 10,
+        pull: {
+            stream$: restoreGeocodingStream$.asObservable(),
+            batchSize: 10000,
+            handler: doGeocodingRestore as any,
+        }
+    });
+
 }
 
-export { initCache, eaCache, restoreEventStream$ }
+export { initCache, eaCache, restoreEventStream$, restoreGeocodingStream$ }
