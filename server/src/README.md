@@ -53,6 +53,27 @@ To get all fireworks in a 100km radius, with the browser location as xx.xxx/yy.y
 colorized winston is setup, default send to console 
 `import { log } from ./utils/logger` then `log.info(...)`
 
+## users and timeline endpoints
+
+### friendship creation
+Send a POST request to ```/events/friend``` with the following body:
+
+{
+  "user_uid": "user-a",
+  "friend_uid": "user-b"
+}
+
+### create a timeline entry (=add favorite)
+Send a POST request to ```/events/timeline``` with the following body:
+
+{
+  "user_uid": "user-a",
+  "event_id": "uuid"
+}
+
+### get user timeline
+send a GET with the userid to ```/events/timeline?user_id={userUid}```
+
 ## Databroker
 
 every datasource must implements ```IEventSource``` interface and extends the ```DefaultEventsource```
@@ -71,3 +92,46 @@ https://zetcode.com/javascript/cheerio/
     "price": selector(".price>span").text(),    
     "priceFull": selector(".product-price-full").text(),    
     "description": selector(".product-description").text(),  
+
+## backup/restore
+
+all configs are available inside utils/config.js
+there is two new values:
+
+backup type = file (for local dev)
+```
+const config: Config = {
+    backupSchedule: "0 22 * * *",
+    backupTarget: "file:../backups"
+}
+```
+
+backup type = sql (for local dev OR production)
+```
+const config: Config = {
+    backupSchedule: "0 22 * * *",
+    backupTarget: "sql:backups"
+}
+```
+
+### backup
+
+RxDB events collection, wich contains the events metadata, can be exported inside the ${projectDir}/backups folder by calling
+
+```PUT /api/cache/backup/events```
+
+the backup is also run each day at 23 PM
+
+in all case, the backup file ends up in ${projectdir}/backups with a filename containing the current time.
+
+note: all details are sent to node console.
+
+### restore
+
+a manual restore of this collection can be done by calling
+
+```PUT /api/cache/restore/events```
+
+also, at node startup, the newest backup is took and reloaded inside the engine automatically.
+
+note: all details are sent to node console.

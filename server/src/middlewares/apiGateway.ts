@@ -1,13 +1,18 @@
-import { addRxPlugin } from 'rxdb/plugins/core';
+import { addRxPlugin, RxReplicationPullStreamItem } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
+import { replicateRxCollection } from 'rxdb/plugins/replication';
+import { Subject } from 'rxjs/internal/Subject';
+import { doRestore } from '../utils/persistence.js';
 
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
+
+const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
 async function initCache() {
     eaCache = await createRxDatabase({
@@ -32,20 +37,20 @@ async function initCache() {
         return !isNaN(Date.parse(dateTimeString));
     });
 
-    await eaCache.addCollections({
+    let myCollection = await eaCache.addCollections({
         events: {
             schema: {
                 version: 0,
-                primaryKey: 'externalId',
+                primaryKey: 'id',
                 type: 'object',
                 properties: {
                     // FIXME: should be something else
                     id: {
-                        type: 'string'
-                    },
-                    externalId: {
                         type: 'string',
                         maxLength: 100
+                    },
+                    externalId: {
+                        type: 'string'
                     },
 
                     originId: {
@@ -125,6 +130,18 @@ async function initCache() {
             }
         }
     });
+    
+    const replicationState = replicateRxCollection({
+        collection: myCollection.events,
+        replicationIdentifier: 'my-http-replication',
+        autoStart: true,
+        retryTime: 10,
+        pull: {
+            stream$: restoreEventStream$.asObservable(),
+            batchSize: 10000,
+            handler: doRestore as any,
+        }
+    });
 
     // from human-readable address to map coordinate
     // = MD5(placeFreeform.toLowercase())
@@ -155,4 +172,4 @@ async function initCache() {
 
 }
 
-export { initCache, eaCache }
+export { initCache, eaCache, restoreEventStream$ }

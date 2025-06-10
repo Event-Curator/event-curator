@@ -13,6 +13,8 @@ dotenv.config()
 interface Config {
     port: number;
     nodeEnv: string;
+    backupSchedule: string;
+    backupTarget: string;
     sources: Array<EventSourceConfigType>;
 }
 
@@ -56,6 +58,14 @@ let _source: Array<EventSourceConfigType> = [
         controller: new JapancheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: 'japan'
+    },
+    {
+        id: "japanconcerttickets",
+        enabled: true,
+        endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
+        controller: new JapanconcertticketsEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: "japan"
     }
 ]
 
@@ -63,7 +73,18 @@ const config: Config = {
     port: Number(process.env.PORT) || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
     // FIXME: have a json file instead ?
-    sources: _source
+    sources: _source,
+    backupSchedule: "0 22 * * *",
+    // sql:table or file:folder
+    // in all case, the latest file or record will be restored at startup
+    // backupTarget: "file:../backups",
+    backupTarget: "sql:backups",
+}
+
+// some sanity checks
+if (config.backupTarget.endsWith('/')) {
+    config.backupTarget = 
+        config.backupTarget.substring(0, config.backupTarget.length - 1);
 }
 
 export default config;
