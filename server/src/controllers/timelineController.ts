@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as TimelineModel from '../models/timeline.js';
 import { log } from '../utils/logger.js';
+import { verifyFriendship } from '../models/friend.js';
 import { getEventById, Event } from '../models/Event.js';
 
 interface TimelineRequestBody {
@@ -35,11 +36,12 @@ export const createTimelineEntry = async (
 };
 
 /**
- * Controller: retrieve all events joined by a user
+ * Controller: retrieve all events joined by the authenticated user
  */
 export const getEventsForUser = async (
-  req: Request<{ user_uid: string }>,
+  req: Request<{}, {}, {}, { user_uid: string }>,
   res: Response,
+  next:NextFunction
 ): Promise<void> => {
   const { user_uid } = req.query;
 
@@ -48,7 +50,6 @@ export const getEventsForUser = async (
       res.status(400).json({ error: 'Missing user_uid in URL params' });
       return;
     }
-
     log.info(`Fetching events for user: ${user_uid}`);
     const events = await TimelineModel.fetchEventsForUser(user_uid.toString());
 
@@ -71,6 +72,41 @@ export const getEventsForUser = async (
     res.status(200).json({ user_uid, fullEvents });
 
   } catch (error) {
-    log.error(`Error fetching events for user ${user_uid}:`, error);
+    log.error(`Error fetching events for user ${req.user?.uid}:`, error);
+    next(error);
+  }
+};
+
+/**
+ * Controller: retrieve all events for a friend of the authenticated user
+ * Verifies the users are friends before fetching
+ */
+export const getEventsOfFriend = async (
+  req: Request<{ user_uid: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  if (!req.user) {
+    throw new Error('Auth middleware did not set req.user');
+  }
+
+  try {
+    const currentUserUid = req.user.uid;
+    const friendUid = req.params.user_uid;
+
+    // Verify they are friends
+    const isFriend = await verifyFriendship(currentUserUid, friendUid);
+    if (!isFriend) {
+      res.status(403).json({ error: 'Not friends with specified user' });
+      return;
+    }
+
+    log.info(`Fetching events for friend: ${friendUid}`);
+    const events = await TimelineModel.fetchEventsForUser(friendUid);
+
+    res.status(200).json({ user_uid: friendUid, events });
+  } catch (error) {
+    log.error(`Error fetching events for friend ${req.params.user_uid}:`, error);
+    next(error);
   }
 };
