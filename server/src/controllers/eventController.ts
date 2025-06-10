@@ -233,10 +233,10 @@ const getEventById = async function (req: Request, res: Response) {
 };
 
 const getSearchHits = async function (req: Request, resp: Response) {
-    let requestedIndex = req.query.key;
+    let requestedIndex = req.query.key || "";
     let hits: object = {};
     
-    log.debug(`getting hits for ${requestedIndex}`);
+    log.debug(`hits for ${requestedIndex}`);
 
     let result = await eaCache.events.find({
         selector: {
@@ -246,27 +246,33 @@ const getSearchHits = async function (req: Request, resp: Response) {
     
     if (result.length > 0) {
         for (let event of result) {
-
             let indexValue = "";
+            let eventCategory = event[requestedIndex.toString()];
+            let eventCategoryFreeform = event.eventCategoryFreeform;
 
-            if (requestedIndex === "categories") {
-                let eventCategory = event.category;
-                let eventCategoryFreeform = event.eventCategoryFreeform;
-
-                if (eventCategory === "") {
-                    hits["unsorted"]++ || 0;
-                } else {
-                    if (hits[eventCategory] === undefined) hits[eventCategory] = 0;
-                    hits[eventCategory]++ || 0;
-                }
-                console.log(hits);
-            // } else if (requestedIndex === "cities")
+            if (eventCategory === "") {
+                hits["unsorted"]++ || 0;
+            } else {
+                if (hits[eventCategory] === undefined) hits[eventCategory] = 0;
+                hits[eventCategory]++ || 0;
             }
         }
+
+        let hitsList: Array<object> = [] ;
+        for (let key of Object.keys(hits)) {
+            let count = hits[key];
+            hitsList.push({
+                "name": key,
+                "count": count,
+                "label": `${key} (${count})`
+            });
+        }
+        resp.status(200);
+        resp.send(hitsList);
     }
 
-    resp.status(200);
-    resp.send(hits);
+    resp.status(404);
+    resp.send();
 }
 
 export { scrapEvent, searchEvent, getEventById, getSearchHits }
