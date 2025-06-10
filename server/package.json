@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node ./dist/app.js",
     "dev": "nodemon --exec node --loader ts-node/esm src/app.ts",
+    "nontstodist": "cp -r .knex dist/ && cp knexfile.js dist/ && cp src/knex.js dist/",
     "build": "cd ../client && npm install && npm run build && cd ../server && npm install && tsc",
     "migrate": "knex migrate:latest"
   },
