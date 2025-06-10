@@ -58,3 +58,52 @@ export const getFriendsForUser = async (
     return;
   }
 };
+interface DeleteFriendRequestBody {
+  user_uid: string;
+  friend_uid: string;
+}
+export const deleteFriendship = async (
+  req: Request<{}, {}, DeleteFriendRequestBody>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Auth middleware must have set req.user
+    if (!req.user) {
+      throw new Error('Auth middleware did not set req.user');
+    }
+
+    const authUid = req.user.uid;
+    const { user_uid, friend_uid } = req.body;
+
+    // Validate body
+    if (!user_uid || !friend_uid) {
+      res.status(400).json({ error: 'Missing user_uid or friend_uid' });
+      return;
+    }
+
+    // Only allow if the authenticated user matches one side of the friendship
+    if (authUid !== user_uid && authUid !== friend_uid) {
+      res.status(403).json({ error: 'Not authorized to delete this friendship' });
+      return;
+    }
+
+    log.info(`Deleting friendship between ${user_uid} and ${friend_uid}`);
+    const deletedCount = await FriendModel.deleteFriendship(user_uid, friend_uid);
+
+    if (deletedCount === 0) {
+      res.status(404).json({
+        message: 'Friendship not found',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'Friendship deleted',
+      deletedCount
+    });
+  } catch (err) {
+    log.error('Error deleting friendship:', err);
+    next(err);
+  }
+};

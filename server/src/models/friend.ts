@@ -1,5 +1,4 @@
 import knex from '../knex.js';
-
 export interface FriendRow {
   user_uid: string;
   friend_uid: string;
@@ -53,4 +52,24 @@ export async function verifyFriendship(userUid: string, friendUid: string): Prom
     .first()
     .where({ user_uid: userUid, friend_uid: friendUid });
   return !!row;
+}
+/**
+ * Deletes the bidirectional friendship between two users.
+ */
+/**
+ * Deletes the bidirectional friendship between two users.
+ */
+export async function deleteFriendship(
+  userUid: string,
+  friendUid: string
+): Promise<number> {
+  const deletedCount = await knex<FriendRow>('friend')
+    .where(qb =>
+      qb
+        .where({ user_uid: userUid,   friend_uid: friendUid })
+        .orWhere({  user_uid: friendUid, friend_uid: userUid })
+    )
+    .del();
+
+  return deletedCount;
 }
