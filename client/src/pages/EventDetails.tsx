@@ -89,7 +89,7 @@ export default function EventDetails() {
   const { likedEvents, setLikedEvents } = useContext(EventContext);
   const [event, setEvent] = useState<FullEventType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdded, setIsAdded] = useState(false); // ✅ Added
+  const [isAdded, setIsAdded] = useState(false);
 
   const api = import.meta.env.VITE_API;
 
@@ -146,7 +146,7 @@ export default function EventDetails() {
     const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
     if (!alreadyLiked) {
       setLikedEvents((prev) => [...prev, event]);
-      setIsAdded(true); // ✅ Mark as added
+      setIsAdded(true); 
     }
   };
 
@@ -193,7 +193,7 @@ export default function EventDetails() {
               type="button"
               className="btn btn-outline flex items-center gap-2"
               onClick={handleAdd}
-              disabled={isAdded} // ✅ Disabled after adding
+              disabled={isAdded} 
             >
               <AddIcon />
               {isAdded ? "Added" : "Add to Timeline"}
