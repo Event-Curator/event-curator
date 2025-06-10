@@ -36,6 +36,32 @@ export const createTimelineEntry = async (
 };
 
 /**
+ * Controller: delete a new timeline entry
+ */
+export const deleteTimelineEntry = async (
+  req: Request<{}, {}, TimelineRequestBody>,
+  res: Response,
+): Promise<void> => {
+  try {
+    const { user_uid, event_id } = req.body;
+    if (!user_uid || !event_id) {
+      res.status(400).json({ error: 'Missing user_uid or event_id' });
+      return;
+    }
+
+    log.info(`Removing timeline entry for user: ${user_uid}, event: ${event_id}`);
+    const entry = await TimelineModel.deleteTimelineEntry(user_uid, event_id);
+
+    res.status(201).json({
+      message: 'Timeline entry removed',
+      data: entry
+    });
+  } catch (error) {
+    log.error('Error inserting timeline entry', error);
+  }
+};
+
+/**
  * Controller: retrieve all events joined by the authenticated user
  */
 export const getEventsForUser = async (
