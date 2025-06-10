@@ -154,17 +154,25 @@ export default function EventFilters() {
         </select>
         {/* Search by radius */}
         <div
-          className="relative w-full flex flex-row"
+          className="relative w-full flex flex-row items-center gap-2"
           hidden={locSearchType === "prefecture"}
         >
-          <label htmlFor="search-radius">Kilometers from me</label>
+          <label htmlFor="search-radius">Km from me</label>
+          <input
+            type="range"
+            min={0}
+            max="30"
+            value={searchRadius}
+            className="range range-primary"
+            onChange={(e) => setSeearchRadius(parseInt(e.target.value))}
+          />
           <input
             id="search-radius"
             type="number"
             inputMode="numeric"
             pattern="[0-9]*"
             placeholder="kilometers"
-            className="input input-bordered w-full pr-8 text-right"
+            className="input input-bordered w-full pr-8 text-right flex-1/6"
             value={searchRadius}
             onChange={(e) => setSeearchRadius(parseInt(e.target.value))}
             style={{
