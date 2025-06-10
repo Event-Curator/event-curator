@@ -8,12 +8,12 @@ export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [prefecture, setPrefecture] = useState("");
+  const [searchRadius, setSeearchRadius] = useState(0);
   const [price, setPrice] = useState("");
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
   const { setEvents } = useContext(EventContext);
   const { latitude, longitude, userRefused } = useGetPosition();
-  console.log(latitude, longitude, userRefused);
 
   const api = import.meta.env.VITE_API;
 
@@ -59,6 +59,7 @@ export default function EventFilters() {
 
   return (
     <aside className="bg-white p-4 rounded shadow-md w-full">
+      {/* Search box */}
       <div className="mb-4">
         <label className="font-bold text-sm text-gray-700 mb-2 block">
           Search
@@ -84,6 +85,7 @@ export default function EventFilters() {
           </button>
         </div>
       </div>
+      {/* Search by category */}
       <div className="flex gap-2 mb-4">
         <select
           className="select select-bordered w-full"
@@ -98,6 +100,7 @@ export default function EventFilters() {
           ))}
         </select>
 
+        {/* Search by price */}
         <div className="relative w-full">
           <input
             type="text"
@@ -119,7 +122,10 @@ export default function EventFilters() {
           </span>
         </div>
       </div>
+
+      {/* Search type */}
       <div className="flex flex-row mb-4">
+        {/* Toggle search type */}
         <label className="label mr-4">
           <input
             type="checkbox"
@@ -132,10 +138,12 @@ export default function EventFilters() {
             ? "Search near me"
             : "Search by prefecture"}
         </label>
+        {/* Search by prefecture */}
         <select
           className="select select-bordered w-full"
           value={prefecture}
           onChange={(e) => setPrefecture(e.target.value)}
+          hidden={locSearchType === "latLong"}
         >
           <option value="">All prefectures</option>
           {prefectures.map((pref) => (
@@ -144,7 +152,28 @@ export default function EventFilters() {
             </option>
           ))}
         </select>
+        {/* Search by radius */}
+        <div
+          className="relative w-full flex flex-row"
+          hidden={locSearchType === "prefecture"}
+        >
+          <label htmlFor="search-radius">Kilometers from me</label>
+          <input
+            id="search-radius"
+            type="number"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="kilometers"
+            className="input input-bordered w-full pr-8 text-right"
+            value={searchRadius}
+            onChange={(e) => setSeearchRadius(parseInt(e.target.value))}
+            style={{
+              MozAppearance: "textfield",
+            }}
+          />
+        </div>
       </div>
+      {/* Search/submit button */}
       <button className="btn btn-primary w-full mb-2" onClick={handleSearch}>
         Find Events
       </button>
