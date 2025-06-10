@@ -124,8 +124,9 @@ export default function EventFilters() {
           <input
             type="checkbox"
             defaultChecked
-            className="toggle"
+            className="toggle border-primary text-primary"
             onChange={toggleSearchLocType}
+            disabled={userRefused}
           />
           {locSearchType === "latLong"
             ? "Search near me"
