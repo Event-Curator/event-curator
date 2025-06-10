@@ -6,25 +6,29 @@ import { Event } from '../models/Event.js';
 import fs from 'node:fs';
 import zlib from 'node-gzip';
 import knex from '../knex.js';
+import { cacheNameEnum} from '../Models/Model.js';
 
+import { Model } from 'firebase-admin/machine-learning';
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
         log.info("scheduled backup starting in: " + config.backupTarget);
-        doBackup();
+        doBackup(cacheNameEnum.EVENTS);
+        doBackup(cacheNameEnum.GEOCODING);
     });
 };
 
 async function backupEventHandler (req, res) {
     let collectionName = req.params.collectionName;
 
-    if (!(collectionName === "events")) {
+    if (!(collectionName === cacheNameEnum.EVENTS 
+        || collectionName === cacheNameEnum.GEOCODING)) {
         res.status(404);
         res.send("requested collection not found");
         return;
     }
 
     log.info(`executing backup for collection: ${collectionName}`);
-    let backupSize = await doBackup();
+    let backupSize = await doBackup(collectionName);
     if (backupSize > 0) {
         res.status(200);
         res.send(`backup finished (${backupSize} records).`);
@@ -36,7 +40,7 @@ async function backupEventHandler (req, res) {
     return
 }
 
-async function doBackup(): Promise<number> {
+async function doBackup(cacheName: string): Promise<number> {
 
     let backupTarget = config.backupTarget.split(':');
 
@@ -45,20 +49,20 @@ async function doBackup(): Promise<number> {
         try {
             let dir = config.backupTarget[1];
             let ts = new Date().getTime();
-            let fileName = `backup.events.${ts}.json.gz`;
-            log.info(`saving events backup in: ${dir}/${fileName}`);
+            let fileName = `backup.${cacheName}.${ts}.json.gz`;
+            log.info(`saving ${cacheName} backup in: ${dir}/${fileName}`);
 
-            let result = await eaCache.events.find({
+            let result = await eaCache[cacheName].find({
                 selector: {
                     $and: [
-                        { name: { $regex: ".*", $options: 'i' } },
+                        { id: { $regex: ".*", $options: 'i' } },
                     ]
                 }
             }).exec();
 
             if (result.length > 0) {
                 fs.writeFileSync(`${dir}/${fileName}`, await zlib.gzip(JSON.stringify(result, null, 2)));
-                log.info(`backup done (${result.length} records)`);
+                log.info(`backup of cache ${cacheName} done (${result.length} records)`);
                 return result.length;
             }
             log.warn(`current dataset in rxdb is empty. no backup has been taken.`);
@@ -68,7 +72,7 @@ async function doBackup(): Promise<number> {
         }
 
     } else if (backupTarget.length === 2 && backupTarget[0] === "sql") {
-        let result = await eaCache.events.find({
+        let result = await eaCache[cacheName].find({
                 selector: {
                     $and: [
                         { name: { $regex: ".*", $options: 'i' } },
@@ -78,12 +82,12 @@ async function doBackup(): Promise<number> {
 
             if (result.length > 0) {                
                 let compressed = await zlib.gzip(JSON.stringify(result, null, 2));
-                log.info(`backup done (${result.length} records)`);
+                log.info(`backup of cache ${cacheName} done (${result.length} records)`);
                 
-                const [id] = await knex(backupTarget[1])
-                .insert({ "content": compressed })
-                .returning(['id']);
-                return id;
+                await knex(backupTarget[1])
+                    .insert({ "content": compressed, "cache_name": cacheName })
+                    .returning(['id']);
+                return result.length;
             }
             log.warn(`current dataset in rxdb is empty. no backup has been taken.`);
 
@@ -98,22 +102,28 @@ async function doBackup(): Promise<number> {
 function restoreEventHandler (req, res) {
     let collectionName = req.params.collectionName;
 
-    if (!(collectionName === "events")) {
+    if (!(collectionName === cacheNameEnum.EVENTS 
+        || collectionName === cacheNameEnum.GEOCODING)) {
         res.status(404);
         res.send("requested collection not found");
         return;
     }
 
     log.warn(`executing restore for collection: ${collectionName}`);
-    restoreEventStream$.next("RESYNC");
+    if (collectionName === cacheNameEnum.EVENTS) {
+        restoreEventStream$.next("RESYNC");
+    } else if (collectionName === cacheNameEnum.GEOCODING) {
+        // FIXME
+        // restoreGeocodingStream$.next("RESYNC");
+    }
 
     res.status(200);
     res.send(`restore for ${collectionName} scheduled. see server logs for status`);
 }
 
-async function doRestore(checkpointOrNull: any, batchSize) {
+async function doEventsRestore(checkpointOrNull: any, batchSize) {
     try {
-        let events: Event[] = await getLatestBackupContent("events");
+        let events: Event[] = await getLatestBackupContent(cacheNameEnum.EVENTS);
 
         if (events.length === 0) {
             log.error(`no backup or empty backup. restore process won't do anything`);
@@ -133,9 +143,12 @@ async function doRestore(checkpointOrNull: any, batchSize) {
     return [];
 }
 
-async function getLatestBackupContent(backupType: string): Promise<Array<Event>> {
-    if (backupType !== "events") return [];
-
+async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> {
+    if (!(cacheName === cacheNameEnum.EVENTS 
+        || cacheName === cacheNameEnum.GEOCODING)) {
+            log.error(`unsupported cache name: ${cacheName}`);
+            return [];
+    }
     let backupTarget = config.backupTarget.split(':');
 
     // local folder kind of backup/restore
@@ -179,8 +192,14 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
     } else if (backupTarget.length === 2 && backupTarget[0] === "sql") {
         let compressed = await knex(backupTarget[1])
             .select('content')
+            .where('cache_name','=','cacheName')
             .orderBy('created_at','desc')
             .first();
+
+        if (!compressed) {
+            log.error(`unable to restore ${cacheName}. no record found in database`)
+            return [];
+        }
 
         const decompressed = await zlib.ungzip(compressed.content);
         let data = JSON.parse(decompressed.toString());
@@ -196,4 +215,4 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
     return [];
 }
 
-export { scheduleBackup, backupEventHandler, restoreEventHandler, doRestore};
+export { scheduleBackup, backupEventHandler, restoreEventHandler, doEventsRestore};

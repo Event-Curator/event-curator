@@ -6,11 +6,13 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
-import { doRestore } from '../utils/persistence.js';
+import { doEventsRestore } from '../utils/persistence.js';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
+addRxPlugin(RxDBUpdatePlugin);
 
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
@@ -139,7 +141,7 @@ async function initCache() {
         pull: {
             stream$: restoreEventStream$.asObservable(),
             batchSize: 10000,
-            handler: doRestore as any,
+            handler: doEventsRestore as any,
         }
     });
 
