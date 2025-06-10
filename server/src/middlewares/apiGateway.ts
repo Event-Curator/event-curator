@@ -172,14 +172,4 @@ async function initCache() {
 
 }
 
-// will scan the cache and send the list of existing value with hit count
-async function getCacheContent(key: string) {
-
-    if (key === 'cities') {
-
-    } else if (key === 'categories') {
-        
-    }
-}
-
 export { initCache, eaCache, restoreEventStream$ }
