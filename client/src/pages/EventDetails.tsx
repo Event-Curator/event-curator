@@ -5,7 +5,7 @@ import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
 import EventContext from "../context/EventContext";
-
+import { auth } from "../firebase"; 
 
 import musicImg from "../assets/music.jpg";
 import businessImg from "../assets/business.jpg";
@@ -28,7 +28,6 @@ import autoImg from "../assets/auto.jpg";
 import hobbiesImg from "../assets/hobbies.jpg";
 import schoolImg from "../assets/school.jpg";
 import otherImg from "../assets/other.jpg";
-
 
 const categoryImages: Record<string, string> = {
   "Music": musicImg,
@@ -83,6 +82,20 @@ const AddIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// DeleteIcon component
+const DeleteIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={16}
+    height={16}
+    fill="#e53e3e"
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+  </svg>
+);
+
 export default function EventDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -95,10 +108,9 @@ export default function EventDetails() {
 
   useEffect(() => {
     if (!id) return;
-
     (async () => {
       try {
-        const res = await fetch(`${api}/${id}`);
+        const res = await fetch(`${api}/events/${id}`);
         if (!res.ok) throw new Error("Event not found");
         const data = await res.json();
         setEvent(Array.isArray(data) && data.length ? data[0] : null);
@@ -110,6 +122,76 @@ export default function EventDetails() {
     })();
   }, [id, api]);
 
+  useEffect(() => {
+    if (!event) return;
+    const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
+    setIsAdded(alreadyLiked);
+  }, [event, likedEvents]);
+
+  const handleAdd = async () => {
+    if (!event) return;
+    const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
+    if (alreadyLiked) return;
+
+    // Make sure user is logged in
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please login to add to timeline.");
+      return;
+    }
+
+    try {
+      // POST to backend
+      const api = import.meta.env.VITE_API;
+      await fetch(`${api}/events/users/timeline`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          user_uid: user.uid,
+          event_id: event.externalId,
+        }),
+      });
+
+      setLikedEvents((prev) => [...prev, event]);
+      setIsAdded(true);
+    } catch (error) {
+      alert("Could not add to timeline.");
+      console.error(error);
+    }
+  };
+
+  // Delete handler
+  const handleDelete = async () => {
+    if (!event) return;
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please login to remove from timeline.");
+      return;
+    }
+    try {
+      const api = import.meta.env.VITE_API;
+      await fetch(`${api}/events/users/timeline`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          user_uid: user.uid,
+          event_id: event.externalId,
+        }),
+      });
+      setLikedEvents((prev) => prev.filter((e) => e.externalId !== event.externalId));
+      setIsAdded(false);
+    } catch (error) {
+      alert("Could not remove from timeline.");
+      console.error(error);
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -117,9 +199,7 @@ export default function EventDetails() {
   if (!event) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh]">
-        <h1 className="text-3xl font-bold text-red-500 mb-4">
-          Event Not Found
-        </h1>
+        <h1 className="text-3xl font-bold text-red-500 mb-4">Event Not Found</h1>
         <button className="btn btn-primary" onClick={() => navigate("/")}>
           Back to Home
         </button>
@@ -139,16 +219,7 @@ export default function EventDetails() {
       month: "long",
     }) || "";
 
-  const imageSrc = categoryImages[event.category] || otherImg;
-
-  const handleAdd = () => {
-    if (!event) return;
-    const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
-    if (!alreadyLiked) {
-      setLikedEvents((prev) => [...prev, event]);
-      setIsAdded(true); 
-    }
-  };
+  const imageSrc = categoryImages[event.category] || categoryImages["Other"];
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
@@ -160,15 +231,11 @@ export default function EventDetails() {
           draggable={false}
         />
       </div>
-
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
-        {/* Left Content */}
         <section>
           <h1 className="text-4xl font-bold text-blue-700 mb-4">
             {event.name || "-"}
           </h1>
-
           <div className="space-y-2 text-gray-700 text-sm mb-6">
             <p>
               <b>Category:</b> {event.category || "-"}
@@ -182,44 +249,59 @@ export default function EventDetails() {
               {endDate ? endDate.toLocaleDateString() : "-"}
             </p>
             <p>
+              <b>Time:&nbsp;</b>
+              {startDate
+                ? startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "-"}
+              {" — "}
+              {endDate
+                ? endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                : "-"}
+            </p>
+            <p>
               <b>Price:</b> <FormattedPrice price={event.budgetMin} />
               {event.budgetMax > 0 && (
                 <span> — {<FormattedPrice price={event.budgetMax} />}</span>
               )}
             </p>
-
-            {/* Add to Timeline Button */}
-            <button
-              type="button"
-              className="btn btn-outline flex items-center gap-2"
-              onClick={handleAdd}
-              disabled={isAdded} 
-            >
-              <AddIcon />
-              {isAdded ? "Added" : "Add to Timeline"}
-            </button>
-
-            {/* Link to Source Button */}
-            {event.originUrl && (
-              <a
-                href={event.originUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
                 className="btn btn-outline flex items-center gap-2"
+                onClick={handleAdd}
+                disabled={isAdded}
               >
-                <LinkIcon />
-                Link to Source
-              </a>
-            )}
+                <AddIcon />
+                {isAdded ? "Added" : "Add to Timeline"}
+              </button>
+              {isAdded && (
+                <button
+                  type="button"
+                  className="btn btn-outline flex items-center gap-2"
+                  onClick={handleDelete}
+                >
+                  <DeleteIcon />
+                  Remove
+                </button>
+              )}
+              {event.originUrl && (
+                <a
+                  href={event.originUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline flex items-center gap-2"
+                >
+                  <LinkIcon />
+                  Link to Source
+                </a>
+              )}
+            </div>
           </div>
-
           <div className="bg-white p-6 rounded-xl shadow prose max-w-none">
             <h2 className="text-blue-700 font-bold mb-2">Event Description</h2>
             <p>{event.description || "No description available."}</p>
           </div>
         </section>
-
-        {/* Right Sidebar */}
         <aside className="space-y-6">
           <div className="bg-white p-4 rounded-xl shadow">
             <h2 className="text-lg font-bold text-blue-700 mb-3">Location</h2>
@@ -227,12 +309,8 @@ export default function EventDetails() {
               [Map integration coming soon]
             </div>
           </div>
-
-          {/* Calendar */}
           <div className="bg-white p-4 rounded-xl shadow">
-            <h3 className="text-lg font-bold text-blue-700 mb-1">
-              {monthYear}
-            </h3>
+            <h3 className="text-lg font-bold text-blue-700 mb-1">{monthYear}</h3>
             <div className="grid grid-cols-7 gap-1 text-center text-xs w-full">
               {["M", "T1", "W", "T2", "F", "S1", "S2"].map((d, idx) => (
                 <div key={d + idx} className="font-bold text-gray-500">
@@ -244,7 +322,6 @@ export default function EventDetails() {
                 const isStartDay = day === eventStartDay;
                 const isEndDay = day === eventEndDay;
                 let baseClasses = "rounded py-1 border cursor-default";
-
                 if (isStartDay) {
                   baseClasses += " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
                 } else if (isEndDay) {
@@ -252,7 +329,6 @@ export default function EventDetails() {
                 } else {
                   baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
                 }
-
                 return (
                   <div
                     key={day}

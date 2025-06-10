@@ -89,8 +89,9 @@ export default function Navbar() {
 
   // Avatar logic: use Google avatar if logged in with Google, otherwise default
   let avatarUrl = defaultAvatar;
+  let isGoogleUser = false;
   if (user) {
-    const isGoogleUser = user.providerData.some(
+    isGoogleUser = user.providerData.some(
       (provider) => provider.providerId === "google.com"
     );
     if (isGoogleUser && user.photoURL) {
@@ -168,9 +169,12 @@ export default function Navbar() {
                   </div>
                   <span className="font-semibold text-sm">{user.displayName || user.email}</span>
                 </div>
-                <li>
-                  <button onClick={() => navigate("/profile")}>Profile Settings</button>
-                </li>
+                {/* Only show Profile Settings for local users */}
+                {!isGoogleUser && (
+                  <li>
+                    <button onClick={() => navigate("/profile")}>Profile Settings</button>
+                  </li>
+                )}
                 <li>
                   <Link to="/timeline">My Event Timeline</Link>
                 </li>
@@ -218,11 +222,14 @@ export default function Navbar() {
                   </div>
                   <span className="text-xs">{user.displayName || user.email}</span>
                 </li>
-                <li>
-                  <button className="btn btn-outline btn-sm mt-2 w-full" onClick={() => navigate("/profile")}>
-                    Profile Settings
-                  </button>
-                </li>
+                {/* Only show Profile Settings for local users */}
+                {!isGoogleUser && (
+                  <li>
+                    <button className="btn btn-outline btn-sm mt-2 w-full" onClick={() => navigate("/profile")}>
+                      Profile Settings
+                    </button>
+                  </li>
+                )}
                 <li>
                   <Link to="/timeline" className="btn btn-outline btn-sm w-full mt-2">
                     My Event Timeline

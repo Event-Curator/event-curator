@@ -15,7 +15,7 @@ export default function EventFilters() {
   async function getEvents() {
     try {
       const response = await fetch(
-        `${api}?name=${search}&category=${category}&budgetMax=${price}`
+        `${api}/events?name=${search}&category=${category}&budgetMax=${price}`
       );
       if (!response.ok) {
         console.error(response);

@@ -2,11 +2,11 @@ import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
 import EventContext from "../context/EventContext";
 import type { FullEventType } from "../types";
+import { auth } from "../firebase";
 
 // Responsive hook
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < breakpoint);
-
   useEffect(() => {
     function handleResize() {
       setIsMobile(window.innerWidth < breakpoint);
@@ -14,7 +14,6 @@ function useIsMobile(breakpoint = 768) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [breakpoint]);
-
   return isMobile;
 }
 
@@ -44,6 +43,35 @@ export default function EventTimeline() {
   const [weekOffset, setWeekOffset] = useState(0);
   const navigate = useNavigate();
   const { likedEvents, setLikedEvents } = useContext(EventContext);
+  const [user, setUser] = useState(() => auth.currentUser);
+
+  // Listen for auth state changes and update user state
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(setUser);
+    return unsubscribe;
+  }, []);
+
+  // Sync timeline from backend when user is available
+  useEffect(() => {
+    if (!user) return;
+    const fetchTimelineEvents = async () => {
+      try {
+        const api = import.meta.env.VITE_API;
+        const token = await user.getIdToken();
+        const res = await fetch(`${api}/events/users/timeline?user_uid=${user.uid}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to fetch timeline events");
+        const events = await res.json();
+        setLikedEvents(events.fullEvents); // events should be an array of FullEventType
+      } catch (err) {
+        console.error("Error fetching timeline events:", err);
+      }
+    };
+    fetchTimelineEvents();
+  }, [user, setLikedEvents]);
 
   const today = new Date();
   const baseDate = new Date(today);
@@ -64,10 +92,11 @@ export default function EventTimeline() {
     }
   });
 
-  // Handler for removing liked events
+  // Handler for removing liked events (local only; add backend call if needed)
   const handleRemove = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     setLikedEvents((prev) => prev.filter((event) => event.externalId !== id));
+    // Optionally: call backend to remove event
   };
 
   const isMobile = useIsMobile(640);
@@ -77,15 +106,20 @@ export default function EventTimeline() {
     (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
   );
 
-  // Find last index where event is today or in the past (for blue line)
+  // Set "now" to midnight for date comparisons
   const now = new Date();
-  now.setHours(0, 0, 0, 0); // Set to midnight
-  let lastBlueIdx = -1;
-  sortedEvents.forEach((ev, idx) => {
-    const evDate = new Date(ev.datetimeFrom);
-    evDate.setHours(0, 0, 0, 0);
-    if (evDate.getTime() <= now.getTime()) lastBlueIdx = idx;
-  });
+  now.setHours(0, 0, 0, 0);
+
+  // Helper to format time range
+  function getTimeRange(ev: FullEventType) {
+    const from = ev.datetimeFrom
+      ? new Date(ev.datetimeFrom).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "-";
+    const to = ev.datetimeTo
+      ? new Date(ev.datetimeTo).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : "-";
+    return `${from} — ${to}`;
+  }
 
   return (
     <div className="min-h-screen w-full bg-blue-50">
@@ -178,6 +212,10 @@ export default function EventTimeline() {
                                 <div className="text-base text-blue-600 font-bold">
                                   {new Date(ev.datetimeFrom).toLocaleDateString()}
                                 </div>
+                                <div className="text-base">
+                                  <b>Time:&nbsp;</b>
+                                  {getTimeRange(ev)}
+                                </div>
                                 <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
                                 <button
                                   className="absolute bottom-3 right-3 btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
@@ -209,11 +247,10 @@ export default function EventTimeline() {
             {sortedEvents.map((ev, idx, arr) => {
               const eventDate = new Date(ev.datetimeFrom);
               eventDate.setHours(0, 0, 0, 0);
-              const isToday =
-                eventDate.getTime() === now.getTime();
-              // line color logic
-              let lineColor = "bg-black";
-              if (idx <= lastBlueIdx) lineColor = "bg-primary";
+              const isToday = eventDate.getTime() === now.getTime();
+              const isPastOrToday = eventDate.getTime() <= now.getTime();
+              const lineColor = isPastOrToday ? "bg-primary" : "bg-black";
+              const iconColor = isPastOrToday ? "rgb(37 99 235)" : "#222";
 
               return (
                 <li key={ev.externalId}>
@@ -228,6 +265,10 @@ export default function EventTimeline() {
                     <div className="text-base text-gray-700">{ev.placeFreeform}</div>
                     <div className="text-base text-blue-600 font-bold">
                       {new Date(ev.datetimeFrom).toLocaleDateString()}
+                    </div>
+                    <div className="text-base">
+                      <b>Time:&nbsp;</b>
+                      {getTimeRange(ev)}
                     </div>
                     <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
                     {/* Delete button */}
@@ -247,7 +288,7 @@ export default function EventTimeline() {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 20 20"
-                      fill={idx <= lastBlueIdx ? "rgb(37 99 235)" : "#222"}
+                      fill={iconColor}
                       className="h-6 w-6"
                     >
                       <path
