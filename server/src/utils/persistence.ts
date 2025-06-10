@@ -56,14 +56,12 @@ async function doBackup(): Promise<number> {
                 }
             }).exec();
 
-            if (result.length === 0) {
-                log.warn(`current dataset in rxdb is empty. terminating backup process`);
+            if (result.length > 0) {
+                fs.writeFileSync(`${dir}/${fileName}`, await zlib.gzip(JSON.stringify(result, null, 2)));
+                log.info(`backup done (${result.length} records)`);
+                return result.length;
             }
-
-            fs.writeFileSync(`${dir}/${fileName}`, await zlib.gzip(JSON.stringify(result, null, 2)));
-            log.info(`backup done (${result.length} records)`);
-
-            return result.length;
+            log.warn(`current dataset in rxdb is empty. no backup has been taken.`);
 
         } catch (e) {
             log.error(`error while taking backup: ${e}`);
@@ -78,22 +76,21 @@ async function doBackup(): Promise<number> {
                 }
             }).exec();
 
-            if (result.length === 0) {
-                log.warn(`current dataset in rxdb is empty. terminating backup process`);
-            }
-
-            let compressed = await zlib.gzip(JSON.stringify(result, null, 2));
-            log.info(`backup done (${result.length} records)`);
-        
-            const [id] = await knex(backupTarget[1])
+            if (result.length > 0) {                
+                let compressed = await zlib.gzip(JSON.stringify(result, null, 2));
+                log.info(`backup done (${result.length} records)`);
+                
+                const [id] = await knex(backupTarget[1])
                 .insert({ "content": compressed })
                 .returning(['id']);
-        return id;
+                return id;
+            }
+            log.warn(`current dataset in rxdb is empty. no backup has been taken.`);
 
     } else {
         log.error("backupSrc must be sql:{tablename} or file:{folderpath}");
     }
-        
+
     return 0;
 }
 
