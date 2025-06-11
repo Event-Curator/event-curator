@@ -35,7 +35,7 @@ export default function EventDetails() {
 
     (async () => {
       try {
-        const res = await fetch(`${api}/${id}`);
+        const res = await fetch(`${api}/events/${id}`);
         if (!res.ok) throw new Error("Event not found");
         const data = await res.json();
         setEvent(Array.isArray(data) && data.length ? data[0] : null);
