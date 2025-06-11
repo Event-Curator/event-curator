@@ -1,10 +1,14 @@
-import { useState, useContext } from "react";
-import { eventCategories, prefectures } from "./constants";
+import { useState, useContext, useEffect } from "react";
+import { prefectures } from "./constants";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
-import type { LocationSearchType } from "../types";
+import type { LocationSearchType, CategoryMetaData } from "../types";
 
 export default function EventFilters() {
+  const [eventCategories, setEventCategories] = useState<CategoryMetaData[]>(
+    []
+  );
+
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [prefecture, setPrefecture] = useState("");
@@ -12,15 +16,38 @@ export default function EventFilters() {
   const [price, setPrice] = useState("");
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
+  const [error, setError] = useState(false);
   const { setEvents } = useContext(EventContext);
   const { latitude, longitude, userRefused } = useGetPosition();
 
   const api = import.meta.env.VITE_API;
 
+  useEffect(() => {
+    async function getEventCategories() {
+      try {
+        const response = await fetch(`${api}/meta?key=category`);
+        const data = await response.json();
+        if (!response.ok) {
+          console.error(response);
+          setError(true);
+        } else {
+          console.log(data);
+          // const categoryLabels = data.map((datum) => datum.label);
+          // setEventCategories(categoryLabels);
+          setEventCategories(data);
+        }
+      } catch (error) {
+        setError(true);
+        console.error(error);
+      }
+    }
+    getEventCategories();
+  }, [api, search, category, price, searchRadius]);
+
   async function getEvents() {
     try {
       const response = await fetch(
-        `${api}?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`
+        `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`
       );
       if (!response.ok) {
         console.error(response);
@@ -31,6 +58,7 @@ export default function EventFilters() {
       console.log(data);
     } catch (error) {
       console.error(error);
+      setError(true);
     }
   }
 
@@ -57,6 +85,14 @@ export default function EventFilters() {
       setLocSearchType("latLong");
     }
   };
+
+  if (error) {
+    return (
+      <h1 className="text-2xl text-red-500">
+        We're sorry, something went wrong. Please try again later.
+      </h1>
+    );
+  }
 
   return (
     <aside className="bg-white p-4 rounded shadow-md w-full">
@@ -95,8 +131,8 @@ export default function EventFilters() {
         >
           <option value="">Categories</option>
           {eventCategories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
+            <option key={cat.name} value={cat.name}>
+              {cat.label}
             </option>
           ))}
         </select>
