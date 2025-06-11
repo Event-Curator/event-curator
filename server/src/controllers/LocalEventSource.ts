@@ -1,7 +1,7 @@
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
 import * as pe from '../models/Event.js'
-import dummyData from '../../data/dummy.js'
+// import dummyData from '../../../backups/dummy.js'
 
 class LocalEventSource extends DefaultEventSource {
   id = "local";
@@ -25,7 +25,7 @@ class LocalEventSource extends DefaultEventSource {
     // anEvent.description = "this is a description";
     // anEvent.originUrl = "http://blah";
 
-    this.events = dummyData;
+    this.events = []; //dummyData;
     // this.events.push(anEvent);
 
     // console.log(this.events.length);
