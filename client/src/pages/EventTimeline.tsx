@@ -92,11 +92,32 @@ export default function EventTimeline() {
     }
   });
 
-  // Handler for removing liked events (local only; add backend call if needed)
-  const handleRemove = (e: React.MouseEvent, id: string) => {
+  // Handler for removing liked events (calls backend)
+  const handleRemove = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setLikedEvents((prev) => prev.filter((event) => event.externalId !== id));
-    // Optionally: call backend to remove event
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please login to remove from timeline.");
+      return;
+    }
+    try {
+      const api = import.meta.env.VITE_API;
+      await fetch(`${api}/events/users/timeline`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          user_uid: user.uid,
+          event_id: id,
+        }),
+      });
+      setLikedEvents((prev) => prev.filter((event) => event.externalId !== id));
+    } catch (error) {
+      alert("Could not remove from timeline.");
+      console.error(error);
+    }
   };
 
   const isMobile = useIsMobile(640);
