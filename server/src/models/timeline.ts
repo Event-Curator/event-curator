@@ -29,3 +29,18 @@ export async function fetchEventsForUser(
     .select('user_events.event_external_id')
     .where('user_events.user_uid', userUid);
 }
+/**
+ * Deletes a timeline entry for a specific user and event.
+ */
+export async function deleteTimelineEntry(
+  userUid: string,
+  eventExternalId: string
+): Promise<number> {
+  const deletedCount = await knex('user_events')
+    .where({
+      user_uid: userUid,
+      event_external_id: eventExternalId
+    })
+    .del();
+  return deletedCount;
+}

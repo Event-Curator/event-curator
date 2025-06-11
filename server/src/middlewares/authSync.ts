@@ -7,10 +7,11 @@ import type { ServiceAccount } from 'firebase-admin';
 import serviceAccountRaw from '../../../serviceAccountKey.json' with { type: 'json' };
 
 // Initialize Firebase Admin SDK
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
-});
-
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccountRaw as ServiceAccount),
+  });
+}
 const auth = admin.auth();
 
 /**
