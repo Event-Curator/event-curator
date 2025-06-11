@@ -182,6 +182,8 @@ async function getLatestBackupContent(backupType: string): Promise<Array<Event>>
             .orderBy('created_at','desc')
             .first();
 
+        if (compressed === undefined) return [];
+
         const decompressed = await zlib.ungzip(compressed.content);
         let data = JSON.parse(decompressed.toString());
 
