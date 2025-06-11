@@ -137,4 +137,47 @@ also, at node startup, the newest backup is took and reloaded inside the engine 
 note: all details are sent to node console.
 
 
+## meta information
 
+there is one endpoint to get the content distribution with different focus.
+like how many hits there is in the dataset for a given city, or category
+
+the endpoint is ```/api/meta?key=${searchTerm}```
+
+search term can be "category", or "placeFreeform", or any other field that is available in the search endpoint.
+
+the response will looks like
+```
+[
+    {
+        "name": "Sports & Fitness",
+        "count": 174,
+        "label": "Sports & Fitness (174)"
+    },
+    {
+        "name": "Other",
+        "count": 331,
+        "label": "Other (331)"
+    },
+    {
+        "name": "Performing & Visual Arts",
+        "count": 9,
+        "label": "Performing & Visual Arts (9)"
+    },
+    {
+        "name": "Food & Drink",
+        "count": 13,
+        "label": "Food & Drink (13)"
+    },
+    {
+        "name": "Music",
+        "count": 13,
+        "label": "Music (13)"
+    },
+    {
+        "name": "Film, Media & Entertainment",
+        "count": 3,
+        "label": "Film, Media & Entertainment (3)"
+    }
+]
+```
