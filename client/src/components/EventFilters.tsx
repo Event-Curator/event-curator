@@ -8,11 +8,10 @@ export default function EventFilters() {
   const [eventCategories, setEventCategories] = useState<CategoryMetaData[]>(
     []
   );
-
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [prefecture, setPrefecture] = useState("");
-  const [searchRadius, setSeearchRadius] = useState(0);
+  const [searchRadius, setSearchRadius] = useState(0);
   const [price, setPrice] = useState("");
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
@@ -31,14 +30,11 @@ export default function EventFilters() {
           console.error(response);
           setError(true);
         } else {
-          console.log(data);
-          // const categoryLabels = data.map((datum) => datum.label);
-          // setEventCategories(categoryLabels);
           setEventCategories(data);
         }
       } catch (error) {
-        setError(true);
         console.error(error);
+        setError(true);
       }
     }
     getEventCategories();
@@ -51,11 +47,10 @@ export default function EventFilters() {
       );
       if (!response.ok) {
         console.error(response);
-        return;
+        setError(true);
       }
       const data = await response.json();
       setEvents(data);
-      console.log(data);
     } catch (error) {
       console.error(error);
       setError(true);
@@ -201,7 +196,7 @@ export default function EventFilters() {
             max="30"
             value={searchRadius}
             className="range range-primary"
-            onChange={(e) => setSeearchRadius(parseInt(e.target.value))}
+            onChange={(e) => setSearchRadius(parseInt(e.target.value))}
           />
           <input
             id="search-radius"
@@ -211,7 +206,7 @@ export default function EventFilters() {
             placeholder="kilometers"
             className="input input-bordered w-full pr-8 text-right flex-1/6"
             value={searchRadius}
-            onChange={(e) => setSeearchRadius(parseInt(e.target.value))}
+            onChange={(e) => setSearchRadius(parseInt(e.target.value))}
             style={{
               MozAppearance: "textfield",
             }}
