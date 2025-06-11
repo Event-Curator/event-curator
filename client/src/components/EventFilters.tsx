@@ -20,7 +20,7 @@ export default function EventFilters() {
   async function getEvents() {
     try {
       const response = await fetch(
-        `${api}?name=${search}&category=${category}&budgetMax=${price}`
+        `${api}?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`
       );
       if (!response.ok) {
         console.error(response);
@@ -28,6 +28,7 @@ export default function EventFilters() {
       }
       const data = await response.json();
       setEvents(data);
+      console.log(data);
     } catch (error) {
       console.error(error);
     }
