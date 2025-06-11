@@ -49,4 +49,10 @@ export interface GeolocationData {
   userRefused: boolean;
 }
 
+export interface CategoryMetaData {
+  name: string;
+  count: number;
+  label: string;
+}
+
 export type LocationSearchType = "latLong" | "prefecture";
