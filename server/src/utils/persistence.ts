@@ -9,6 +9,7 @@ import knex from '../knex.js';
 import { cacheNameEnum} from '../Models/Model.js';
 
 import { Model } from 'firebase-admin/machine-learning';
+import { getDocumentById } from '../controllers/CacheController.js';
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
         log.info("scheduled backup starting in: " + config.backupTarget);
@@ -79,6 +80,14 @@ async function doBackup(cacheName: string): Promise<number> {
                     ]
                 }
             }).exec();
+
+            for (let r of result) {
+                r.attachments = (await getDocumentById(r.externalId)).allAttachments();
+            }
+
+            for (let r of result) {
+                console.log(r.attachments);
+            }
 
             if (result.length > 0) {                
                 let compressed = await zlib.gzip(JSON.stringify(result, null, 2));
@@ -205,7 +214,7 @@ async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> 
             const decompressed = await zlib.ungzip(compressed);
             let data = JSON.parse(decompressed.toString());
 
-            log.warn(`found  ${data.length} records in backup`);
+            log.warn(`found ${data.length} records in ${cacheName} backup`);
             return data;
 
         } catch (e) {
@@ -227,7 +236,7 @@ async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> 
         const decompressed = await zlib.ungzip(compressed.content);
         let data = JSON.parse(decompressed.toString());
 
-        log.warn(`found  ${data.length} records in backup`);
+        log.warn(`found ${data.length} records in ${cacheName} backup`);
         return data;
 
 

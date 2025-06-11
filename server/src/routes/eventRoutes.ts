@@ -2,6 +2,7 @@ import { Router } from "express";
 import { scrapEvent, searchEvent, getEventById, getSearchHits } from "../controllers/eventController.js";
 import apicache from "apicache";
 import { restoreEventHandler, backupEventHandler } from "../utils/persistence.js";
+import { getEventAttachment } from "../controllers/MediaController.js";
 
 const router = Router();
 let cache = apicache.middleware;
@@ -9,6 +10,7 @@ let cache = apicache.middleware;
 // router.get('/event', cache('5 minutes'), searchEvent);
 router.get('/events', searchEvent);
 router.get('/events/:eventId', getEventById);
+router.get('/events/:eventId/attachment/:attachmentId', getEventAttachment);
 router.get('/meta', getSearchHits);
 
 router.put('/cache/backup/:collectionName', backupEventHandler )

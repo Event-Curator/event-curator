@@ -8,11 +8,13 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
 import { doEventsRestore, doGeocodingRestore } from '../utils/persistence.js';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
+import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBUpdatePlugin);
+addRxPlugin(RxDBAttachmentsPlugin);
 
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 const restoreGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
@@ -40,7 +42,7 @@ async function initCache() {
         return !isNaN(Date.parse(dateTimeString));
     });
 
-    let myCollection = await eaCache.addCollections({
+    let eventCache = await eaCache.addCollections({
         events: {
             schema: {
                 version: 0,
@@ -129,13 +131,16 @@ async function initCache() {
                         type: 'string'
                     },
                 },
+                attachments: {
+                    encrypted: false
+                },
                 required: ['id', 'externalId', 'name']
             }
         }
     });
     
     const eventsReplicationState = replicateRxCollection({
-        collection: myCollection.events,
+        collection: eventCache.events,
         replicationIdentifier: 'events-replication',
         autoStart: true,
         retryTime: 10,
@@ -148,7 +153,7 @@ async function initCache() {
 
     // from human-readable address to map coordinate
     // = MD5(placeFreeform.toLowercase())
-    await eaCache.addCollections({
+    let geocodingCache = await eaCache.addCollections({
         geocoding: {
             schema: {
                 version: 0,
@@ -174,7 +179,7 @@ async function initCache() {
     });
 
     const geocodingReplicationState = replicateRxCollection({
-        collection: myCollection.geocoding,
+        collection: geocodingCache.geocoding,
         replicationIdentifier: 'geocoding-replication',
         autoStart: true,
         retryTime: 10,

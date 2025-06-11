@@ -71,8 +71,19 @@ const scrapEvent = async function (req: Request, res: Response) {
                 }
             });
 
+            for (let key in event.attachments) {
+                let blob = event.attachments[key];
+                log.debug(`blob attached: ${key}  ${blob.type} (${blob.size} bytes)`);
+                await cachedEvent.putAttachment({
+                    id: key,
+                    data: blob,
+                    type: blob.type
+                });
+            }
+
         } else {
-            await geocodeAddress(sourceId, event);   
+            await geocodeAddress(sourceId, event);
+            console.log(event);
             await eaCache.events.insert({
                 // FIXME: shoud be something, not 0
                 id: event.externalId,
@@ -105,6 +116,17 @@ const scrapEvent = async function (req: Request, res: Response) {
                 size: event.size,
                 sizeFreeform: event.sizeFreeform,
             });
+            
+            let cachedEvent = await getEvent(event.externalId);
+            for (let key in event.attachments) {
+                let blob = event.attachments[key];
+                log.debug(`blob attached: ${key} ${blob.type} (${blob.size} bytes)`);
+                await cachedEvent.putAttachment({
+                    id: key,
+                    data: blob,
+                    type: blob.type
+                });
+            }
         }
     }
 

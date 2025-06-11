@@ -26,7 +26,7 @@ class JapancheapoEventSource extends DefaultEventSource {
       log.info(`${this.id}: scrapping started`);
 
       // FIXME: get back to 18
-      for (let i = 1; i<18; i++) {
+      for (let i = 1; i<2; i++) {
         log.info(`${this.id}: scrapping ongoing. page ${i}`);
 
         const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
@@ -34,7 +34,7 @@ class JapancheapoEventSource extends DefaultEventSource {
 
         const $ = cheerio.load(html);
         
-        $(".article.card--event").each((index, element) => {
+        for (let element of $(".article.card--event")) {
 
           let val = $(element).find('.card__cta').find('a').attr('href') || "";
           let anEvent = new Event(val);
@@ -47,6 +47,11 @@ class JapancheapoEventSource extends DefaultEventSource {
           val = $(element).find(".cheapo-archive-thumb").attr("src") || "";
 
           anEvent.teaserMedia = val.trim();
+
+          let _r = await fetch(anEvent.teaserMedia);
+          let blob = await _r.blob();
+          anEvent.attachments['TEASERMEDIA'] = blob;
+          log.debug(`blob attached: ${anEvent.externalId} ${blob.type} (${blob.size} bytes)`);
 
           val = $(element).find(".card__content").find(".card__title").text() || "";
           anEvent.name = val.trim();
@@ -207,7 +212,7 @@ class JapancheapoEventSource extends DefaultEventSource {
           anEvent.placeFreeform = val.trim();
 
           events.push(anEvent);
-        });
+        };
 
       }
       log.info(`${this.id}: scrapping done. ${events.length} found.`);

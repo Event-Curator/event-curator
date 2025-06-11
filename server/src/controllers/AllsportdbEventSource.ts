@@ -66,6 +66,20 @@ class AllsportdbEventSource extends DefaultEventSource {
             anEvent.category = EventCategoryEnum.SPORT;
             anEvent.categoryFreeform = event.sport;
 
+            // some events span multiple country and/or cities
+            // we get the country only if there is only one, same for city
+            if (event.location.length === 1) {
+              let country = event.location[0].name.toLowerCase();
+
+              if (event.location[0].locations.length === 1) {
+                let city = event.location[0].locations[0].name.toLowerCase();
+                anEvent.placeFreeform = `${city}, ${country}`;
+
+              } else {
+                anEvent.placeFreeform = country
+              }
+            }
+
             // FIXME
             // wikiUrl
             // twitterUrl
