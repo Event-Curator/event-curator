@@ -45,6 +45,12 @@ Yuki wants to join more events in Japan and share them with her friends, but she
 
 ---
 
+## 📣 Contributing
+
+PRs welcome! See [issues](https://github.com/your-team/event-curator/issues) for planned features and bugs.
+
+---
+
 ## 📚 Event Category Images Credits
 
 This project uses free images provided by Unsplash. Below are the image attributions:
@@ -129,7 +135,6 @@ This project uses free images provided by Unsplash. Below are the image attribut
 
 - Photo by [Chris Linnett](https://unsplash.com/@chrislinnett) on [Unsplash](https://unsplash.com/photos/5Mfgd-I4n0Q)
 
----
 
 ## 📜 License
 

@@ -178,11 +178,7 @@ export default function AuthModal({
 
         {/* "Forgot password" for login */}
         {mode === "login" && (
-          <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
-            <label className="flex items-center gap-1">
-              <input type="checkbox" className="checkbox checkbox-xs" />
-              Remember me
-            </label>
+          <div className="flex items-center justify-end mt-2 text-xs text-gray-400">
             <a href="#" className="text-blue-600 hover:underline">Forgot password?</a>
           </div>
         )}
