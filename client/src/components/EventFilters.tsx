@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { prefectures } from "./constants";
+import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
 import type { LocationSearchType, CategoryMetaData } from "../types";
@@ -10,15 +11,17 @@ export default function EventFilters() {
   );
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [prefecture, setPrefecture] = useState("");
   const [searchRadius, setSearchRadius] = useState(0);
-  const [price, setPrice] = useState("");
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
-  const [error, setError] = useState(false);
-  const { setEvents } = useContext(EventContext);
   const { latitude, longitude, userRefused } = useGetPosition();
+  const [error, setError] = useState(false);
 
+  const { setEvents } = useContext(EventContext);
   const api = import.meta.env.VITE_API;
 
   useEffect(() => {
@@ -109,12 +112,6 @@ export default function EventFilters() {
               }
             }}
           />
-          <button
-            className="btn btn-primary rounded-l-none"
-            onClick={handleSearch}
-          >
-            🔍
-          </button>
         </div>
       </div>
       {/* Search by category */}
