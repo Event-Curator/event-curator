@@ -266,7 +266,6 @@ const searchEvent = async function (req: Request, res: Response) {
     for (let foundEvent of foundEvents) {
         foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
         if (
-            placeDistanceRange === 0 ||
             (placeDistanceRange > 0 && foundEvent.placeDistance <= placeDistanceRange)) {
             events.push(foundEvent);
         }
