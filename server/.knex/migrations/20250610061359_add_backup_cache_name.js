@@ -5,7 +5,7 @@ export async function up(knex) {
 };
 
 export async function down(knex) {
-    await knex.schema.alterTable('user_events', (table) => {
+    await knex.schema.alterTable('backups', (table) => {
         table.dropColumn('cache_name');
     })
 };
