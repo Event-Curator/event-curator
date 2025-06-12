@@ -326,29 +326,38 @@ const getSearchHits = async function (req: Request, resp: Response) {
 // save the media behind a given url locally and return the "local url" (or undefined if error)
 // the return path can be used as the new filepath below express static "/media"
 const saveMedia = async function (url: string) {
-    const mediaResp = await fetch(url);
-    if (mediaResp.status != 200) {
-        log.warn(`unable to fetch media: ${url}`);
-        return undefined;
-    }
-
-    const mediaBlob = await mediaResp.blob();
-    const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
-
-    const fileExtension = url.split('.').pop();
-    const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
-    const filePath = `${config.mediaStoragePath}/${fileName}`;
-
-    // only download if the same path didn't exist locally
-    // FIXME: compate last-modified header and local timestamp
-    fs.access(filePath, fs.constants.R_OK, (err) => {
-        if (err) {
-            fs.writeFileSync(`${config.mediaStoragePath}/${fileName}`, buffer)
-            log.debug(`media saved: ${url} ${mediaBlob.type} (${mediaBlob.size} bytes)`);
+    
+    try {
+        const mediaResp = await fetch(url);
+        
+        if (mediaResp.status != 200) {
+            log.warn(`unable to fetch media: ${url}`);
+            return undefined;
         }
-    })
+        
+        const mediaBlob = await mediaResp.blob();
+        const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
+        
+        const fileExtension = url.split('.').pop();
+        const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
+        const filePath = `${config.mediaStoragePath}/${fileName}`;
+        
+        // only download if the same path didn't exist locally
+        // FIXME: compate last-modified header and local timestamp
+        fs.access(filePath, fs.constants.R_OK, (err) => {
+            if (err) {
+                fs.writeFileSync(`${config.mediaStoragePath}/${fileName}`, buffer)
+                log.debug(`media saved: ${url} ${mediaBlob.type} (${mediaBlob.size} bytes)`);
+            }
+        })
+        
+        return `/media/${fileName}`;
 
-    return `/media/${fileName}`;
+    } catch (e) {
+        // FIXME: put some default here in case the fetch is unable to connect/fails
+        return "";
+    }
 }
+
 
 export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }
