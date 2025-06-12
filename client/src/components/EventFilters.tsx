@@ -12,8 +12,10 @@ export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [selectedDates, setSelectedDates] = useState<Date[] | undefined>([
+    new Date(),
+    new Date(),
+  ]);
   const [prefecture, setPrefecture] = useState("");
   const [searchRadius, setSearchRadius] = useState(0);
   const [locSearchType, setLocSearchType] =
@@ -66,6 +68,8 @@ export default function EventFilters() {
       alert("Please enter a search term, price, category, or location!");
       return;
     } else {
+      console.log(selectedDates);
+
       getEvents();
     }
   };
@@ -150,6 +154,15 @@ export default function EventFilters() {
             ¥
           </span>
         </div>
+      </div>
+
+      {/* Search by dates */}
+      <div className="flex flex-row items-center gap-2 mb-2">
+        <p>Dates</p>
+        <Calendar
+          selectedDates={selectedDates}
+          setSelectedDates={setSelectedDates}
+        />
       </div>
 
       {/* Search type */}
