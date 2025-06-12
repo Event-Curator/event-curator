@@ -364,7 +364,7 @@ const saveMedia = async function (url: string) {
         let fileExtension = "blob";
         let lastUrlPart = url.split('/').pop() || "";
         if (lastUrlPart.indexOf('.') > 0 && lastUrlPart.indexOf('/') < 0) {
-            fileExtension = url.split('.').pop() || "blob";
+            fileExtension = lastUrlPart.split('.').pop() || "blob";
         }
 
         const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();

@@ -1,6 +1,6 @@
 export async function up(knex) {
     await knex.schema.alterTable('backups', (table) => {
-        table.string('cache_name');
+        table.string('cache_name').defaultTo("events");
     })
 };
 
