@@ -7,9 +7,8 @@ import fs from 'node:fs';
 import zlib from 'node-gzip';
 import knex from '../knex.js';
 import { cacheNameEnum} from '../Models/Model.js';
+import { getEventById } from '../models/Event.js';
 
-import { Model } from 'firebase-admin/machine-learning';
-import { getDocumentById } from '../controllers/CacheController.js';
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
         log.info("scheduled backup starting in: " + config.backupTarget);
@@ -82,7 +81,7 @@ async function doBackup(cacheName: string): Promise<number> {
             }).exec();
 
             for (let r of result) {
-                r.attachments = (await getDocumentById(r.externalId)).allAttachments();
+                r.attachments = (await getEventById(r.externalId)).allAttachments();
             }
 
             for (let r of result) {
@@ -130,120 +129,103 @@ function restoreEventHandler (req, res) {
     res.send(`restore for ${collectionName} scheduled. see server logs for status`);
 }
 
-async function doEventsRestore(checkpointOrNull: any, batchSize) {
-    try {
-        let events: Event[] = await getLatestBackupContent(cacheNameEnum.EVENTS);
-
-        if (events.length === 0) {
-            log.error(`no backup or empty backup. restore process won't do anything`);
-        }
-
-        log.warn(`sending data to rxdb engine for restoration`);
-        return {
-            documents: events,
-            checkpoint: { id: 1 },
-            hasMoreDocuments: false
-        };
-
-    } catch (e) {
-        log.error(`unable to list backup dir content: ${e}`);
+async function doRestore(documents) {
+    if (documents.length === 0) {
+        log.warn(`no backup or empty backup.`);
     }
 
-    return [];
+    log.info(`sending data to rxdb engine for restoration`);
+    return {
+        documents: documents,
+        checkpoint: { id: 1 },
+        hasMoreDocuments: false
+    };
 }
 
+async function doEventsRestore(checkpointOrNull: any, batchSize) {
+    let documents: Event[] = await getLatestBackupContent(cacheNameEnum.EVENTS);
+    return doRestore(documents);
+}
 
 async function doGeocodingRestore(checkpointOrNull: any, batchSize) {
-    try {
-        let entries: object[] = await getLatestBackupContent(cacheNameEnum.GEOCODING);
-
-        if (entries.length === 0) {
-            log.error(`no backup or empty backup. restore process won't do anything`);
-        }
-
-        log.warn(`sending data to rxdb engine for restoration`);
-        return {
-            documents: entries,
-            checkpoint: { id: 1 },
-            hasMoreDocuments: false
-        };
-
-    } catch (e) {
-        log.error(`unable to list backup dir content: ${e}`);
-    }
-
-    return [];
+    let documents: object[] = await getLatestBackupContent(cacheNameEnum.GEOCODING);
+    return doRestore(documents);
 }
 
 async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> {
-    if (!(cacheName === cacheNameEnum.EVENTS 
-        || cacheName === cacheNameEnum.GEOCODING)) {
-            log.error(`unsupported cache name: ${cacheName}`);
-            return [];
-    }
-    let backupTarget = config.backupTarget.split(':');
+    try {
+        if (!(cacheName === cacheNameEnum.EVENTS 
+            || cacheName === cacheNameEnum.GEOCODING)) {
+                log.error(`unsupported cache name: ${cacheName}`);
+                return [];
+        }
+        let backupTarget = config.backupTarget.split(':');
 
-    // local folder kind of backup/restore
-    if (backupTarget.length === 2 && backupTarget[0] === "file") {
-        let dir = backupTarget[1];
-        
-        log.warn(`current dir is: ${process.cwd()}`);
-        log.warn(`backup folder is: ${dir}/`);
+        // local folder kind of backup/restore
+        if (backupTarget.length === 2 && backupTarget[0] === "file") {
+            let dir = backupTarget[1];
+            
+            log.warn(`current dir is: ${process.cwd()}`);
+            log.warn(`backup folder is: ${dir}/`);
 
-        // account for all filesystem-related erros (ENOENT, ..)
-        try {
-            let files = fs.readdirSync(`${dir}/`);
-            let backups: string[] = [];
+            // account for all filesystem-related erros (ENOENT, ..)
+            try {
+                let files = fs.readdirSync(`${dir}/`);
+                let backups: string[] = [];
 
-            files.forEach( (file) => {
-                if (file.startsWith("backup.") && file.endsWith(".json.gz")) {
-                    backups.push(file);
+                files.forEach( (file) => {
+                    if (file.startsWith("backup.") && file.endsWith(".json.gz")) {
+                        backups.push(file);
+                    }
+                });
+
+                if (backups.length === 0) {
+                    log.error(`no backup file found`);
+                    return [];
                 }
-            });
+        
+                let newestFile = backups.map(name => ({ name, ctime: fs.statSync(`${dir}/${name}`).ctimeMs }))
+                    .sort((a, b) => b.ctime - a.ctime)[0].name;
+                log.warn(`latest backup file found is: ${newestFile}`);
 
-            if (backups.length === 0) {
-                log.error(`no backup file found`);
+                let compressed = fs.readFileSync(`${dir}/${newestFile}`);
+                const decompressed = await zlib.ungzip(compressed);
+                let data = JSON.parse(decompressed.toString());
+
+                log.warn(`found ${data.length} records in ${cacheName} backup`);
+                return data;
+
+            } catch (e) {
+                log.error(e);
+            }
+
+        } else if (backupTarget.length === 2 && backupTarget[0] === "sql") {
+            let compressed = await knex(backupTarget[1])
+                .select('content')
+                .where('cache_name','=',cacheName)
+                .orderBy('created_at','desc')
+                .first();
+
+            if (!compressed) {
+                log.error(`unable to restore ${cacheName}. no record found in database`)
                 return [];
             }
-    
-            let newestFile = backups.map(name => ({ name, ctime: fs.statSync(`${dir}/${name}`).ctimeMs }))
-                .sort((a, b) => b.ctime - a.ctime)[0].name;
-            log.warn(`latest backup file found is: ${newestFile}`);
 
-            let compressed = fs.readFileSync(`${dir}/${newestFile}`);
-            const decompressed = await zlib.ungzip(compressed);
+            const decompressed = await zlib.ungzip(compressed.content);
             let data = JSON.parse(decompressed.toString());
 
             log.warn(`found ${data.length} records in ${cacheName} backup`);
             return data;
 
-        } catch (e) {
-            log.error(e);
+
+        } else {
+            log.error("backupSrc must be sql:{tablename} or file:{folderpath}");
         }
 
-    } else if (backupTarget.length === 2 && backupTarget[0] === "sql") {
-        let compressed = await knex(backupTarget[1])
-            .select('content')
-            .where('cache_name','=',cacheName)
-            .orderBy('created_at','desc')
-            .first();
-
-        if (!compressed) {
-            log.error(`unable to restore ${cacheName}. no record found in database`)
-            return [];
-        }
-
-        const decompressed = await zlib.ungzip(compressed.content);
-        let data = JSON.parse(decompressed.toString());
-
-        log.warn(`found ${data.length} records in ${cacheName} backup`);
-        return data;
-
-
-    } else {
-        log.error("backupSrc must be sql:{tablename} or file:{folderpath}");
+    } catch (e) {
+        log.error(`unable to list backup dir content: ${e}`);
     }
-        
+
     return [];
 }
 

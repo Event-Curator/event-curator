@@ -270,10 +270,12 @@ const getEventById = async function (req: Request, res: Response) {
     if (result.length === 0) {
         res.status(404);
         res.send("the requested ressource is not found");
+        return
     }
 
     res.status(200);
     res.send(result);
+    return
 };
 
 const getSearchHits = async function (req: Request, resp: Response) {

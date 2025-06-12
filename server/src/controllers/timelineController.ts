@@ -3,7 +3,7 @@ import * as TimelineModel from '../models/timeline.js';
 import { log } from '../utils/logger.js';
 import { verifyFriendship } from '../models/friend.js';
 import { Event } from '../models/Event.js';
-import { getDocumentById } from './CacheController.js';
+import { getEventById } from '../models/Event.js';
 
 interface TimelineRequestBody {
   user_uid: string;
@@ -85,7 +85,7 @@ export const getEventsForUser = async (
 
     for (let event of events) {
       if (dups.indexOf(event.event_external_id) < 0) {
-        let fullEvent = await getDocumentById(event.event_external_id);
+        let fullEvent = await getEventById(event.event_external_id);
         dups.push(event.event_external_id);
 
         // we don't need all the stuff from RxDB
