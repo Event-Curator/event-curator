@@ -3,6 +3,8 @@ import { EventType, Event, EventCategoryEnum } from "../models/Event.js";
 import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
 import { log } from "../utils/logger.js";
+import * as ec from "./eventController.js";
+
 moment().format();
 
 class JapancheapoEventSource extends DefaultEventSource {
@@ -34,8 +36,7 @@ class JapancheapoEventSource extends DefaultEventSource {
 
         const $ = cheerio.load(html);
         
-        $(".article.card--event").each((index, element) => {
-
+        for (let element of $(".article.card--event")) {
           let val = $(element).find('.card__cta').find('a').attr('href') || "";
           let anEvent = new Event(val);
 
@@ -47,6 +48,8 @@ class JapancheapoEventSource extends DefaultEventSource {
           val = $(element).find(".cheapo-archive-thumb").attr("src") || "";
 
           anEvent.teaserMedia = val.trim();
+          let localUrl = await ec.saveMedia(anEvent.teaserMedia);
+          if (localUrl) { anEvent.teaserMedia = localUrl };
 
           val = $(element).find(".card__content").find(".card__title").text() || "";
           anEvent.name = val.trim();
@@ -207,7 +210,7 @@ class JapancheapoEventSource extends DefaultEventSource {
           anEvent.placeFreeform = val.trim();
 
           events.push(anEvent);
-        });
+        };
 
       }
       log.info(`${this.id}: scrapping done. ${events.length} found.`);

@@ -7,6 +7,8 @@ import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
 import { geocodeAddress, getDistance } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
+import fs from "fs";
+import md5 from 'md5';
 
 const scrapEvent = async function (req: Request, res: Response) {
     
@@ -35,47 +37,77 @@ const scrapEvent = async function (req: Request, res: Response) {
     
     log.info(`caching objects ...`);
     for (let event of result) {
-        if (await findEvent(event.externalId)) {
-            log.warn(`Oops: duplicate on ${event.externalId}`);
-            // FIXME: do an update
-            continue;
+
+        let cachedEvent = await getEvent(event.externalId);
+        if (cachedEvent) {
+            log.debug(`existing event found, updating data for ${event.externalId}`);
+
+            await geocodeAddress(sourceId, event);
+            await cachedEvent.update({
+                $set: {
+                    name: event.name,
+                    description: event.description,
+
+                    teaserText: event.teaserText,
+                    teaserMedia: event.teaserMedia,
+                    teaserFreeform: event.teaserFreeform,
+
+                    placeLattitude: event.placeLattitude,
+                    placeLongitude: event.placeLongitude,
+                    placeFreeform: event.placeFreeform,
+
+                    budgetMin: event.budgetMin,
+                    budgetMax: event.budgetMax,
+                    budgetCurrency: event.budgetCurrency,
+                    budgetFreeform: event.budgetFreeform,
+
+                    datetimeFrom: event.datetimeFrom.toISOString(),
+                    datetimeTo: event.datetimeTo.toISOString(),
+                    datetimeFreeform: event.datetimeFreeform,
+
+                    category: event.category,
+                    categoryFreeform: event.categoryFreeform,
+
+                    size: event.size,
+                    sizeFreeform: event.sizeFreeform,
+                }
+            });
+
+        } else {
+            await geocodeAddress(sourceId, event);
+
+            await eaCache.events.insert({
+                id: event.externalId,
+                externalId: event.externalId,
+                originId: event.originId,
+                originUrl: event.originUrl,
+                name: event.name,
+                description: event.description,
+
+                teaserText: event.teaserText,
+                teaserMedia: event.teaserMedia,
+                teaserFreeform: event.teaserFreeform,
+
+                placeLattitude: event.placeLattitude,
+                placeLongitude: event.placeLongitude,
+                placeFreeform: event.placeFreeform,
+
+                budgetMin: event.budgetMin,
+                budgetMax: event.budgetMax,
+                budgetCurrency: event.budgetCurrency,
+                budgetFreeform: event.budgetFreeform,
+
+                datetimeFrom: event.datetimeFrom.toISOString(),
+                datetimeTo: event.datetimeTo.toISOString(),
+                datetimeFreeform: event.datetimeFreeform,
+
+                category: event.category,
+                categoryFreeform: event.categoryFreeform,
+
+                size: event.size,
+                sizeFreeform: event.sizeFreeform,
+            });
         }
-
-        await geocodeAddress(sourceId, event);
-        
-        await eaCache.events.insert({
-            // FIXME: shoud be something, not 0
-            id: event.externalId,
-            externalId: event.externalId,
-            originId: event.originId,
-            originUrl: event.originUrl,
-            name: event.name,
-            description: event.description,
-
-            teaserText: event.teaserText,
-            teaserMedia: event.teaserMedia,
-            teaserFreeform: event.teaserFreeform,
-
-            placeLattitude: event.placeLattitude,
-            placeLongitude: event.placeLongitude,
-            placeFreeform: event.placeFreeform,
-
-            budgetMin: event.budgetMin,
-            budgetMax: event.budgetMax,
-            budgetCurrency: event.budgetCurrency,
-            budgetFreeform: event.budgetFreeform,
-
-            datetimeFrom: event.datetimeFrom.toISOString(),
-            datetimeTo: event.datetimeTo.toISOString(),
-            datetimeFreeform: event.datetimeFreeform,
-
-            category: event.category,
-            categoryFreeform: event.categoryFreeform,
-
-            size: event.size,
-            sizeFreeform: event.sizeFreeform,
-        });
-
     }
 
     res.status(200)
@@ -91,6 +123,17 @@ const findEvent = async function (externalId) {
         }
     }).exec();
     return result.length > 0 ? true : false;
+}
+
+const getEvent = async function (externalId) {
+    let result = await eaCache.events.find({
+        selector: {
+            "externalId": {
+                $eq: externalId
+            }
+        }
+    }).exec();
+    return result.length > 0 ? result[0] : undefined;
 }
 
 const searchEvent = async function (req: Request, res: Response) {
@@ -277,4 +320,43 @@ const getSearchHits = async function (req: Request, resp: Response) {
     resp.send();
 }
 
-export { scrapEvent, searchEvent, getEventById, getSearchHits }
+// -------------------------- utility functions for website implementations
+
+// save the media behind a given url locally and return the "local url" (or undefined if error)
+// the return path can be used as the new filepath below express static "/media"
+const saveMedia = async function (url: string) {
+    
+    try {
+        const mediaResp = await fetch(url);
+        
+        if (mediaResp.status != 200) {
+            log.warn(`unable to fetch media: ${url}`);
+            return undefined;
+        }
+        
+        const mediaBlob = await mediaResp.blob();
+        const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
+        
+        const fileExtension = url.split('.').pop();
+        const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
+        const filePath = `${config.mediaStoragePath}/${fileName}`;
+        
+        // only download if the same path didn't exist locally
+        // FIXME: compate last-modified header and local timestamp
+        fs.access(filePath, fs.constants.R_OK, (err) => {
+            if (err) {
+                fs.writeFileSync(`${config.mediaStoragePath}/${fileName}`, buffer)
+                log.debug(`media saved: ${url} ${mediaBlob.type} (${mediaBlob.size} bytes)`);
+            }
+        })
+        
+        return `/media/${fileName}`;
+
+    } catch (e) {
+        // FIXME: put some default here in case the fetch is unable to connect/fails
+        return "";
+    }
+}
+
+
+export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }

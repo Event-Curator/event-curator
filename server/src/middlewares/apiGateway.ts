@@ -2,6 +2,7 @@ import { addRxPlugin, RxReplicationPullStreamItem } from 'rxdb/plugins/core';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
@@ -11,7 +12,7 @@ import { doRestore } from '../utils/persistence.js';
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
-
+addRxPlugin(RxDBUpdatePlugin);
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
 async function initCache() {
