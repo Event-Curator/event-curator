@@ -149,7 +149,7 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
 
           // anEvent.originUrl = $(element).find('.entry-title.title1').find('a').attr("href") || "";
           anEvent.originUrl = originUrl;
-
+          
           // we can extract many things from the title
           let val = $(element).find('.entry-title.title1').find('a').text().trim() || "";
           let _ = "";

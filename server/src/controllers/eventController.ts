@@ -161,6 +161,10 @@ const searchEvent = async function (req: Request, res: Response) {
         || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
     const placeDistanceRange = Number(req.query.placeDistanceRange) || 0;
+    const placeSuburb = req.query.placeSuburb || '.*';
+    const placeCity = req.query.placeCity || '.*';
+    const placeProvince = req.query.placeProvince || '.*';
+    const placeCountry = req.query.placeCountry || '.*';
     const browserLat = Number(req.query.browserLat) || 0;
     const browserLong = Number(req.query.browserLong) || 0;
 
@@ -201,6 +205,10 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
     searchTerms.push({"placeDistanceRange": placeDistanceRange});
+    searchTerms.push({"placeSuburb": placeSuburb});
+    searchTerms.push({"placeCity": placeCity});
+    searchTerms.push({"placeProvince": placeProvince});
+    searchTerms.push({"placeCountry": placeCountry});
     searchTerms.push({"browserLat": browserLat});
     searchTerms.push({"browserLong": browserLong});
 
@@ -218,6 +226,11 @@ const searchEvent = async function (req: Request, res: Response) {
                     { description: { $regex: description, $options: 'i' } },
                     { category: { $regex: category, $options: 'i' } },
 
+                    { placeSuburb: { $regex: placeSuburb, $options: 'i' } },
+                    { placeCity: { $regex: placeCity, $options: 'i' } },
+                    { placeProvince: { $regex: placeProvince, $options: 'i' } },
+                    { placeCountry: { $regex: placeCountry, $options: 'i' } },
+                    
                     { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
