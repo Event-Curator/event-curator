@@ -13,10 +13,9 @@ export default function EventFilters() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
-  const [selectedDates, setSelectedDates] = useState<Date[] | undefined>([
-    new Date(),
-    new Date(),
-  ]);
+  const [selectedDates, setSelectedDates] = useState<Date[] | undefined>(
+    undefined
+  );
   const [prefecture, setPrefecture] = useState("");
   const [searchRadius, setSearchRadius] = useState(0);
   const [locSearchType, setLocSearchType] =
