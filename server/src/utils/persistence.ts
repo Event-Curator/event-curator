@@ -30,14 +30,9 @@ async function backupEventHandler (req, res) {
 
     log.info(`executing backup for collection: ${collectionName}`);
     let backupSize = await doBackup(collectionName);
-    if (backupSize > 0) {
-        res.status(200);
-        res.send(`backup finished (${backupSize} records).`);
-        return
-    }
 
-    res.status(500);
-    res.send("backup failed. see console logs for details");
+    res.status(200);
+    res.send(`backup finished (${backupSize} records).`);
     return
 }
 

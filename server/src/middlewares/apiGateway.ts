@@ -89,6 +89,18 @@ async function initCache() {
                     placeFreeform: {
                         type: 'string'
                     },
+                    placeSuburb: {
+                        type: 'string'
+                    },
+                    placeCity: {
+                        type: 'string'
+                    },
+                    placeProvince: {
+                        type: 'string'
+                    },
+                    placeCountry: {
+                        type: 'string'
+                    },
 
                     budgetMin: {
                         type: 'number'
@@ -129,9 +141,6 @@ async function initCache() {
                         type: 'string'
                     },
                 },
-                attachments: {
-                    encrypted: false
-                },
                 required: ['id', 'externalId', 'name']
             }
         }
@@ -164,7 +173,7 @@ async function initCache() {
                     },
 
                     lat: {
-                        type: 'number',
+                        type: 'number'
                     },
 
                     long: {
@@ -188,7 +197,7 @@ async function initCache() {
         }
     });
 
-        // from human-readable address to map coordinate
+    // from human-readable address to map coordinate
     // = MD5(placeFreeform.toLowercase())
     let reverseGeocodingCache = await eaCache.addCollections({
         reverseGeocoding: {
@@ -201,16 +210,20 @@ async function initCache() {
                         type: 'string',
                         maxLength: 32
                     },
-
-                    lat: {
-                        type: 'number',
+                    placeSuburb: {
+                        type: 'string'
                     },
-
-                    long: {
-                        type: 'number'
-                    }
+                    placeCity: {
+                        type: 'string'
+                    },
+                    placeProvince: {
+                        type: 'string'
+                    },
+                    placeCountry: {
+                        type: 'string'
+                    },
                 },
-                required: ['id', 'lat', 'long']
+                required: ['id']
             }
         }
     });

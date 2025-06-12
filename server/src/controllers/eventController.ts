@@ -5,7 +5,7 @@ import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event } from "../mode
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
-import { geocodeAddress, getDistance } from '../utils/geo.js';
+import { geocodeAddress, getDistance, reverseGeocodeAddress } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
 import fs from "fs";
 import md5 from 'md5';
@@ -42,6 +42,7 @@ const scrapEvent = async function (req: Request, res: Response) {
             log.debug(`existing event found, updating data for ${event.externalId}`);
 
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
             await cachedEvent.update({
                 $set: {
                     name: event.name,
@@ -54,6 +55,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                     placeLattitude: event.placeLattitude,
                     placeLongitude: event.placeLongitude,
                     placeFreeform: event.placeFreeform,
+                    placeSuburb: event.placeSuburb,
+                    placeCity: event.placeCity,
+                    placeProvince: event.placeProvince,
+                    placeCountry: event.placeCountry,
 
                     budgetMin: event.budgetMin,
                     budgetMax: event.budgetMax,
@@ -74,6 +79,7 @@ const scrapEvent = async function (req: Request, res: Response) {
 
         } else {
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
 
             await eaCache.events.insert({
                 id: event.externalId,
@@ -90,6 +96,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                 placeLattitude: event.placeLattitude,
                 placeLongitude: event.placeLongitude,
                 placeFreeform: event.placeFreeform,
+                placeSuburb: event.placeSuburb,
+                placeCity: event.placeCity,
+                placeProvince: event.placeProvince,
+                placeCountry: event.placeCountry,
 
                 budgetMin: event.budgetMin,
                 budgetMax: event.budgetMax,
@@ -338,7 +348,12 @@ const saveMedia = async function (url: string) {
         const mediaBlob = await mediaResp.blob();
         const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
         
-        const fileExtension = url.split('.').pop();
+        let fileExtension = "blob";
+        let lastUrlPart = url.split('/').pop() || "";
+        if (lastUrlPart.indexOf('.') > 0 && lastUrlPart.indexOf('/') < 0) {
+            fileExtension = url.split('.').pop() || "blob";
+        }
+
         const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
         const filePath = `${config.mediaStoragePath}/${fileName}`;
         

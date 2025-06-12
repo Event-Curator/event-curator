@@ -61,6 +61,10 @@ export class Event implements EventType {
   placeLongitude: number;
   placeFreeform: string;
   placeDistance: number;
+  placeSuburb: string;
+  placeCity: string;
+  placeProvince: string;
+  placeCountry: string;
   budgetMin: number;
   budgetMax: number;
   budgetCurrency: string;
@@ -72,7 +76,6 @@ export class Event implements EventType {
   categoryFreeform: string;
   size: EventSizeEnum;
   sizeFreeform: string;
-  attachments: Blob[];
     
   public constructor (url: string) {
     this.externalId = md5(url.toLocaleLowerCase()); 
@@ -87,6 +90,10 @@ export class Event implements EventType {
     this.placeLongitude = 0;
     this.placeFreeform = "";
     this.placeDistance = 0;
+    this.placeSuburb = "";
+    this.placeCity = "";
+    this.placeProvince = "";
+    this.placeCountry = "";
     this.budgetMin = 0;
     this.budgetMax = 0;
     this.budgetCurrency = "USD";
@@ -98,7 +105,6 @@ export class Event implements EventType {
     this.categoryFreeform = "";
     this.size = EventSizeEnum.M;
     this.sizeFreeform = "";
-    this.attachments = [];
   }
 }
 
@@ -122,6 +128,11 @@ export type EventType = {
   placeLongitude: number;
   placeFreeform: string;
   placeDistance: number;        // #meters between the user location and the event's coordinates
+  placeSuburb: string;
+  placeCity: string;
+  placeProvince: string;
+  placeCountry: string;
+
   // only available in searchResult if includeDistance is set
   
   // princing stuff
@@ -145,7 +156,6 @@ export type EventType = {
   size: EventSizeEnum;
   sizeFreeform: string;
   
-  attachments: Blob[];
   // getOriginId: () => {};
 }
 
