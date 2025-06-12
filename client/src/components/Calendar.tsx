@@ -31,7 +31,11 @@ export default function Calendar({
       >
         {displayDates}
       </button>
-      <button type="button" onClick={handleClearDates}>
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={handleClearDates}
+      >
         Clear
       </button>
       <div
