@@ -337,7 +337,12 @@ const saveMedia = async function (url: string) {
         const mediaBlob = await mediaResp.blob();
         const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
         
-        const fileExtension = url.split('.').pop();
+        let fileExtension = "blob";
+        let lastUrlPart = url.split('/').pop() || "";
+        if (lastUrlPart.indexOf('.') > 0 && lastUrlPart.indexOf('/') < 0) {
+            fileExtension = lastUrlPart.split('.').pop() || "blob";
+        }
+
         const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
         const filePath = `${config.mediaStoragePath}/${fileName}`;
         
