@@ -6,7 +6,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
-import { doEventsRestore, doGeocodingRestore } from '../utils/persistence.js';
+import { doEventsRestore, doGeocodingRestore, doReverseGeocodingRestore } from '../utils/persistence.js';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 
 let eaCache;
@@ -15,6 +15,7 @@ addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBUpdatePlugin);
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 const restoreGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+const restoreReverseGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
 async function initCache() {
     eaCache = await createRxDatabase({
@@ -187,6 +188,44 @@ async function initCache() {
         }
     });
 
+        // from human-readable address to map coordinate
+    // = MD5(placeFreeform.toLowercase())
+    let reverseGeocodingCache = await eaCache.addCollections({
+        reverseGeocoding: {
+            schema: {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 32
+                    },
+
+                    lat: {
+                        type: 'number',
+                    },
+
+                    long: {
+                        type: 'number'
+                    }
+                },
+                required: ['id', 'lat', 'long']
+            }
+        }
+    });
+
+    const reverseGeocodingReplicationState = replicateRxCollection({
+        collection: reverseGeocodingCache.reverseGeocoding,
+        replicationIdentifier: 'reverse-geocoding-replication',
+        autoStart: true,
+        retryTime: 10,
+        pull: {
+            stream$: restoreReverseGeocodingStream$.asObservable(),
+            batchSize: 10000,
+            handler: doReverseGeocodingRestore as any,
+        }
+    });
 }
 
-export { initCache, eaCache, restoreEventStream$, restoreGeocodingStream$ }
+export { initCache, eaCache, restoreEventStream$, restoreGeocodingStream$, restoreReverseGeocodingStream$ }

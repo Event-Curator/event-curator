@@ -28,7 +28,7 @@ class JapancheapoEventSource extends DefaultEventSource {
       log.info(`${this.id}: scrapping started`);
 
       // FIXME: get back to 18
-      for (let i = 1; i<2; i++) {
+      for (let i = 1; i<18; i++) {
         log.info(`${this.id}: scrapping ongoing. page ${i}`);
 
         const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
@@ -50,11 +50,6 @@ class JapancheapoEventSource extends DefaultEventSource {
           anEvent.teaserMedia = val.trim();
           let localUrl = await ec.saveMedia(anEvent.teaserMedia);
           if (localUrl) { anEvent.teaserMedia = localUrl };
-
-          let _r = await fetch(anEvent.teaserMedia);
-          let blob = await _r.blob();
-          anEvent.attachments['TEASERMEDIA'] = blob;
-          log.debug(`blob attached: ${anEvent.externalId} ${blob.type} (${blob.size} bytes)`);
 
           val = $(element).find(".card__content").find(".card__title").text() || "";
           anEvent.name = val.trim();

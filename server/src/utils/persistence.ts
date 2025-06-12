@@ -1,19 +1,19 @@
 import cron from 'node-cron';
 import { log } from "./logger.js";
 import config from './config.js';
-import { eaCache, restoreEventStream$ } from '../middlewares/apiGateway.js';
+import { eaCache, restoreEventStream$, restoreGeocodingStream$, restoreReverseGeocodingStream$ } from '../middlewares/apiGateway.js';
 import { Event } from '../models/Event.js';
 import fs from 'node:fs';
 import zlib from 'node-gzip';
 import knex from '../knex.js';
 import { cacheNameEnum} from '../Models/Model.js';
-import { getEventById } from '../models/Event.js';
 
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
         log.info("scheduled backup starting in: " + config.backupTarget);
         doBackup(cacheNameEnum.EVENTS);
         doBackup(cacheNameEnum.GEOCODING);
+        doBackup(cacheNameEnum.REVERSE_GEOCODING);
     });
 };
 
@@ -21,7 +21,8 @@ async function backupEventHandler (req, res) {
     let collectionName = req.params.collectionName;
 
     if (!(collectionName === cacheNameEnum.EVENTS 
-        || collectionName === cacheNameEnum.GEOCODING)) {
+        || collectionName === cacheNameEnum.GEOCODING
+        || collectionName === cacheNameEnum.REVERSE_GEOCODING)) {
         res.status(404);
         res.send("requested collection not found");
         return;
@@ -80,14 +81,6 @@ async function doBackup(cacheName: string): Promise<number> {
                 }
             }).exec();
 
-            for (let r of result) {
-                r.attachments = (await getEventById(r.externalId)).allAttachments();
-            }
-
-            for (let r of result) {
-                console.log(r.attachments);
-            }
-
             if (result.length > 0) {                
                 let compressed = await zlib.gzip(JSON.stringify(result, null, 2));
                 log.info(`backup of cache ${cacheName} done (${result.length} records)`);
@@ -111,6 +104,7 @@ function restoreEventHandler (req, res) {
     let collectionName = req.params.collectionName;
 
     if (!(collectionName === cacheNameEnum.EVENTS 
+        || collectionName === cacheNameEnum.REVERSE_GEOCODING
         || collectionName === cacheNameEnum.GEOCODING)) {
         res.status(404);
         res.send("requested collection not found");
@@ -122,7 +116,10 @@ function restoreEventHandler (req, res) {
         restoreEventStream$.next("RESYNC");
 
     } else if (collectionName === cacheNameEnum.GEOCODING) {
-        // restoreGeocodingStream$.next("RESYNC");
+        restoreGeocodingStream$.next("RESYNC");
+
+    } else if (collectionName === cacheNameEnum.REVERSE_GEOCODING) {
+        restoreReverseGeocodingStream$.next("RESYNC");
     }
 
     res.status(200);
@@ -152,10 +149,16 @@ async function doGeocodingRestore(checkpointOrNull: any, batchSize) {
     return doRestore(documents);
 }
 
+async function doReverseGeocodingRestore(checkpointOrNull: any, batchSize) {
+    let documents: object[] = await getLatestBackupContent(cacheNameEnum.REVERSE_GEOCODING);
+    return doRestore(documents);
+}
+
 async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> {
     try {
         if (!(cacheName === cacheNameEnum.EVENTS 
-            || cacheName === cacheNameEnum.GEOCODING)) {
+            || cacheName === cacheNameEnum.GEOCODING
+            || cacheName === cacheNameEnum.REVERSE_GEOCODING)) {
                 log.error(`unsupported cache name: ${cacheName}`);
                 return [];
         }
@@ -229,4 +232,11 @@ async function getLatestBackupContent(cacheName: string): Promise<Array<Event>> 
     return [];
 }
 
-export { scheduleBackup, backupEventHandler, restoreEventHandler, doEventsRestore, doGeocodingRestore};
+export { 
+    scheduleBackup, 
+    backupEventHandler, 
+    restoreEventHandler, 
+    doEventsRestore, 
+    doGeocodingRestore,
+    doReverseGeocodingRestore
+};
