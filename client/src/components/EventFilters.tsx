@@ -47,14 +47,15 @@ export default function EventFilters() {
 
   async function getEvents() {
     try {
-      const response = await fetch(
-        `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`
-      );
+      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${selectedDates[0].toISOString()}&datetimeTo=${selectedDates[1].toISOString()}`;
+      const response = await fetch(query);
+
       if (!response.ok) {
         console.error(response);
         setError(true);
       }
       const data = await response.json();
+
       setEvents(data);
     } catch (error) {
       console.error(error);
