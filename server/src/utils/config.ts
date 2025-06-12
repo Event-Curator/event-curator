@@ -81,7 +81,7 @@ const config: Config = {
     // in all case, the latest file or record will be restored at startup
     // backupTarget: "file:../backups",
     backupTarget: "sql:backups",
-    mediaStoragePath: "../media"
+    mediaStoragePath: process.env.MEDIA_STORAGE_PATH || "../media"
 }
 
 // some sanity checks
