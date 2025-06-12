@@ -7,6 +7,8 @@ import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
 import { geocodeAddress, getDistance } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
+import fs from "fs";
+import md5 from 'md5';
 
 const scrapEvent = async function (req: Request, res: Response) {
     
@@ -277,4 +279,26 @@ const getSearchHits = async function (req: Request, resp: Response) {
     resp.send();
 }
 
-export { scrapEvent, searchEvent, getEventById, getSearchHits }
+// -------------------------- utility functions for website implementations
+
+// save the media behind a given url locally and return the "local url" (or undefined if error)
+// the return path can be used as the new filepath below express static "/medias"
+const saveMedia = async function (url: string) {
+    const mediaResp = await fetch(url);
+    if (mediaResp.status != 200) {
+        log.warn(`unable to fetch media: ${url}`);
+        return undefined;
+    }
+
+    const mediaBlob = await mediaResp.blob();
+    const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
+
+    const fileExtension = url.split('.').pop();
+    const fileName = `${config.mediaStoragePath}/${md5(url)}.${fileExtension}`.toLocaleLowerCase();
+
+    fs.writeFileSync(fileName, buffer);
+
+    return fileName;
+}
+
+export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }

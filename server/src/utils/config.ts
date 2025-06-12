@@ -15,6 +15,7 @@ interface Config {
     nodeEnv: string;
     backupSchedule: string;
     backupTarget: string;
+    mediaStoragePath: string;
     sources: Array<EventSourceConfigType>;
 }
 
@@ -69,6 +70,7 @@ let _source: Array<EventSourceConfigType> = [
     }
 ]
 
+// paths are relative to SERVER folder
 const config: Config = {
     port: Number(process.env.PORT) || 3000,
     nodeEnv: process.env.NODE_ENV || "development",
@@ -79,6 +81,7 @@ const config: Config = {
     // in all case, the latest file or record will be restored at startup
     // backupTarget: "file:../backups",
     backupTarget: "sql:backups",
+    mediaStoragePath: "../medias"
 }
 
 // some sanity checks
