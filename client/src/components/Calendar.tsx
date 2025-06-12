@@ -13,7 +13,7 @@ export default function Calendar({
   if (selectedDates === undefined) {
     displayDates = "Choose your dates";
   } else if (selectedDates[1] === undefined) {
-    displayDates = `${selectedDates[0].toLocaleDateString()} —`;
+    displayDates = `${selectedDates[0].toLocaleDateString()}`;
   } else {
     displayDates = `${selectedDates[0].toLocaleDateString()} — ${selectedDates[1].toLocaleDateString()}`;
   }

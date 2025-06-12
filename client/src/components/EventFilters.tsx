@@ -3,6 +3,7 @@ import { prefectures } from "./constants";
 import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
+import addOneDay from "../utils/addOneDay";
 import type { LocationSearchType, CategoryMetaData } from "../types";
 
 export default function EventFilters() {
@@ -47,11 +48,25 @@ export default function EventFilters() {
 
   async function getEvents() {
     try {
+      // Get to and from dates. This requires a little extra processsing to account for
+      // cases where user can enter undefined. If the user only selects on day, the "to"
+      // var is set to that day + 24h to create a meaningful range to search.
       const from =
         selectedDates !== undefined ? selectedDates[0].toISOString() : "";
-      const to =
-        selectedDates !== undefined ? selectedDates[1].toISOString() : "";
+      let to = "";
+      if (selectedDates !== undefined && selectedDates[1] !== undefined) {
+        to = selectedDates[1].toISOString();
+      } else if (
+        selectedDates !== undefined &&
+        selectedDates[1] === undefined
+      ) {
+        to = addOneDay(selectedDates[0]).toISOString();
+      }
+
+      // Query string with all data from user.
       const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${from}&datetimeTo=${to}`;
+
+      console.log("query string:", query);
 
       const response = await fetch(query);
 
