@@ -7,6 +7,8 @@ import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
 import { geocodeAddress, getDistance } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
+import fs from "fs";
+import md5 from 'md5';
 
 const scrapEvent = async function (req: Request, res: Response) {
     
@@ -49,7 +51,6 @@ const scrapEvent = async function (req: Request, res: Response) {
                     teaserMedia: event.teaserMedia,
                     teaserFreeform: event.teaserFreeform,
 
-                    // to force a new geoding later
                     placeLattitude: event.placeLattitude,
                     placeLongitude: event.placeLongitude,
                     placeFreeform: event.placeFreeform,
@@ -67,25 +68,14 @@ const scrapEvent = async function (req: Request, res: Response) {
                     categoryFreeform: event.categoryFreeform,
 
                     size: event.size,
-                    sizeFreeform: event.sizeFreeform,                    
+                    sizeFreeform: event.sizeFreeform,
                 }
             });
 
-            for (let key in event.attachments) {
-                let blob = event.attachments[key];
-                log.debug(`blob attached: ${key}  ${blob.type} (${blob.size} bytes)`);
-                await cachedEvent.putAttachment({
-                    id: key,
-                    data: blob,
-                    type: blob.type
-                });
-            }
-
         } else {
             await geocodeAddress(sourceId, event);
-            console.log(event);
+
             await eaCache.events.insert({
-                // FIXME: shoud be something, not 0
                 id: event.externalId,
                 externalId: event.externalId,
                 originId: event.originId,
@@ -116,17 +106,6 @@ const scrapEvent = async function (req: Request, res: Response) {
                 size: event.size,
                 sizeFreeform: event.sizeFreeform,
             });
-            
-            let cachedEvent = await getEvent(event.externalId);
-            for (let key in event.attachments) {
-                let blob = event.attachments[key];
-                log.debug(`blob attached: ${key} ${blob.type} (${blob.size} bytes)`);
-                await cachedEvent.putAttachment({
-                    id: key,
-                    data: blob,
-                    type: blob.type
-                });
-            }
         }
     }
 
@@ -340,4 +319,34 @@ const getSearchHits = async function (req: Request, resp: Response) {
     resp.send();
 }
 
-export { scrapEvent, searchEvent, getEventById, getSearchHits }
+// -------------------------- utility functions for website implementations
+
+// save the media behind a given url locally and return the "local url" (or undefined if error)
+// the return path can be used as the new filepath below express static "/medias"
+const saveMedia = async function (url: string) {
+    const mediaResp = await fetch(url);
+    if (mediaResp.status != 200) {
+        log.warn(`unable to fetch media: ${url}`);
+        return undefined;
+    }
+
+    const mediaBlob = await mediaResp.blob();
+    const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
+
+    const fileExtension = url.split('.').pop();
+    const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
+    const filePath = `${config.mediaStoragePath}/${fileName}`;
+
+    // only download if the same path didn't exist locally
+    // FIXME: compate last-modified header and local timestamp
+    fs.access(filePath, fs.constants.R_OK, (err) => {
+        if (err) {
+            fs.writeFileSync(`${config.mediaStoragePath}/${fileName}`, buffer)
+            log.debug(`media saved: ${url} ${mediaBlob.type} (${mediaBlob.size} bytes)`);
+        }
+    })
+
+    return `/medias/${fileName}`;
+}
+
+export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }

@@ -8,14 +8,11 @@ import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
 import { doEventsRestore, doGeocodingRestore } from '../utils/persistence.js';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
-import { RxDBAttachmentsPlugin } from 'rxdb/plugins/attachments';
 
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
 addRxPlugin(RxDBUpdatePlugin);
-addRxPlugin(RxDBAttachmentsPlugin);
-
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 const restoreGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
