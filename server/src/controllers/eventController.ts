@@ -264,9 +264,15 @@ const searchEvent = async function (req: Request, res: Response) {
     log.debug(`filtering events in the range (meters): ${placeDistanceRange}`);
     let events: Array<EventType> = [];
     for (let foundEvent of foundEvents) {
-        foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
-        if (
-            (placeDistanceRange > 0 && foundEvent.placeDistance <= placeDistanceRange)) {
+        if (placeDistanceRange > 0) {
+            foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
+            if (
+                foundEvent.placeDistance > 0
+                && foundEvent.placeDistance <= placeDistanceRange) {
+                events.push(foundEvent);
+            }
+
+        } else {
             events.push(foundEvent);
         }
     }
