@@ -353,7 +353,11 @@ const saveMedia = async function (url: string) {
         return `/media/${fileName}`;
 
     } catch (e) {
+        log.error(`unable to save the image in [${config.mediaStoragePath}/]`);
+        log.error(`current path is: ${process.cwd}`);
+        log.error(e);
         // FIXME: put some default here in case the fetch is unable to connect/fails
+
         return "";
     }
 }
