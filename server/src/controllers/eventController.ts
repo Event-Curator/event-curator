@@ -324,7 +324,7 @@ const getSearchHits = async function (req: Request, resp: Response) {
 // -------------------------- utility functions for website implementations
 
 // save the media behind a given url locally and return the "local url" (or undefined if error)
-// the return path can be used as the new filepath below express static "/medias"
+// the return path can be used as the new filepath below express static "/media"
 const saveMedia = async function (url: string) {
     const mediaResp = await fetch(url);
     if (mediaResp.status != 200) {
@@ -348,7 +348,7 @@ const saveMedia = async function (url: string) {
         }
     })
 
-    return `/medias/${fileName}`;
+    return `/media/${fileName}`;
 }
 
 export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }
