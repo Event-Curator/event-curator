@@ -47,7 +47,12 @@ export default function EventFilters() {
 
   async function getEvents() {
     try {
-      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${selectedDates[0].toISOString()}&datetimeTo=${selectedDates[1].toISOString()}`;
+      const from =
+        selectedDates !== undefined ? selectedDates[0].toISOString() : "";
+      const to =
+        selectedDates !== undefined ? selectedDates[1].toISOString() : "";
+      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${from}&datetimeTo=${to}`;
+
       const response = await fetch(query);
 
       if (!response.ok) {
@@ -55,6 +60,7 @@ export default function EventFilters() {
         setError(true);
       }
       const data = await response.json();
+      console.log(data);
 
       setEvents(data);
     } catch (error) {
@@ -65,8 +71,8 @@ export default function EventFilters() {
 
   const handleSearch = () => {
     // Allow search if there is text in the search bar, or a category, price, or a location
-    if (!search && !category && !location && !price) {
-      alert("Please enter a search term, price, category, or location!");
+    if (!search && !category && !location && !price && !selectedDates) {
+      alert("Please enter a search term, price, category, dates, or location!");
       return;
     } else {
       console.log(selectedDates);

@@ -18,6 +18,10 @@ export default function Calendar({
     displayDates = `${selectedDates[0].toLocaleDateString()} — ${selectedDates[1].toLocaleDateString()}`;
   }
 
+  function handleClearDates() {
+    setSelectedDates(undefined);
+  }
+
   return (
     <>
       <button
@@ -26,6 +30,9 @@ export default function Calendar({
         style={{ anchorName: "--rdp" } as React.CSSProperties}
       >
         {displayDates}
+      </button>
+      <button type="button" onClick={handleClearDates}>
+        Clear
       </button>
       <div
         popover="auto"
