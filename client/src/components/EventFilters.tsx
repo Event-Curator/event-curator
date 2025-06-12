@@ -63,12 +63,7 @@ export default function EventFilters() {
               }
             }}
           />
-          <button
-            className="btn btn-primary rounded-l-none"
-            onClick={handleSearch}
-          >
-            🔍
-          </button>
+          
         </div>
       </div>
       <div className="flex gap-2 mb-4">

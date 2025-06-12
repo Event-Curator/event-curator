@@ -131,7 +131,7 @@ export default function Navbar() {
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
           {user && (
-            <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">
+            <Link to="/timeline" className="btn btn-ghost btn-xl text-blue-700">
               My Event Timeline
             </Link>
           )}

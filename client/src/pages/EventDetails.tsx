@@ -5,53 +5,7 @@ import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
 import EventContext from "../context/EventContext";
-import { auth } from "../firebase"; 
-
-import musicImg from "../assets/music.jpg";
-import businessImg from "../assets/business.jpg";
-import foodImg from "../assets/food.jpg";
-import communityImg from "../assets/community.jpg";
-import performanceImg from "../assets/performance.jpg";
-import mediaImg from "../assets/media.jpg";
-import sportImg from "../assets/sport.jpg";
-import healthImg from "../assets/health.jpg";
-import scienceImg from "../assets/science.jpg";
-import travelImg from "../assets/travel.jpg";
-import charityImg from "../assets/charity.jpg";
-import religionImg from "../assets/religion.jpg";
-import familyImg from "../assets/family.jpg";
-import seasonalImg from "../assets/seasonal.jpg";
-import governmentImg from "../assets/government.jpg";
-import fashionImg from "../assets/fashion.jpg";
-import homeImg from "../assets/home.jpg";
-import autoImg from "../assets/auto.jpg";
-import hobbiesImg from "../assets/hobbies.jpg";
-import schoolImg from "../assets/school.jpg";
-import otherImg from "../assets/other.jpg";
-
-const categoryImages: Record<string, string> = {
-  "Music": musicImg,
-  "Business & Professional": businessImg,
-  "Food & Drink": foodImg,
-  "Community & Culture": communityImg,
-  "Performing & Visual Arts": performanceImg,
-  "Film, Media & Entertainment": mediaImg,
-  "Sports & Fitness": sportImg,
-  "Health & Wellness": healthImg,
-  "Science & Technology": scienceImg,
-  "Travel & Outdoor": travelImg,
-  "Charity & Causes": charityImg,
-  "Religion & Spirituality": religionImg,
-  "Family & Education": familyImg,
-  "Seasonal & Holiday": seasonalImg,
-  "Government & Politics": governmentImg,
-  "Fashion & Beauty": fashionImg,
-  "Home & Lifestyle": homeImg,
-  "Auto, Boat & Air": autoImg,
-  "Hobbies & Special Interest": hobbiesImg,
-  "School Activities": schoolImg,
-  "Other": otherImg,
-};
+import { auth } from "../firebase";
 
 // LinkIcon component
 const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -96,6 +50,18 @@ const DeleteIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+// Arrow icons for calendar navigation
+const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width={20} height={20} fill="none" stroke="#2761da" strokeWidth={2} viewBox="0 0 24 24" {...props}>
+    <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+const ArrowRight = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg width={20} height={20} fill="none" stroke="#2761da" strokeWidth={2} viewBox="0 0 24 24" {...props}>
+    <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 export default function EventDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -103,6 +69,10 @@ export default function EventDetails() {
   const [event, setEvent] = useState<FullEventType | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdded, setIsAdded] = useState(false);
+
+  // Calendar state
+  const [calendarMonth, setCalendarMonth] = useState<number | null>(null);
+  const [calendarYear, setCalendarYear] = useState<number | null>(null);
 
   const api = import.meta.env.VITE_API;
 
@@ -126,6 +96,13 @@ export default function EventDetails() {
     if (!event) return;
     const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
     setIsAdded(alreadyLiked);
+
+    // Set calendar to event start month on load
+    if (event.datetimeFrom) {
+      const start = new Date(event.datetimeFrom);
+      setCalendarMonth(start.getMonth());
+      setCalendarYear(start.getFullYear());
+    }
   }, [event, likedEvents]);
 
   const handleAdd = async () => {
@@ -209,17 +186,63 @@ export default function EventDetails() {
 
   const startDate = event.datetimeFrom ? new Date(event.datetimeFrom) : null;
   const endDate = event.datetimeTo ? new Date(event.datetimeTo) : null;
-  const calendarDays = startDate ? getDaysInMonth(startDate) : 31;
-  const eventStartDay = startDate ? startDate.getDate() : -1;
-  const eventEndDay = endDate ? endDate.getDate() : -1;
+
+  // Calendar month/year state fallback
+  const currentMonth = calendarMonth !== null ? calendarMonth : (startDate ? startDate.getMonth() : new Date().getMonth());
+  const currentYear = calendarYear !== null ? calendarYear : (startDate ? startDate.getFullYear() : new Date().getFullYear());
+
+  const calendarDays = getDaysInMonth(new Date(currentYear, currentMonth));
+  // For multi-month events, highlight days in range
+  function isDayInEventRange(day: number) {
+    if (!startDate || !endDate) return false;
+    const thisDay = new Date(currentYear, currentMonth, day);
+    return thisDay >= startDate && thisDay <= endDate;
+  }
+
+  function isStartDay(day: number) {
+    return startDate && startDate.getFullYear() === currentYear && startDate.getMonth() === currentMonth && startDate.getDate() === day;
+  }
+  function isEndDay(day: number) {
+    return endDate && endDate.getFullYear() === currentYear && endDate.getMonth() === currentMonth && endDate.getDate() === day;
+  }
 
   const monthYear =
-    startDate?.toLocaleDateString(undefined, {
+    new Date(currentYear, currentMonth).toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
-    }) || "";
+    });
 
-  const imageSrc = categoryImages[event.category] || categoryImages["Other"];
+  // Use ONLY the original event image from backend; fallback to a generic placeholder
+  const imageSrc =
+    event.teaserMedia && event.teaserMedia.trim() !== ""
+      ? event.teaserMedia
+      : "https://via.placeholder.com/600x320?text=No+Image";
+
+  // Map setup: use event latitude/longitude if available, else Tokyo (35.6895, 139.6917)
+  const lat =
+    event.placeLattitude && !isNaN(event.placeLattitude) ? event.placeLattitude : 35.6895;
+  const lng =
+    event.placeLongitude && !isNaN(event.placeLongitude) ? event.placeLongitude : 139.6917;
+  // OSM iframe url
+  const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.02}%2C${lat-0.01}%2C${lng+0.02}%2C${lat+0.01}&layer=mapnik&marker=${lat}%2C${lng}`;
+
+  // Calendar navigation
+  const handlePrevMonth = () => {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear((prev) => (prev !== null ? prev - 1 : currentYear - 1));
+    } else {
+      setCalendarMonth((prev) => (prev !== null ? prev - 1 : currentMonth - 1));
+    }
+  };
+  const handleNextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear((prev) => (prev !== null ? prev + 1 : currentYear + 1));
+    } else {
+      setCalendarMonth((prev) => (prev !== null ? prev + 1 : currentMonth + 1));
+    }
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
@@ -304,13 +327,64 @@ export default function EventDetails() {
         </section>
         <aside className="space-y-6">
           <div className="bg-white p-4 rounded-xl shadow">
-            <h2 className="text-lg font-bold text-blue-700 mb-3">Location</h2>
-            <div className="mt-4 flex items-center justify-center text-blue-500 text-xs bg-blue-50 border border-blue-100 rounded h-24">
-              [Map integration coming soon]
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-bold text-blue-700">Location</h2>
+              <a
+                href={`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary btn-sm px-4 flex items-center gap-2 shadow font-semibold text-base"
+                title="Open map in full screen"
+                style={{ minHeight: "2.5rem" }}
+              >
+                <svg
+                  width={18}
+                  height={18}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                  className="inline-block"
+                >
+                  <path d="M8 3H5a2 2 0 0 0-2 2v3m0 8v3a2 2 0 0 0 2 2h3m8-18h3a2 2 0 0 1 2 2v3m0 8v3a2 2 0 0 1-2 2h-3" />
+                </svg>
+                Open in Fullscreen
+              </a>
+            </div>
+            <div className="mt-4 flex items-center justify-center text-blue-500 text-xs bg-blue-50 border border-blue-100 rounded h-64 overflow-hidden">
+              <iframe
+                title="Event Location Map"
+                src={mapSrc}
+                width="100%"
+                height="220"
+                className="rounded"
+                style={{ border: 0, minWidth: "200px" }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow">
-            <h3 className="text-lg font-bold text-blue-700 mb-1">{monthYear}</h3>
+            <div className="flex items-center justify-between mb-1">
+              <button
+                type="button"
+                aria-label="Previous month"
+                className="p-1 rounded hover:bg-blue-100"
+                onClick={handlePrevMonth}
+              >
+                <ArrowLeft />
+              </button>
+              <h3 className="text-lg font-bold text-blue-700">{monthYear}</h3>
+              <button
+                type="button"
+                aria-label="Next month"
+                className="p-1 rounded hover:bg-blue-100"
+                onClick={handleNextMonth}
+              >
+                <ArrowRight />
+              </button>
+            </div>
             <div className="grid grid-cols-7 gap-1 text-center text-xs w-full">
               {["M", "T1", "W", "T2", "F", "S1", "S2"].map((d, idx) => (
                 <div key={d + idx} className="font-bold text-gray-500">
@@ -319,13 +393,17 @@ export default function EventDetails() {
               ))}
               {Array.from({ length: calendarDays }).map((_, i) => {
                 const day = i + 1;
-                const isStartDay = day === eventStartDay;
-                const isEndDay = day === eventEndDay;
+                const start = isStartDay(day);
+                const end = isEndDay(day);
+                const inRange = isDayInEventRange(day);
+
                 let baseClasses = "rounded py-1 border cursor-default";
-                if (isStartDay) {
-                  baseClasses += " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
-                } else if (isEndDay) {
-                  baseClasses += " bg-orange-400 text-white font-bold border-orange-500 hover:bg-orange-500";
+                if (start) {
+                  baseClasses += " bg-blue-700 text-white font-bold border-green-600 hover:bg-green-600";
+                } else if (end) {
+                  baseClasses += " bg-blue-700 text-white font-bold border-orange-500 hover:bg-orange-500";
+                } else if (inRange) {
+                  baseClasses += " bg-blue-700 text-white font-bold border-blue-800 hover:bg-blue-800";
                 } else {
                   baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
                 }
@@ -333,10 +411,12 @@ export default function EventDetails() {
                   <div
                     key={day}
                     title={
-                      isStartDay
+                      start
                         ? "🎉 Event Start Day!"
-                        : isEndDay
+                        : end
                         ? "🏁 Event End Day!"
+                        : inRange
+                        ? "Multi-day Event"
                         : undefined
                     }
                     className={baseClasses}
