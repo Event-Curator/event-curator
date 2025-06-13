@@ -5,7 +5,7 @@ import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event } from "../mode
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
-import { geocodeAddress, getDistance } from '../utils/geo.js';
+import { geocodeAddress, getDistance, reverseGeocodeAddress } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
 import fs from "fs";
 import md5 from 'md5';
@@ -37,12 +37,12 @@ const scrapEvent = async function (req: Request, res: Response) {
     
     log.info(`caching objects ...`);
     for (let event of result) {
-
         let cachedEvent = await getEvent(event.externalId);
         if (cachedEvent) {
             log.debug(`existing event found, updating data for ${event.externalId}`);
 
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
             await cachedEvent.update({
                 $set: {
                     name: event.name,
@@ -55,6 +55,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                     placeLattitude: event.placeLattitude,
                     placeLongitude: event.placeLongitude,
                     placeFreeform: event.placeFreeform,
+                    placeSuburb: event.placeSuburb,
+                    placeCity: event.placeCity,
+                    placeProvince: event.placeProvince,
+                    placeCountry: event.placeCountry,
 
                     budgetMin: event.budgetMin,
                     budgetMax: event.budgetMax,
@@ -75,6 +79,7 @@ const scrapEvent = async function (req: Request, res: Response) {
 
         } else {
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
 
             await eaCache.events.insert({
                 id: event.externalId,
@@ -91,6 +96,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                 placeLattitude: event.placeLattitude,
                 placeLongitude: event.placeLongitude,
                 placeFreeform: event.placeFreeform,
+                placeSuburb: event.placeSuburb,
+                placeCity: event.placeCity,
+                placeProvince: event.placeProvince,
+                placeCountry: event.placeCountry,
 
                 budgetMin: event.budgetMin,
                 budgetMax: event.budgetMax,
@@ -152,6 +161,10 @@ const searchEvent = async function (req: Request, res: Response) {
         || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
     const placeDistanceRange = Number(req.query.placeDistanceRange) || 0;
+    const placeSuburb = req.query.placeSuburb || '.*';
+    const placeCity = req.query.placeCity || '.*';
+    const placeProvince = req.query.placeProvince || '.*';
+    const placeCountry = req.query.placeCountry || '.*';
     const browserLat = Number(req.query.browserLat) || 0;
     const browserLong = Number(req.query.browserLong) || 0;
 
@@ -192,6 +205,10 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
     searchTerms.push({"placeDistanceRange": placeDistanceRange});
+    searchTerms.push({"placeSuburb": placeSuburb});
+    searchTerms.push({"placeCity": placeCity});
+    searchTerms.push({"placeProvince": placeProvince});
+    searchTerms.push({"placeCountry": placeCountry});
     searchTerms.push({"browserLat": browserLat});
     searchTerms.push({"browserLong": browserLong});
 
@@ -209,6 +226,11 @@ const searchEvent = async function (req: Request, res: Response) {
                     { description: { $regex: description, $options: 'i' } },
                     { category: { $regex: category, $options: 'i' } },
 
+                    { placeSuburb: { $regex: placeSuburb, $options: 'i' } },
+                    { placeCity: { $regex: placeCity, $options: 'i' } },
+                    { placeProvince: { $regex: placeProvince, $options: 'i' } },
+                    { placeCountry: { $regex: placeCountry, $options: 'i' } },
+                    
                     { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
@@ -271,10 +293,12 @@ const getEventById = async function (req: Request, res: Response) {
     if (result.length === 0) {
         res.status(404);
         res.send("the requested ressource is not found");
+        return
     }
 
     res.status(200);
     res.send(result);
+    return
 };
 
 const getSearchHits = async function (req: Request, resp: Response) {

@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import * as TimelineModel from '../models/timeline.js';
 import { log } from '../utils/logger.js';
 import { verifyFriendship } from '../models/friend.js';
-import { getEventById, Event } from '../models/Event.js';
+import { Event } from '../models/Event.js';
+import { getEventById } from '../models/Event.js';
 
 interface TimelineRequestBody {
   user_uid: string;
