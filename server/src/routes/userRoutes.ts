@@ -8,6 +8,7 @@ import {
   getEventsOfFriendCtrl,
   deleteTimelineEntryCtrl,
   publishTimelineCtrl,
+  getSharedTimelineCtrl,
 } from "../controllers/timelineController.js";
 
 import {
@@ -58,5 +59,9 @@ router.post(
   authenticateFirebaseToken,
   publishTimelineCtrl
 );
-
+// ── Publish snapshot ────────────────────────────────────────────
+router.get(
+  "/events/users/timeline/:friendUid",
+  getSharedTimelineCtrl
+);
 export default router;
