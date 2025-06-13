@@ -62,16 +62,6 @@ export default function EventFilters() {
         to = addOneDay(selectedDates[0]).toISOString();
       }
 
-      // Query string with all data from user.
-      // const query = `${api}/events?name=${search}&
-      //   category=${category}&
-      //   budgetMax=${price}&
-      //   placeDistanceRange=${searchRadius}&
-      //   browserLat=${latitude}&
-      //   browserLong=${longitude}
-      //   &datetimeFrom=${from}&
-      //   datetimeTo=${to}`;
-
       let query = `${api}/events?name=${search}&
       category=${category}&
       budgetMax=${price}&
@@ -86,16 +76,12 @@ export default function EventFilters() {
         query += `placeProvince=${prefecture}`;
       }
 
-      console.log("query string:", query);
-
       const response = await fetch(query);
       if (!response.ok) {
         console.error(response);
         setError(true);
       }
       const data = await response.json();
-      console.log(data);
-
       setEvents(data);
     } catch (error) {
       console.error(error);
@@ -109,8 +95,6 @@ export default function EventFilters() {
       alert("Please enter a search term, price, category, dates, or location!");
       return;
     } else {
-      console.log(selectedDates);
-
       getEvents();
     }
   };
