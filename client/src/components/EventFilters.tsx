@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect } from "react";
-// import { prefectures } from "./constants";
 import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
@@ -7,7 +6,11 @@ import usePrefectureList from "../hooks/usePrefectureList";
 import addOneDay from "../utils/addOneDay";
 import type { LocationSearchType, MetaData } from "../types";
 
-export default function EventFilters() {
+interface EventFiltersProps {
+  setDisplayHero: (value: boolean) => void;
+}
+
+export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
   const [eventCategories, setEventCategories] = useState<MetaData[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -82,6 +85,7 @@ export default function EventFilters() {
         setError(true);
       }
       const data = await response.json();
+      setDisplayHero(false);
       setEvents(data);
     } catch (error) {
       console.error(error);
