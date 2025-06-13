@@ -14,7 +14,10 @@ import { categoryImages } from "../assets/categoryImages";
 import { FaHome } from "react-icons/fa";
 import { MdCategory } from "react-icons/md";
 
-export default function EventDetails() {
+const server = import.meta.env.VITE_API;
+
+import React from "react";
+export default function EventDetails(): React.ReactElement {
   const { id } = useParams();
   const navigate = useNavigate();
   const { events, likedEvents, setLikedEvents } = useContext(EventContext);
@@ -215,7 +218,7 @@ export default function EventDetails() {
   const fallbackImage = categoryImages[category] || categoryImages["Other"];
   const imageSrc =
     event.teaserMedia && event.teaserMedia.trim() !== ""
-      ? event.teaserMedia
+      ? (server + "/.." + event.teaserMedia)
       : fallbackImage;
 
   // Map setup: use event latitude/longitude if available, else Tokyo (35.6895, 139.6917)

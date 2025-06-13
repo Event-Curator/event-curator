@@ -4,9 +4,11 @@ import type { FullEventType } from "../types";
 import { auth } from "../firebase";
 import { useIsMobile } from "../utils/useIsMobile";
 import { getMonday, getWeekDates } from "../utils/eventUtils";
-import TableView from "./TableView";
-import WeekCalendarView from "./WeekCalendarView";
+import TableView from "../components/TableView";
+import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
+
+
 
 // ShareTimelineButton for timeline (not per event)
 function ShareTimelineButton({ timelineId }: { timelineId: string }) {

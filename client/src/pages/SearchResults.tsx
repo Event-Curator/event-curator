@@ -1,9 +1,9 @@
-import { useLocation } from "react-router";
+//import { useLocation } from "react-router";
 import EventSection from "../components/EventSection";
 import EventFilters from "../components/EventFilters";
 
 export default function SearchResults() {
-  const location = useLocation();
+  //const location = useLocation();
   const params = new URLSearchParams(location.search);
   const query = params.get("q") || "";
 

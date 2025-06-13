@@ -28,11 +28,12 @@ export default function EventPreviewCard({
     displayCategory = categoryFreeform;
   }
 
+  const server = import.meta.env.VITE_API;
   const fallbackImage = categoryImages[category] || categoryImages["Other"];
 
   const imageSrc =
     imageUrl && imageUrl.trim() !== ""
-      ? imageUrl
+      ? (server + "/.." + imageUrl)
       : fallbackImage;
 
   return (
