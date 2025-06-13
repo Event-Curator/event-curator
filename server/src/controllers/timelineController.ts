@@ -1,21 +1,24 @@
 // src/controllers/timelineController.ts
+
 import { RequestHandler } from 'express';
 import {
   addTimelineEntry,
   deleteTimelineEntry,
   fetchEventsForUser,
-  shareTimeline
+  shareTimeline,
+  getSharedTimeline,
+  type SharedEntry
 } from '../models/timeline.js';
 import { verifyFriendship } from '../models/friend.js';
 import { getEventById, Event } from '../models/Event.js';
 import { log } from '../utils/logger.js';
 
-interface CreateBody     { event_external_id: string }
-interface PublishBody    { timestamp: string }
-interface FriendParams   { friendUid: string }
+interface CreateBody   { event_external_id: string }
+interface PublishBody  { timestamp: string }
+interface FriendParams { friendUid: string }
 
 // ── Create a new timeline entry ─────────────────────────────────
-export const createTimelineEntry: RequestHandler<{}, any, CreateBody> = 
+export const createTimelineEntry: RequestHandler<{}, any, CreateBody> =
 async (req, res, next) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -40,7 +43,7 @@ async (req, res, next) => {
 };
 
 // ── Delete a timeline entry ──────────────────────────────────────
-export const deleteTimelineEntryCtrl: RequestHandler<{}, any, CreateBody> = 
+export const deleteTimelineEntryCtrl: RequestHandler<{}, any, CreateBody> =
 async (req, res, next) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -76,7 +79,7 @@ export const getEventsForUserCtrl: RequestHandler = async (req, res, next) => {
     log.info(`Fetching timeline for ${userUid}`);
     const rows = await fetchEventsForUser(userUid);
 
-    const seen: string[]   = [];
+    const seen: string[] = [];
     const fullEvents: Event[] = [];
     for (const { event_external_id } of rows) {
       if (!seen.includes(event_external_id)) {
@@ -97,7 +100,7 @@ export const getEventsForUserCtrl: RequestHandler = async (req, res, next) => {
 };
 
 // ── Fetch all events for a friend ────────────────────────────────
-export const getEventsOfFriendCtrl: RequestHandler= 
+export const getEventsOfFriendCtrl: RequestHandler =
 async (req, res, next) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
@@ -122,14 +125,14 @@ async (req, res, next) => {
 };
 
 // ── Publish the user’s timeline snapshot ─────────────────────────
-export const publishTimelineCtrl: RequestHandler<{}, any, PublishBody> = 
+export const publishTimelineCtrl: RequestHandler<{}, any, PublishBody> =
 async (req, res, next) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
-  const userUid  = req.user.uid;
+  const userUid = req.user.uid;
   const { timestamp } = req.body;
   if (!timestamp) {
     res.status(400).json({ error: 'Missing timestamp' });
@@ -147,6 +150,20 @@ async (req, res, next) => {
     res.status(201).json({ shared });
   } catch (err) {
     log.error('publishTimeline error:', err);
+    next(err);
+  }
+};
+
+// ── Fetch the latest public snapshot for a user ─────────────────
+export const getSharedTimelineCtrl: RequestHandler<FriendParams> =
+async (req, res, next) => {
+  const userUid = req.params.friendUid;
+  try {
+    log.info(`Fetching shared timeline for ${userUid}`);
+    const shared: SharedEntry[] = await getSharedTimeline(userUid);
+    res.status(200).json({ user_uid: userUid, shared });
+  } catch (err) {
+    log.error(`getSharedTimeline error for ${userUid}:`, err);
     next(err);
   }
 };
