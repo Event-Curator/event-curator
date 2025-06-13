@@ -6,7 +6,7 @@ import { Event } from '../models/Event.js';
 import fs from 'node:fs';
 import zlib from 'node-gzip';
 import knex from '../knex.js';
-import { cacheNameEnum} from '../Models/Model.js';
+import { cacheNameEnum} from '../models/Model.js';
 
 const scheduleBackup = () => {
     cron.schedule(config.backupSchedule, () => {
