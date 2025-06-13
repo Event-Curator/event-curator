@@ -11,7 +11,8 @@ import {
 import type { User } from "firebase/auth";
 import AuthModal from "./AuthModal";
 import RegisterModal from "./RegisterModal";
-import defaultAvatar from "../assets/default-avatar.webp";
+import eventIcon from "../assets/eventicon.png";
+import userLogo from "../assets/userlogo.png";
 
 export default function Navbar() {
   const [email, setEmail] = useState("");
@@ -87,8 +88,7 @@ export default function Navbar() {
     setUser(null);
   };
 
-  // Avatar logic: use Google avatar if logged in with Google, otherwise default
-  let avatarUrl = defaultAvatar;
+  let avatarUrl = userLogo;
   let isGoogleUser = false;
   if (user) {
     isGoogleUser = user.providerData.some(
@@ -121,9 +121,9 @@ export default function Navbar() {
         {/* Logo & Title */}
         <div className="flex items-center gap-3">
           <Link to="/" className="flex items-center gap-3">
-            <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-7 w-7" />
+            <img src={eventIcon} alt="logo" className="h-20 w-20" />
             <span className="text-2xl font-bold text-blue-700 tracking-wide">
-              Event Curator
+              Japan-Events.com
             </span>
           </Link>
         </div>
@@ -131,7 +131,7 @@ export default function Navbar() {
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
           {user && (
-            <Link to="/timeline" className="btn btn-ghost btn-sm text-blue-700">
+            <Link to="/timeline" className="btn btn-ghost btn-lg text-blue-700">
               My Event Timeline
             </Link>
           )}
@@ -142,13 +142,13 @@ export default function Navbar() {
           {user ? (
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 h-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                  <img
+               <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 transition">
+                <img 
                     src={avatarUrl}
                     alt="avatar"
                     className="object-cover w-full h-full"
                     onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                      (e.currentTarget as HTMLImageElement).src = userLogo;
                     }}
                   />
                 </div>
@@ -162,7 +162,7 @@ export default function Navbar() {
                         alt="avatar"
                         className="object-cover w-full h-full"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                          (e.currentTarget as HTMLImageElement).src = userLogo;
                         }}
                       />
                     </div>
@@ -215,7 +215,7 @@ export default function Navbar() {
                         alt="avatar"
                         className="object-cover w-full h-full"
                         onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = defaultAvatar;
+                          (e.currentTarget as HTMLImageElement).src = userLogo;
                         }}
                       />
                     </div>
@@ -248,7 +248,7 @@ export default function Navbar() {
         </div>
         <div className="flex items-center space-x-2">
           <Link to="/" className="flex items-center space-x-2">
-            <img src="https://cdn-icons-png.flaticon.com/512/609/609803.png" alt="logo" className="h-6 w-6" />
+            <img src={eventIcon} alt="logo" className="h-6 w-6" />
             <span className="text-lg font-bold text-blue-700">
               Event Curator
             </span>
