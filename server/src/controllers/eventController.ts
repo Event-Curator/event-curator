@@ -351,6 +351,41 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
 // -------------------------- utility functions for website implementations
 
+// wait for x ms and handle 3 fetch retry counts if something fails
+// returns the html content as a string
+const throtthledFetch = async function (url: string, ms: number ): Promise<string> {
+    if (url === '') {
+        log.error("Oops, requesting a blank url");
+        return "";
+    }
+
+    let ok = false;
+    let html = "";
+
+    for (let retryCount = 0; retryCount<=3; retryCount++) {
+        await sleep(ms);
+
+        const res = await fetch(url);
+        html = await res.text();
+
+        ok = (html.indexOf("Error 1015") < 0 && html.length > 0) ? true : false;
+        if (ok) break;
+
+        log.warn(`looks we are rate limited from cloudflare, pause for 2 seconds before retrying (#${retryCount})`);
+    }
+    
+    if (!ok) {
+        log.error("looks like fetch is still blocked (error 1015) by cloudflare after 3 retry.");
+    }
+
+    return html;
+}
+
+// await this to block for x milliseconds.
+const sleep = async function (s: number) {
+    return new Promise( resolve => setTimeout( resolve, s ));
+}
+
 // save the media behind a given url locally and return the "local url" (or undefined if error)
 // the return path can be used as the new filepath below express static "/media"
 const saveMedia = async function (url: string) {
@@ -396,5 +431,30 @@ const saveMedia = async function (url: string) {
     }
 }
 
+const debugHtml = function(t: unknown): undefined | string {
+    if (t === undefined) return undefined
+    else if (t === null) return 'null'
+    else if (typeof t == 'bigint') throw TypeError('stringifyJSON cannot serialize BigInt')
+    else if (typeof t == 'number') return String(t)
+    else if (typeof t == 'boolean') return t ? 'true' : 'false'
+    else if (typeof t == 'string') return '"' + t.replace(/"/g, '\\"') + '"'
+    else if (typeof t == 'object') return Array.isArray(t) 
+        ? '[' + Array.from(t, v => debugHtml(v) ?? 'null').join(',') + ']'
+        : '{' + Object.entries(t)
+                .map(([k,v]) => [debugHtml(k), debugHtml(v)])
+                .filter(([k,v]) => v !== undefined)
+                .map(entry => entry.join(':'))
+                .join(',') + '}'
+    else return undefined
+}
 
-export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }
+export { 
+    scrapEvent,
+    searchEvent,
+    getEventById,
+    getSearchHits,
+    throtthledFetch,
+    sleep,
+    saveMedia,
+    debugHtml
+}

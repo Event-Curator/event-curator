@@ -181,3 +181,14 @@ the response will looks like
     }
 ]
 ```
+
+## Scraping a new website.
+
+### prepare the source files:
+
+note: in all case, please respect the naming convention of the different object type, which are:
+- ```websiteid``` = take the domainname, all lowercase and ascii letter
+- ```controller name```=  websiteid but in camelCase
+ 
+As a preliminary step, thinks to consider are:
+- clone the ```server/src/controllers/_templateEventSource.ts``` file
