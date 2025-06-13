@@ -16,6 +16,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.static("./client/dist"));
+app.use("/media", express.static(`${config.mediaStoragePath}`));
 app.use("/api", eventRoute);
 app.use("/api", userRoute);
 app.use(errorHandler);

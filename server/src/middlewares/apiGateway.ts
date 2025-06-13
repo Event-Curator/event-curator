@@ -6,13 +6,16 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { getAjv } from 'rxdb/plugins/validate-ajv';
 import { replicateRxCollection } from 'rxdb/plugins/replication';
 import { Subject } from 'rxjs/internal/Subject';
-import { doRestore } from '../utils/persistence.js';
+import { doEventsRestore, doGeocodingRestore, doReverseGeocodingRestore } from '../utils/persistence.js';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 
 let eaCache;
 
 addRxPlugin(RxDBDevModePlugin);
-
+addRxPlugin(RxDBUpdatePlugin);
 const restoreEventStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+const restoreGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
+const restoreReverseGeocodingStream$ = new Subject<RxReplicationPullStreamItem<any, any>>();
 
 async function initCache() {
     eaCache = await createRxDatabase({
@@ -37,7 +40,7 @@ async function initCache() {
         return !isNaN(Date.parse(dateTimeString));
     });
 
-    let myCollection = await eaCache.addCollections({
+    let eventCache = await eaCache.addCollections({
         events: {
             schema: {
                 version: 0,
@@ -86,6 +89,18 @@ async function initCache() {
                     placeFreeform: {
                         type: 'string'
                     },
+                    placeSuburb: {
+                        type: 'string'
+                    },
+                    placeCity: {
+                        type: 'string'
+                    },
+                    placeProvince: {
+                        type: 'string'
+                    },
+                    placeCountry: {
+                        type: 'string'
+                    },
 
                     budgetMin: {
                         type: 'number'
@@ -131,21 +146,21 @@ async function initCache() {
         }
     });
     
-    const replicationState = replicateRxCollection({
-        collection: myCollection.events,
-        replicationIdentifier: 'my-http-replication',
+    const eventsReplicationState = replicateRxCollection({
+        collection: eventCache.events,
+        replicationIdentifier: 'events-replication',
         autoStart: true,
         retryTime: 10,
         pull: {
             stream$: restoreEventStream$.asObservable(),
             batchSize: 10000,
-            handler: doRestore as any,
+            handler: doEventsRestore as any,
         }
     });
 
     // from human-readable address to map coordinate
     // = MD5(placeFreeform.toLowercase())
-    await eaCache.addCollections({
+    let geocodingCache = await eaCache.addCollections({
         geocoding: {
             schema: {
                 version: 0,
@@ -158,7 +173,7 @@ async function initCache() {
                     },
 
                     lat: {
-                        type: 'number',
+                        type: 'number'
                     },
 
                     long: {
@@ -170,6 +185,60 @@ async function initCache() {
         }
     });
 
+    const geocodingReplicationState = replicateRxCollection({
+        collection: geocodingCache.geocoding,
+        replicationIdentifier: 'geocoding-replication',
+        autoStart: true,
+        retryTime: 10,
+        pull: {
+            stream$: restoreGeocodingStream$.asObservable(),
+            batchSize: 10000,
+            handler: doGeocodingRestore as any,
+        }
+    });
+
+    // from human-readable address to map coordinate
+    // = MD5(placeFreeform.toLowercase())
+    let reverseGeocodingCache = await eaCache.addCollections({
+        reverseGeocoding: {
+            schema: {
+                version: 0,
+                primaryKey: 'id',
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'string',
+                        maxLength: 32
+                    },
+                    placeSuburb: {
+                        type: 'string'
+                    },
+                    placeCity: {
+                        type: 'string'
+                    },
+                    placeProvince: {
+                        type: 'string'
+                    },
+                    placeCountry: {
+                        type: 'string'
+                    },
+                },
+                required: ['id']
+            }
+        }
+    });
+
+    const reverseGeocodingReplicationState = replicateRxCollection({
+        collection: reverseGeocodingCache.reverseGeocoding,
+        replicationIdentifier: 'reverse-geocoding-replication',
+        autoStart: true,
+        retryTime: 10,
+        pull: {
+            stream$: restoreReverseGeocodingStream$.asObservable(),
+            batchSize: 10000,
+            handler: doReverseGeocodingRestore as any,
+        }
+    });
 }
 
-export { initCache, eaCache, restoreEventStream$ }
+export { initCache, eaCache, restoreEventStream$, restoreGeocodingStream$, restoreReverseGeocodingStream$ }

@@ -4,6 +4,8 @@ import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
 import { log } from "../utils/logger.js";
 import config from "../utils/config.js";
+import * as ec from "./eventController.js";
+
 moment().format();
 
 class JapanconcertticketsEventSource extends DefaultEventSource {
@@ -162,7 +164,11 @@ class JapanconcertticketsEventSource extends DefaultEventSource {
           anEvent.teaserFreeform = val;
           
           let eventDetail = await this.getEventDetail(anEvent.originUrl, _eventDate);
+
           anEvent.teaserMedia = eventDetail.teaserMedia;
+          let localUrl = await ec.saveMedia(anEvent.teaserMedia);
+          if (localUrl) { anEvent.teaserMedia = localUrl };
+
           anEvent.description = eventDetail.description;
           anEvent.placeFreeform = eventDetail.placeFreeform;
           anEvent.budgetFreeform = eventDetail.budgetFreeform;

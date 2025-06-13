@@ -1,5 +1,6 @@
 import md5 from 'md5';
 import { eaCache } from '../middlewares/apiGateway.js';
+import { blob } from 'stream/consumers';
 
 export const ES_SEARCH_IN_CACHE = 0x1;    // this event source will use the local cache for search query
 export const ES_SEARCH_REMOTE = 0x2;      // this event source will make a remote api query for search
@@ -60,6 +61,10 @@ export class Event implements EventType {
   placeLongitude: number;
   placeFreeform: string;
   placeDistance: number;
+  placeSuburb: string;
+  placeCity: string;
+  placeProvince: string;
+  placeCountry: string;
   budgetMin: number;
   budgetMax: number;
   budgetCurrency: string;
@@ -85,6 +90,10 @@ export class Event implements EventType {
     this.placeLongitude = 0;
     this.placeFreeform = "";
     this.placeDistance = 0;
+    this.placeSuburb = "";
+    this.placeCity = "";
+    this.placeProvince = "";
+    this.placeCountry = "";
     this.budgetMin = 0;
     this.budgetMax = 0;
     this.budgetCurrency = "USD";
@@ -95,7 +104,7 @@ export class Event implements EventType {
     this.category = EventCategoryEnum.OTHER;
     this.categoryFreeform = "";
     this.size = EventSizeEnum.M;
-    this.sizeFreeform = ""
+    this.sizeFreeform = "";
   }
 }
 
@@ -110,7 +119,7 @@ export type EventType = {
   teaserText: string;
   teaserMedia: string;
   teaserFreeform: string;
-
+  
   // location stuff
   // detail will be fetched at run time, asynchronously
   // https://support.google.com/maps/answer/18539?hl=en&co=GENIE.Platform%3DDesktop
@@ -119,15 +128,20 @@ export type EventType = {
   placeLongitude: number;
   placeFreeform: string;
   placeDistance: number;        // #meters between the user location and the event's coordinates
-                                // only available in searchResult if includeDistance is set
+  placeSuburb: string;
+  placeCity: string;
+  placeProvince: string;
+  placeCountry: string;
 
+  // only available in searchResult if includeDistance is set
+  
   // princing stuff
   // all is in Yen. o means free
   budgetMin: number;
   budgetMax: number;
   budgetCurrency: string;    // USD, EUR, ...
   budgetFreeform: string;
-
+  
   // schedule stuff
   // GMT
   datetimeFrom: Date;
@@ -137,11 +151,11 @@ export type EventType = {
   // category of this event
   category: EventCategoryEnum;
   categoryFreeform: string;
-
+  
   // size of the event
   size: EventSizeEnum;
   sizeFreeform: string;
-
+  
   // getOriginId: () => {};
 }
 

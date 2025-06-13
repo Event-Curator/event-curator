@@ -13,6 +13,7 @@ import { EventCategoryEnum, EventType, Event } from '../models/Event.js';
 import config from '../utils/config.js';
 import { log } from '../utils/logger.js';
 import { DefaultEventSource } from './DefaultEventSource.js';
+import * as ec from "./eventController.js";
 
 class AllsportdbEventSource extends DefaultEventSource {
 
@@ -52,7 +53,10 @@ class AllsportdbEventSource extends DefaultEventSource {
             anEvent.name = event.competition;
             anEvent.description = event.name;
             anEvent.teaserText = event.sport;
+
             anEvent.teaserMedia = event.webUrl;
+            let localUrl = await ec.saveMedia(anEvent.teaserMedia);
+            if (localUrl) { anEvent.teaserMedia = localUrl };
 
             anEvent.budgetCurrency = this.CURRENCY;
             anEvent.budgetMin = 0;
@@ -65,6 +69,20 @@ class AllsportdbEventSource extends DefaultEventSource {
 
             anEvent.category = EventCategoryEnum.SPORT;
             anEvent.categoryFreeform = event.sport;
+
+            // some events span multiple country and/or cities
+            // we get the country only if there is only one, same for city
+            if (event.location.length === 1) {
+              let country = event.location[0].name.toLowerCase();
+
+              if (event.location[0].locations.length === 1) {
+                let city = event.location[0].locations[0].name.toLowerCase();
+                anEvent.placeFreeform = `${city}, ${country}`;
+
+              } else {
+                anEvent.placeFreeform = country
+              }
+            }
 
             // FIXME
             // wikiUrl
