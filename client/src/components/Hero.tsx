@@ -2,11 +2,11 @@ import heroImg from "../assets/Matsuri.jpg";
 
 export default function Hero() {
   return (
-    <section className="relative w-full h-56 md:h-64 flex items-center justify-center bg-blue-900 mb-6">
+    <section className="relative w-full h-80 md:h-[20rem] flex items-center justify-center bg-blue-900 mb-6">
       <img
         src={heroImg}
         alt="Events Hero"
-        className="absolute inset-0 w-full h-full object-cover opacity-70"
+        className="absolute inset-0 w-full h-full object-cover"
         draggable={false}
       />
       

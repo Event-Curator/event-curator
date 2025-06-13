@@ -16,6 +16,11 @@ export interface FullEventType {
   placeLongitude: number;
   placeFreeform: string;
 
+  organizer?: string;
+  website?: string;
+  details?: string; // additional details?
+  notes?: string; // additional notes?
+
   // princing stuff
   // all is in Yen. o means free
   budgetMin: number;
@@ -49,7 +54,7 @@ export interface GeolocationData {
   userRefused: boolean;
 }
 
-export interface CategoryMetaData {
+export interface MetaData {
   name: string;
   count: number;
   label: string;
