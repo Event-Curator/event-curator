@@ -7,6 +7,7 @@ import EventTimeline from "./pages/EventTimeline";
 import Profile from "./pages/ProfileSettings";
 import EventContext from "./context/EventContext";
 import type { FullEventType } from "./types";
+import SearchResults from "./pages/SearchResults";
 
 export default function App() {
   const [events, setEvents] = useState<FullEventType[]>([]);
@@ -22,7 +23,8 @@ export default function App() {
               <Route path=":id" element={<EventDetails />} />
             </Route>
             <Route path="timeline" element={<EventTimeline />} />
-            <Route path="/profile" element={<Profile />} /> 
+            <Route path="search" element={<SearchResults />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { categoryImages } from "../assets/categoryImages";
 
 interface EventPreviewCardProps {
   id: string;
@@ -22,15 +23,17 @@ export default function EventPreviewCard({
   price,
   imageUrl,
 }: EventPreviewCardProps) {
+  let displayCategory = category;
   if (category === "Other" && categoryFreeform) {
-    category = categoryFreeform;
+    displayCategory = categoryFreeform;
   }
 
- 
+  const fallbackImage = categoryImages[category] || categoryImages["Other"];
+
   const imageSrc =
     imageUrl && imageUrl.trim() !== ""
       ? imageUrl
-      : "https://via.placeholder.com/160x160?text=No+Image";
+      : fallbackImage;
 
   return (
     <Link
@@ -48,7 +51,7 @@ export default function EventPreviewCard({
       </div>
       <div className="flex flex-col justify-between flex-1 p-4">
         <span className="uppercase text-xs font-semibold text-blue-600 mb-1">
-          {category}
+          {displayCategory}
         </span>
         <h3 className="text-lg font-bold text-gray-800 mb-1">{name}</h3>
         <div className="text-gray-500 text-m mb-2">{date}</div>
