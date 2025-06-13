@@ -25,5 +25,7 @@ export default function usePrefectureList() {
     getPrefectureList();
   }, [api]);
 
+  prefectureList.sort((a, b) => a.name.localeCompare(b.name));
+
   return { prefectureList, prefectureListError };
 }
