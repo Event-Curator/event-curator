@@ -1,7 +1,9 @@
 import { useState, useContext, useEffect } from "react";
 import { prefectures } from "./constants";
+import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
+import addOneDay from "../utils/addOneDay";
 import type { LocationSearchType, CategoryMetaData } from "../types";
 
 export default function EventFilters() {
@@ -10,15 +12,18 @@ export default function EventFilters() {
   );
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [selectedDates, setSelectedDates] = useState<Date[] | undefined>(
+    undefined
+  );
   const [prefecture, setPrefecture] = useState("");
   const [searchRadius, setSearchRadius] = useState(0);
-  const [price, setPrice] = useState("");
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
-  const [error, setError] = useState(false);
-  const { setEvents } = useContext(EventContext);
   const { latitude, longitude, userRefused } = useGetPosition();
+  const [error, setError] = useState(false);
 
+  const { setEvents } = useContext(EventContext);
   const api = import.meta.env.VITE_API;
 
   useEffect(() => {
@@ -42,14 +47,35 @@ export default function EventFilters() {
 
   async function getEvents() {
     try {
-      const response = await fetch(
-        `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`
-      );
+      // Get to and from dates. This requires a little extra processsing to account for
+      // cases where user can enter undefined. If the user only selects on day, the "to"
+      // var is set to that day + 24h to create a meaningful range to search.
+      const from =
+        selectedDates !== undefined ? selectedDates[0].toISOString() : "";
+      let to = "";
+      if (selectedDates !== undefined && selectedDates[1] !== undefined) {
+        to = selectedDates[1].toISOString();
+      } else if (
+        selectedDates !== undefined &&
+        selectedDates[1] === undefined
+      ) {
+        to = addOneDay(selectedDates[0]).toISOString();
+      }
+
+      // Query string with all data from user.
+      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${from}&datetimeTo=${to}`;
+
+      console.log("query string:", query);
+
+      const response = await fetch(query);
+
       if (!response.ok) {
         console.error(response);
         setError(true);
       }
       const data = await response.json();
+      console.log(data);
+
       setEvents(data);
     } catch (error) {
       console.error(error);
@@ -59,10 +85,12 @@ export default function EventFilters() {
 
   const handleSearch = () => {
     // Allow search if there is text in the search bar, or a category, price, or a location
-    if (!search && !category && !location && !price) {
-      alert("Please enter a search term, price, category, or location!");
+    if (!search && !category && !location && !price && !selectedDates) {
+      alert("Please enter a search term, price, category, dates, or location!");
       return;
     } else {
+      console.log(selectedDates);
+
       getEvents();
     }
   };
@@ -109,12 +137,6 @@ export default function EventFilters() {
               }
             }}
           />
-          <button
-            className="btn btn-primary rounded-l-none"
-            onClick={handleSearch}
-          >
-            🔍
-          </button>
         </div>
       </div>
       {/* Search by category */}
@@ -153,6 +175,15 @@ export default function EventFilters() {
             ¥
           </span>
         </div>
+      </div>
+
+      {/* Search by dates */}
+      <div className="flex flex-row items-center gap-2 mb-2">
+        <p>Dates</p>
+        <Calendar
+          selectedDates={selectedDates}
+          setSelectedDates={setSelectedDates}
+        />
       </div>
 
       {/* Search type */}
