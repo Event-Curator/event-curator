@@ -11,7 +11,7 @@ export default function SearchResults() {
     <main className="max-w-7xl mx-auto px-4 py-10">
       {/* Search and filter box at the top */}
       <div className="mb-8">
-        <EventFilters />
+        <EventFilters setDisplayHero={() => {}} />
       </div>
       <h2 className="text-2xl font-bold mb-6">Search Results for "{query}"</h2>
       <EventSection searchQuery={query} />

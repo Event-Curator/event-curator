@@ -215,7 +215,7 @@ export default function EventDetails(): React.ReactElement {
   const category = event.category || "Other";
   const categoryFreeform = event.categoryFreeform;
   const displayCategory = category === "Other" && categoryFreeform ? categoryFreeform : category;
-  const fallbackImage = categoryImages[category] || categoryImages["Other"];
+  const fallbackImage = categoryImages[category];
   const imageSrc =
     event.teaserMedia && event.teaserMedia.trim() !== ""
       ? (server + "/.." + event.teaserMedia)
