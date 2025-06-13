@@ -1,6 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import * as TimelineModel from '../models/timeline.js';
-import { log } from '../utils/logger.js';
+// src/controllers/timelineController.ts
+import { RequestHandler } from 'express';
+import {
+  addTimelineEntry,
+  deleteTimelineEntry,
+  fetchEventsForUser,
+  shareTimeline
+} from '../models/timeline.js';
 import { verifyFriendship } from '../models/friend.js';
 import { Event } from '../models/Event.js';
 import { getEventById } from '../models/Event.js';
@@ -64,23 +69,17 @@ export const deleteTimelineEntry = async (
   }
 };
 
-/**
- * Controller: retrieve all events joined by the authenticated user
- */
-export const getEventsForUser = async (
-  req: Request<{}, {}, {}, { user_uid: string }>,
-  res: Response,
-  next:NextFunction
-): Promise<void> => {
-  const { user_uid } = req.query;
+// ── Fetch all events for the authenticated user ─────────────────
+export const getEventsForUserCtrl: RequestHandler = async (req, res, next) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
 
+  const userUid = req.user.uid;
   try {
-    if (!user_uid) {
-      res.status(400).json({ error: 'Missing user_uid in URL params' });
-      return;
-    }
-    log.info(`Fetching events for user: ${user_uid}`);
-    const events = await TimelineModel.fetchEventsForUser(user_uid.toString());
+    log.info(`Fetching timeline for ${userUid}`);
+    const rows = await fetchEventsForUser(userUid);
 
     let fullEvents: Event[] = [];
     let scheduleDedup: string[] = [];
@@ -103,47 +102,68 @@ export const getEventsForUser = async (
         fullEvents.push(ev);
       }
     }
-    
-    fullEvents.sort( (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime() )
+    fullEvents.sort((a, b) =>
+      new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
+    );
 
-    res.status(200).json({ user_uid, fullEvents });
-
-  } catch (error) {
-    log.error(`Error fetching events for user ${req.user?.uid}:`, error);
-    next(error);
+    res.status(200).json({ user_uid: userUid, events: fullEvents });
+  } catch (err) {
+    log.error(`getEventsForUser error for ${userUid}:`, err);
+    next(err);
   }
 };
 
-/**
- * Controller: retrieve all events for a friend of the authenticated user
- * Verifies the users are friends before fetching
- */
-export const getEventsOfFriend = async (
-  req: Request<{ user_uid: string }>,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// ── Fetch all events for a friend ────────────────────────────────
+export const getEventsOfFriendCtrl: RequestHandler= 
+async (req, res, next) => {
   if (!req.user) {
-    throw new Error('Auth middleware did not set req.user');
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
   }
 
+  const currentUser = req.user.uid;
+  const friendUid   = req.params.friendUid;
   try {
-    const currentUserUid = req.user.uid;
-    const friendUid = req.params.user_uid;
-
-    // Verify they are friends
-    const isFriend = await verifyFriendship(currentUserUid, friendUid);
-    if (!isFriend) {
-      res.status(403).json({ error: 'Not friends with specified user' });
+    if (!(await verifyFriendship(currentUser, friendUid))) {
+      res.status(403).json({ error: 'Not friends' });
       return;
     }
 
-    log.info(`Fetching events for friend: ${friendUid}`);
-    const events = await TimelineModel.fetchEventsForUser(friendUid);
+    log.info(`Fetching timeline for friend ${friendUid}`);
+    const rows = await fetchEventsForUser(friendUid);
+    res.status(200).json({ user_uid: friendUid, events: rows });
+  } catch (err) {
+    log.error(`getEventsOfFriend error:`, err);
+    next(err);
+  }
+};
 
-    res.status(200).json({ user_uid: friendUid, events });
-  } catch (error) {
-    log.error(`Error fetching events for friend ${req.params.user_uid}:`, error);
-    next(error);
+// ── Publish the user’s timeline snapshot ─────────────────────────
+export const publishTimelineCtrl: RequestHandler<{}, any, PublishBody> = 
+async (req, res, next) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  const userUid  = req.user.uid;
+  const { timestamp } = req.body;
+  if (!timestamp) {
+    res.status(400).json({ error: 'Missing timestamp' });
+    return;
+  }
+  const publishAt = new Date(timestamp);
+  if (isNaN(publishAt.getTime())) {
+    res.status(400).json({ error: 'Invalid timestamp' });
+    return;
+  }
+
+  try {
+    log.info(`Publishing timeline for ${userUid} at ${publishAt.toISOString()}`);
+    const shared = await shareTimeline(userUid);
+    res.status(201).json({ shared });
+  } catch (err) {
+    log.error('publishTimeline error:', err);
+    next(err);
   }
 };
