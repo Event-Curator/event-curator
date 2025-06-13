@@ -65,11 +65,11 @@ export default function EventCalendar({
 
           let baseClasses = "rounded py-1 border cursor-default";
           if (start) {
-            baseClasses += " bg-blue-700 text-white font-bold border-green-600 hover:bg-green-600";
+            baseClasses += " bg-blue-700 text-white font-bold border-blue-700 hover:bg-blue-800";
           } else if (end) {
-            baseClasses += " bg-blue-700 text-white font-bold border-orange-500 hover:bg-orange-500";
+            baseClasses += " bg-blue-700 text-white font-bold border-blue-700 hover:bg-blue-800";
           } else if (inRange) {
-            baseClasses += " bg-blue-700 text-white font-bold border-blue-800 hover:bg-blue-800";
+            baseClasses += " bg-blue-700 text-white font-bold border-blue-700 hover:bg-blue-800";
           } else {
             baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
           }

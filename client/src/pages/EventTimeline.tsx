@@ -26,33 +26,15 @@ function ShareTimelineButton({ timelineId }: { timelineId: string }) {
     <>
       <button
         type="button"
-        className="ml-2 bg-transparent rounded-full p-1 shadow hover:bg-blue-100 z-10 transition-colors"
+        className="btn btn-outline btn-sm rounded-md"
         title="Share timeline"
         onClick={e => {
           e.stopPropagation();
           setOpen(true);
         }}
-        tabIndex={-1}
         style={{ lineHeight: 0 }}
       >
-        <svg
-          width={30}
-          height={30}
-          fill="none"
-          stroke="#2761da"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-          style={{
-            display: "block",
-            borderRadius: "50%",
-            boxSizing: "border-box",
-            background: "transparent"
-          }}
-        >
-          <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-          <path d="M16 6l-4-4-4 4" />
-          <path d="M12 2v14" />
-        </svg>
+        Share
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
@@ -228,24 +210,28 @@ export default function EventTimeline() {
           <h1 className="text-2xl md:text-3xl font-bold text-blue-700 text-center">
             My Event Timeline
           </h1>
-          {/* Desktop: Toggle button and Share button */}
-          {!isMobile && (
-            <div className="flex gap-2 items-center">
-              <button
-                className={`btn btn-outline btn-sm rounded-md ${viewMode === "table" ? "btn-active btn-primary" : ""}`}
-                onClick={() => setViewMode("table")}
-              >
-                Table View
-              </button>
-              <button
-                className={`btn btn-outline btn-sm rounded-md ${viewMode === "calendar" ? "btn-active btn-primary" : ""}`}
-                onClick={() => setViewMode("calendar")}
-              >
-                Week View
-              </button>
+          {/* Buttons: Only Share on mobile, all on desktop */}
+          <div className="flex gap-2 items-center">
+            {isMobile ? (
               <ShareTimelineButton timelineId={timelineId} />
-            </div>
-          )}
+            ) : (
+              <>
+                <button
+                  className={`btn btn-outline btn-sm rounded-md ${viewMode === "table" ? "btn-active btn-primary" : ""}`}
+                  onClick={() => setViewMode("table")}
+                >
+                  Table View
+                </button>
+                <button
+                  className={`btn btn-outline btn-sm rounded-md ${viewMode === "calendar" ? "btn-active btn-primary" : ""}`}
+                  onClick={() => setViewMode("calendar")}
+                >
+                  Week View
+                </button>
+                <ShareTimelineButton timelineId={timelineId} />
+              </>
+            )}
+          </div>
         </div>
 
         {/* Main Content */}

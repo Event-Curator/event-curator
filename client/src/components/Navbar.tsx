@@ -87,7 +87,7 @@ export default function Navbar() {
     setUser(null);
   };
 
-  // Avatar logic: use Google avatar if logged in with Google, otherwise default
+  
   let avatarUrl = defaultAvatar;
   let isGoogleUser = false;
   if (user) {
@@ -131,7 +131,7 @@ export default function Navbar() {
         {/* Main Navigation */}
         <div className="flex items-center gap-4">
           {user && (
-            <Link to="/timeline" className="btn btn-ghost btn-xl text-blue-700">
+            <Link to="/timeline" className="btn btn-ghost btn-lg text-blue-700">
               My Event Timeline
             </Link>
           )}
