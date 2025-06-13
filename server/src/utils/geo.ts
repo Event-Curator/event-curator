@@ -5,6 +5,7 @@ import { log } from "./logger.js";
 import { getConfig, sleep } from "./util.js";
 import * as geolib from 'geolib';
 import { geocodingTypeEnum } from "../models/Model.js";
+import { endWith } from "rxjs";
 
 const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
 const OSM_REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
@@ -64,7 +65,7 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     if (myConfig.geocodingLookupType === geocodingTypeEnum.STATICMAP) {
         let map =  myConfig.geocodingStaticMap || [];
         for (let key of Object.keys(map)) {
-            if (placeToLookup === key) {
+            if (placeToLookup.startsWith(key) || placeToLookup.endsWith(key)) {
                 event.placeLattitude = map[key][0];
                 event.placeLongitude = map[key][1];
 
