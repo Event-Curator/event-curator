@@ -1,15 +1,14 @@
 import { useState, useContext, useEffect } from "react";
-import { prefectures } from "./constants";
+// import { prefectures } from "./constants";
 import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
+import usePrefectureList from "../hooks/usePrefectureList";
 import addOneDay from "../utils/addOneDay";
-import type { LocationSearchType, CategoryMetaData } from "../types";
+import type { LocationSearchType, MetaData } from "../types";
 
 export default function EventFilters() {
-  const [eventCategories, setEventCategories] = useState<CategoryMetaData[]>(
-    []
-  );
+  const [eventCategories, setEventCategories] = useState<MetaData[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
@@ -21,6 +20,7 @@ export default function EventFilters() {
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
   const { latitude, longitude, userRefused } = useGetPosition();
+  const { prefectureList, prefectureListError } = usePrefectureList();
   const [error, setError] = useState(false);
 
   const { setEvents } = useContext(EventContext);
@@ -63,12 +63,32 @@ export default function EventFilters() {
       }
 
       // Query string with all data from user.
-      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${from}&datetimeTo=${to}`;
+      // const query = `${api}/events?name=${search}&
+      //   category=${category}&
+      //   budgetMax=${price}&
+      //   placeDistanceRange=${searchRadius}&
+      //   browserLat=${latitude}&
+      //   browserLong=${longitude}
+      //   &datetimeFrom=${from}&
+      //   datetimeTo=${to}`;
+
+      let query = `${api}/events?name=${search}&
+      category=${category}&
+      budgetMax=${price}&
+      &datetimeFrom=${from}&
+      datetimeTo=${to}&`;
+
+      if (locSearchType === "latLong") {
+        query += `placeDistanceRange=${searchRadius}&
+          browserLat=${latitude}&
+          browserLong=${longitude}`;
+      } else {
+        query += `placeProvince=${prefecture}`;
+      }
 
       console.log("query string:", query);
 
       const response = await fetch(query);
-
       if (!response.ok) {
         console.error(response);
         setError(true);
@@ -109,7 +129,7 @@ export default function EventFilters() {
     }
   };
 
-  if (error) {
+  if (error || prefectureListError) {
     return (
       <h1 className="text-2xl text-red-500">
         We're sorry, something went wrong. Please try again later.
@@ -209,11 +229,15 @@ export default function EventFilters() {
           hidden={locSearchType === "latLong"}
         >
           <option value="">All prefectures</option>
-          {prefectures.map((pref) => (
-            <option key={pref} value={pref}>
-              {pref} Prefecture
-            </option>
-          ))}
+          {prefectureList.map(
+            (pref) =>
+              pref.name !== "undefined" &&
+              pref.name !== "unsorted" && (
+                <option key={pref.name} value={pref.name}>
+                  {pref.label}
+                </option>
+              )
+          )}
         </select>
         {/* Search by radius */}
         <div
