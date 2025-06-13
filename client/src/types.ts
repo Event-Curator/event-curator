@@ -49,7 +49,7 @@ export interface GeolocationData {
   userRefused: boolean;
 }
 
-export interface CategoryMetaData {
+export interface MetaData {
   name: string;
   count: number;
   label: string;
