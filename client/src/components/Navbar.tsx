@@ -13,6 +13,7 @@ import AuthModal from "./AuthModal";
 import RegisterModal from "./RegisterModal";
 import eventIcon from "../assets/eventicon.png";
 import userLogo from "../assets/userlogo.png";
+import { FaSearch } from "react-icons/fa";
 
 export default function Navbar() {
   const [email, setEmail] = useState("");
@@ -23,12 +24,43 @@ export default function Navbar() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
+
+  // Search logic (similar to EventFilters, but only one input)
+  useEffect(() => {
+    if (!showSearch || !search.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    let ignore = false;
+    setSearchLoading(true);
+    fetch(
+      `${import.meta.env.VITE_API}/events/search?query=${encodeURIComponent(search.trim())}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore) setSearchResults(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!ignore) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!ignore) setSearchLoading(false);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [search, showSearch]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +146,57 @@ export default function Navbar() {
     </>
   );
 
+  // Search modal
+  const SearchModal = showSearch && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowSearch(false)}>
+      <div
+        className="bg-white rounded-xl shadow-lg p-6 min-w-[320px] max-w-xs w-full relative"
+        onClick={e => e.stopPropagation()}
+      >
+        <button
+          className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+          onClick={() => setShowSearch(false)}
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <div className="mb-2">
+          <input
+            type="text"
+            className="input input-bordered w-full"
+            placeholder="Search events by name or tag"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            autoFocus
+          />
+        </div>
+        {searchLoading && <div className="text-center text-gray-400 py-2">Searching...</div>}
+        {!searchLoading && search && (
+          <ul className="max-h-56 overflow-y-auto divide-y">
+            {searchResults.length === 0 && (
+              <li className="text-gray-400 py-2 text-center">No results found.</li>
+            )}
+            {searchResults.map((ev: any) => (
+              <li
+                key={ev.externalId}
+                className="py-2 px-1 hover:bg-blue-50 cursor-pointer rounded"
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearch("");
+                  setSearchResults([]);
+                  navigate(`/event/${ev.externalId}`);
+                }}
+              >
+                <div className="font-bold text-blue-700 text-base">{ev.name}</div>
+                <div className="text-xs text-gray-500">{ev.placeFreeform}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
       {/* Desktop Navbar */}
@@ -123,7 +206,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3">
             <img src={eventIcon} alt="logo" className="h-20 w-20" />
             <span className="text-2xl font-bold text-blue-700 tracking-wide">
-              Japan-Events.com
+              Japan-Events
             </span>
           </Link>
         </div>
@@ -137,13 +220,22 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Auth */}
-        <div className="flex gap-2">
+        {/* Auth + Search */}
+        <div className="flex gap-2 items-center">
+          {/* Magnifying glass icon */}
+          <button
+            className="btn btn-ghost btn-circle"
+            title="Search events"
+            onClick={() => setShowSearch(true)}
+            aria-label="Search"
+          >
+            <FaSearch className="w-5 h-5 text-blue-700" />
+          </button>
           {user ? (
             <div className="dropdown dropdown-end">
               <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-               <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 transition">
-                <img 
+                <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 transition">
+                  <img
                     src={avatarUrl}
                     alt="avatar"
                     className="object-cover w-full h-full"
@@ -250,12 +342,23 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-2">
             <img src={eventIcon} alt="logo" className="h-6 w-6" />
             <span className="text-lg font-bold text-blue-700">
-              Event Curator
+              Japan-Events.com
             </span>
           </Link>
         </div>
-        <div /> {/* Space for symmetry */}
+        {/* Magnifying glass icon on the right */}
+        <button
+          className="btn btn-ghost btn-circle ml-2"
+          title="Search events"
+          onClick={() => setShowSearch(true)}
+          aria-label="Search"
+        >
+          <FaSearch className="w-5 h-5 text-blue-700" />
+        </button>
       </div>
+
+      {/* Search Modal */}
+      {SearchModal}
 
       {/* Modals */}
       {showLogin && (
