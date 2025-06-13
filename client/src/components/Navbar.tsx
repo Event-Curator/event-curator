@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useNavigate, useLocation } from "react-router";
 import { auth, googleProvider } from "../firebase";
 import {
   signInWithEmailAndPassword,
@@ -14,6 +15,7 @@ import RegisterModal from "./RegisterModal";
 import eventIcon from "../assets/eventicon.png";
 import userLogo from "../assets/userlogo.png";
 import { FaSearch } from "react-icons/fa";
+import EventContext from "../context/EventContext";
 
 export default function Navbar() {
   const [email, setEmail] = useState("");
@@ -26,41 +28,16 @@ export default function Navbar() {
   const [showRegister, setShowRegister] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [search, setSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  useContext(EventContext);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
     return () => unsubscribe();
   }, []);
-
-  // Search logic (similar to EventFilters, but only one input)
-  useEffect(() => {
-    if (!showSearch || !search.trim()) {
-      setSearchResults([]);
-      return;
-    }
-    let ignore = false;
-    setSearchLoading(true);
-    fetch(
-      `${import.meta.env.VITE_API}/events/search?query=${encodeURIComponent(search.trim())}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (!ignore) setSearchResults(Array.isArray(data) ? data : []);
-      })
-      .catch(() => {
-        if (!ignore) setSearchResults([]);
-      })
-      .finally(() => {
-        if (!ignore) setSearchLoading(false);
-      });
-    return () => {
-      ignore = true;
-    };
-  }, [search, showSearch]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,6 +123,69 @@ export default function Navbar() {
     </>
   );
 
+  // Search modal logic: always redirect to main event page, set search, and scroll to event section
+  const handleSearchModal = async () => {
+    if (!search.trim()) {
+      alert("Please enter a search term!");
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      // Always redirect to main event page ("/")
+      // Pass search as state so EventFilters/EventList can use it
+      setShowSearch(false);
+      setSearchLoading(false);
+      setTimeout(() => {
+        if (location.pathname !== "/") {
+          navigate("/", { state: { searchFromNavbar: search.trim() } });
+        } else {
+          // If already on main page, trigger search logic directly
+          const eventInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]');
+          if (eventInput) {
+            eventInput.value = search.trim();
+            eventInput.dispatchEvent(new Event("input", { bubbles: true }));
+            eventInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+          }
+          // Scroll to event section if present
+          const eventSection = document.getElementById("event-section");
+          if (eventSection) {
+            eventSection.scrollIntoView({ behavior: "smooth" });
+          }
+        }
+      }, 100);
+      setSearch("");
+    } catch {
+      setError("Could not search events.");
+      setSearchLoading(false);
+    }
+  };
+
+  // Listen for navigation to "/" and auto-fill search if coming from navbar
+  useEffect(() => {
+    if (
+      location.pathname === "/" &&
+      location.state &&
+      (location.state as any).searchFromNavbar
+    ) {
+      const searchValue = (location.state as any).searchFromNavbar;
+      setTimeout(() => {
+        const eventInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]');
+        if (eventInput) {
+          eventInput.value = searchValue;
+          eventInput.dispatchEvent(new Event("input", { bubbles: true }));
+          eventInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        }
+        const eventSection = document.getElementById("event-section");
+        if (eventSection) {
+          eventSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 200);
+      // Remove state so it doesn't repeat on next navigation
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line
+  }, [location.pathname]);
+
   // Search modal
   const SearchModal = showSearch && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowSearch(false)}>
@@ -168,31 +208,18 @@ export default function Navbar() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             autoFocus
+            onKeyDown={e => {
+              if (e.key === "Enter") handleSearchModal();
+            }}
           />
         </div>
-        {searchLoading && <div className="text-center text-gray-400 py-2">Searching...</div>}
-        {!searchLoading && search && (
-          <ul className="max-h-56 overflow-y-auto divide-y">
-            {searchResults.length === 0 && (
-              <li className="text-gray-400 py-2 text-center">No results found.</li>
-            )}
-            {searchResults.map((ev: any) => (
-              <li
-                key={ev.externalId}
-                className="py-2 px-1 hover:bg-blue-50 cursor-pointer rounded"
-                onClick={() => {
-                  setShowSearch(false);
-                  setSearch("");
-                  setSearchResults([]);
-                  navigate(`/event/${ev.externalId}`);
-                }}
-              >
-                <div className="font-bold text-blue-700 text-base">{ev.name}</div>
-                <div className="text-xs text-gray-500">{ev.placeFreeform}</div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <button
+          className="btn btn-primary w-full mb-2"
+          onClick={handleSearchModal}
+          disabled={searchLoading}
+        >
+          {searchLoading ? "Searching..." : "Search"}
+        </button>
       </div>
     </div>
   );
