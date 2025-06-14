@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { auth, googleProvider } from "../firebase";
@@ -14,8 +13,11 @@ import AuthModal from "./AuthModal";
 import RegisterModal from "./RegisterModal";
 import eventIcon from "../assets/eventicon.png";
 import userLogo from "../assets/userlogo.png";
-import { FaSearch } from "react-icons/fa";
 import EventContext from "../context/EventContext";
+import NavbarSearch from "./NavbarSearch";
+import UserDropDown from "./UserDropdown";
+import MobileNavbarSearch from "./MobileNavbarSearch";
+import { FaSearch } from "react-icons/fa";
 
 export default function Navbar() {
   const [email, setEmail] = useState("");
@@ -26,13 +28,16 @@ export default function Navbar() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [showSearch, setShowSearch] = useState(false); // for mobile only
+  const [showDesktopSearch, setShowDesktopSearch] = useState(false); // for desktop only
   const [search, setSearch] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  useContext(EventContext);
+  const { setEvents } = useContext(EventContext);
+
+  const api = import.meta.env.VITE_API;
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -49,7 +54,7 @@ export default function Navbar() {
       setEmail("");
       setPassword("");
       setShowRegister(false);
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError("Something went wrong when registering.");
     }
@@ -66,7 +71,7 @@ export default function Navbar() {
       setEmail("");
       setPassword("");
       setShowLogin(false);
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof Error) {
         const code = (err as { code?: string }).code;
         setError(`${err.message}${code ? ` (${code})` : ""}`);
@@ -83,7 +88,7 @@ export default function Navbar() {
       setUser(result.user);
       setShowLogin(false);
       setShowRegister(false);
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof Error) {
         const code = (err as { code?: string }).code;
         setError(`${err.message}${code ? ` (${code})` : ""}`);
@@ -123,7 +128,26 @@ export default function Navbar() {
     </>
   );
 
-  // Search modal logic: always redirect to main event page, set search, and scroll to event section
+  async function fetchEventsByName(name: string) {
+    try {
+      const response = await fetch(`${api}/events?name=${encodeURIComponent(name)}`);
+      if (!response.ok) {
+        setError("Failed to fetch events.");
+        return;
+      }
+      const data = await response.json();
+      const hero = document.getElementById("hero-section");
+      if (hero) hero.style.display = "none";
+      setEvents(data);
+      const eventSection = document.getElementById("event-section");
+      if (eventSection) {
+        eventSection.scrollIntoView({ behavior: "smooth" });
+      }
+    } catch {
+      setError("Could not search events.");
+    }
+  }
+
   const handleSearchModal = async () => {
     if (!search.trim()) {
       alert("Please enter a search term!");
@@ -131,28 +155,15 @@ export default function Navbar() {
     }
     setSearchLoading(true);
     try {
-      // Always redirect to main event page ("/")
-      // Pass search as state so EventFilters/EventList can use it
       setShowSearch(false);
+      setShowDesktopSearch(false);
       setSearchLoading(false);
-      setTimeout(() => {
-        if (location.pathname !== "/") {
-          navigate("/", { state: { searchFromNavbar: search.trim() } });
-        } else {
-          // If already on main page, trigger search logic directly
-          const eventInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]');
-          if (eventInput) {
-            eventInput.value = search.trim();
-            eventInput.dispatchEvent(new Event("input", { bubbles: true }));
-            eventInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-          }
-          // Scroll to event section if present
-          const eventSection = document.getElementById("event-section");
-          if (eventSection) {
-            eventSection.scrollIntoView({ behavior: "smooth" });
-          }
-        }
-      }, 100);
+      if (location.pathname !== "/") {
+        navigate("/", { state: { hideHero: true } });
+        setTimeout(() => fetchEventsByName(search.trim()), 200);
+      } else {
+        fetchEventsByName(search.trim());
+      }
       setSearch("");
     } catch {
       setError("Could not search events.");
@@ -160,69 +171,65 @@ export default function Navbar() {
     }
   };
 
-  // Listen for navigation to "/" and auto-fill search if coming from navbar
   useEffect(() => {
     if (
       location.pathname === "/" &&
       location.state &&
-      (location.state as any).searchFromNavbar
+      (typeof location.state === "object") &&
+      ("hideHero" in location.state)
     ) {
-      const searchValue = (location.state as any).searchFromNavbar;
       setTimeout(() => {
-        const eventInput = document.querySelector<HTMLInputElement>('input[placeholder*="Search"]');
-        if (eventInput) {
-          eventInput.value = searchValue;
-          eventInput.dispatchEvent(new Event("input", { bubbles: true }));
-          eventInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-        }
+        const hero = document.getElementById("hero-section");
+        if (hero) hero.style.display = "none";
         const eventSection = document.getElementById("event-section");
         if (eventSection) {
           eventSection.scrollIntoView({ behavior: "smooth" });
         }
       }, 200);
-      // Remove state so it doesn't repeat on next navigation
       navigate(location.pathname, { replace: true, state: {} });
     }
     // eslint-disable-next-line
   }, [location.pathname]);
 
-  // Search modal
-  const SearchModal = showSearch && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowSearch(false)}>
-      <div
-        className="bg-white rounded-xl shadow-lg p-6 min-w-[320px] max-w-xs w-full relative"
-        onClick={e => e.stopPropagation()}
-      >
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-          onClick={() => setShowSearch(false)}
-          aria-label="Close"
-        >
-          ×
-        </button>
-        <div className="mb-2">
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            placeholder="Search events by name or tag"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            autoFocus
-            onKeyDown={e => {
-              if (e.key === "Enter") handleSearchModal();
-            }}
-          />
-        </div>
-        <button
-          className="btn btn-primary w-full mb-2"
-          onClick={handleSearchModal}
-          disabled={searchLoading}
-        >
-          {searchLoading ? "Searching..." : "Search"}
-        </button>
-      </div>
-    </div>
-  );
+  async function handleFacebookLogin() {
+    setError(null);
+    setLoading(true);
+    try {
+      // Dynamically import FacebookAuthProvider to avoid tree-shaking issues
+      const { FacebookAuthProvider, signInWithPopup } = await import("firebase/auth");
+      const provider = new FacebookAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user);
+      setShowLogin(false);
+      setShowRegister(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        const code = (err as { code?: string }).code;
+        setError(`${err.message}${code ? ` (${code})` : ""}`);
+      } else setError("Something went wrong when logging in with Facebook.");
+    }
+    setLoading(false);
+  }
+
+  async function handleAppleLogin() {
+  setError(null);
+  setLoading(true);
+  try {
+    // Dynamically import OAuthProvider to avoid tree-shaking issues
+    const { OAuthProvider, signInWithPopup } = await import("firebase/auth");
+    const provider = new OAuthProvider("apple.com");
+    const result = await signInWithPopup(auth, provider);
+    setUser(result.user);
+    setShowLogin(false);
+    setShowRegister(false);
+  } catch (err) {
+    if (err instanceof Error) {
+      const code = (err as { code?: string }).code;
+      setError(`${err.message}${code ? ` (${code})` : ""}`);
+    } else setError("Something went wrong when logging in with Apple.");
+  }
+  setLoading(false);
+}
 
   return (
     <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
@@ -249,59 +256,21 @@ export default function Navbar() {
 
         {/* Auth + Search */}
         <div className="flex gap-2 items-center">
-          {/* Magnifying glass icon */}
-          <button
-            className="btn btn-ghost btn-circle"
-            title="Search events"
-            onClick={() => setShowSearch(true)}
-            aria-label="Search"
-          >
-            <FaSearch className="w-5 h-5 text-blue-700" />
-          </button>
+          <NavbarSearch
+            show={showDesktopSearch}
+            setShow={setShowDesktopSearch}
+            search={search}
+            setSearch={setSearch}
+            onSearch={handleSearchModal}
+            searchLoading={searchLoading}
+          />
           {user ? (
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 transition">
-                  <img
-                    src={avatarUrl}
-                    alt="avatar"
-                    className="object-cover w-full h-full"
-                    onError={(e) => {
-                      (e.currentTarget as HTMLImageElement).src = userLogo;
-                    }}
-                  />
-                </div>
-              </div>
-              <ul tabIndex={0} className="dropdown-content mt-3 p-4 shadow menu menu-sm bg-white rounded-box w-52 border border-blue-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="avatar online">
-                    <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                      <img
-                        src={avatarUrl}
-                        alt="avatar"
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLImageElement).src = userLogo;
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <span className="font-semibold text-sm">{user.displayName || user.email}</span>
-                </div>
-                {/* Only show Profile Settings for local users */}
-                {!isGoogleUser && (
-                  <li>
-                    <button onClick={() => navigate("/profile")}>Profile Settings</button>
-                  </li>
-                )}
-                <li>
-                  <Link to="/timeline">My Event Timeline</Link>
-                </li>
-                <li>
-                  <button onClick={handleLogout}>Sign Out</button>
-                </li>
-              </ul>
-            </div>
+            <UserDropDown
+              user={user}
+              avatarUrl={avatarUrl}
+              isGoogleUser={isGoogleUser}
+              handleLogout={handleLogout}
+            />
           ) : (
             <>
               <button className="btn btn-outline btn-sm" onClick={() => setShowRegister(true)}>
@@ -328,7 +297,7 @@ export default function Navbar() {
               <>
                 <li className="flex flex-col items-center justify-center gap-2 py-2">
                   <div className="avatar online">
-                    <div className="w-12 h-12 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+                    <div className="w-12 h-12 rounded-full">
                       <img
                         src={avatarUrl}
                         alt="avatar"
@@ -341,7 +310,6 @@ export default function Navbar() {
                   </div>
                   <span className="text-xs">{user.displayName || user.email}</span>
                 </li>
-                {/* Only show Profile Settings for local users */}
                 {!isGoogleUser && (
                   <li>
                     <button className="btn btn-outline btn-sm mt-2 w-full" onClick={() => navigate("/profile")}>
@@ -369,7 +337,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-2">
             <img src={eventIcon} alt="logo" className="h-6 w-6" />
             <span className="text-lg font-bold text-blue-700">
-              Japan-Events.com
+              Japan-Events
             </span>
           </Link>
         </div>
@@ -384,8 +352,15 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Search Modal */}
-      {SearchModal}
+      {/* Search Modal (mobile only) */}
+      <MobileNavbarSearch
+        show={showSearch}
+        setShow={setShowSearch}
+        search={search}
+        setSearch={setSearch}
+        onSearch={handleSearchModal}
+        searchLoading={searchLoading}
+      />
 
       {/* Modals */}
       {showLogin && (
@@ -393,6 +368,8 @@ export default function Navbar() {
           mode="login"
           onClose={() => setShowLogin(false)}
           onGoogleLogin={handleGoogleLogin}
+          onAppleLogin={handleAppleLogin}
+          onFacebookLogin={handleFacebookLogin}
           onEmailLogin={handleLogin}
           loading={loading}
           error={error}
@@ -404,6 +381,8 @@ export default function Navbar() {
         <RegisterModal
           onClose={() => setShowRegister(false)}
           onGoogleRegister={handleGoogleLogin}
+          onAppleRegister={handleAppleLogin}
+          onFacebookRegister={handleFacebookLogin}
           onEmailRegister={handleRegister}
           loading={loading}
           error={error}
