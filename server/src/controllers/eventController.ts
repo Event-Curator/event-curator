@@ -314,7 +314,10 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
     let result = await eaCache.events.find({
         selector: {
-            name: { $regex: '.*', $options: 'i' },
+            $and: [
+                { name: { $regex: '.*', $options: 'i' } },
+                { datetimeFrom: { $gt: moment().toISOString() }}
+            ]
         }
     }).exec();
     
