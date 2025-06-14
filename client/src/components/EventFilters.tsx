@@ -65,19 +65,14 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
         to = addOneDay(selectedDates[0]).toISOString();
       }
 
-      let query = `${api}/events?name=${search}&
-      category=${category}&
-      budgetMax=${price}&
-      &datetimeFrom=${from}&
-      datetimeTo=${to}&`;
+      let query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&datetimeFrom=${from}&datetimeTo=${to}&`;
 
       if (locSearchType === "latLong") {
-        query += `placeDistanceRange=${searchRadius}&
-          browserLat=${latitude}&
-          browserLong=${longitude}`;
+        query += `placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`;
       } else {
         query += `placeProvince=${prefecture}`;
       }
+      console.log(query);
 
       const response = await fetch(query);
       if (!response.ok) {
