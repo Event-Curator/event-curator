@@ -227,10 +227,10 @@ class TokyocheapoEventSource extends DefaultEventSource {
 
           events.push(anEvent);
 
-          currentPage++;
         };
-
+        currentPage++;
       }
+
       log.info(`${this.id}: scrapping done. ${events.length} found.`);
 
       return new Promise((resolve, reject) => resolve(events));
