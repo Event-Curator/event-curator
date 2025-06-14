@@ -21,7 +21,24 @@ class JapancheapoEventSource extends DefaultEventSource {
       // console.log("QUERY !!");
       return new Promise((resolve, reject) => resolve(events));
     }
-    
+
+    async getThumbnailHiresUrl(url: string): Promise<string> {
+      let detailPageContent = await ec.throtthledFetch(url, 0);
+      if (detailPageContent === '') return '';
+
+      let $ = cheerio.load(detailPageContent)
+      let imageSet = $.root().find('.hero-img').attr('srcset') || '';
+      if (imageSet === '') return '';
+
+      let imageUrls = imageSet.split(',').filter( s => s.endsWith('1280w') ) || [];
+      if (!imageUrls || imageUrls.length === 0) return '';
+
+      let imageUrl = imageUrls[0].split(' ').shift() || '';
+
+      console.log(imageUrl);
+      return imageUrl;
+    }
+
     async scrapEvent(): Promise<Array<EventType>> {
       let events = new Array();
 
@@ -43,11 +60,13 @@ class JapancheapoEventSource extends DefaultEventSource {
           val = $(element).find(".cheapo-archive-thumb").attr("alt") || "";
           anEvent.teaserText = val.trim();
           
-          // TO DEBUG
-          // let _val = $(element).find(".cheapo-archive-thumb").toString() || "";
-          val = $(element).find(".cheapo-archive-thumb").attr("src") || "";
+          // go get the detail page to get the hires url of the thumbnail
+          anEvent.teaserMedia = await this.getThumbnailHiresUrl(anEvent.originUrl);
+          if (!anEvent.teaserMedia.length) {
+            val = $(element).find(".cheapo-archive-thumb").attr("src") || "";
+            anEvent.teaserMedia = val.trim();
+          }
 
-          anEvent.teaserMedia = val.trim();
           let localUrl = await ec.saveMedia(anEvent.teaserMedia);
           if (localUrl) { anEvent.teaserMedia = localUrl };
 
