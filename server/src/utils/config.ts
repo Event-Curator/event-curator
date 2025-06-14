@@ -7,6 +7,7 @@ import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
 import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 import { EventSourceConfigType, languageEnum } from '../models/EventSource.js';
 import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
+import { ArisugawaParkEventSource } from '../controllers/ArisugawaParkEventSource.js';
 import { geocodingTypeEnum } from '../models/Model.js';
 
 dotenv.config()
@@ -80,6 +81,36 @@ let _source: Array<EventSourceConfigType> = [
         homeCountry: "japan",
         contentLanguage: languageEnum.EN,
         geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP,
+    },
+    {
+        id: "arisugawapark",
+        enabled: true,
+        endpoint: "https://minato-park.jp/",
+        controller: new ArisugawaParkEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: "japan",
+        contentLanguage: languageEnum.JP,
+        geocodingLookupType: geocodingTypeEnum.STATICMAP,
+        geocodingStaticMap: {
+            "その他": [35.6431655,139.7406811],
+            "三河台公園六本木西公園六本木三丁目児童遊園": [35.6627876,139.7302281],
+            "六本木西公園": [35.6633551,139.7272584],
+            "共通": [35.673673,139.726325],
+            "共通その他": [35.673673,139.726325],
+            "共通南桜公園": [35.6663773,139.7501446],
+            "共通桜田公園": [35.6654333,139.7541748],
+            "共通港区立芝公園": [35.6555626,139.7491112],
+            "南桜公園": [35.6663773,139.7501446],
+            "新広尾公園古川橋児童遊園中": [35.6465089,139.7328963],
+            "有栖川宮記念公園": [35.6520827,139.7257986],
+            "本芝公園": [35.6470459,139.7474054],
+            "東麻布児童遊園その他": [35.6579026,139.7443906],
+            "桜田公園": [35.6654333,139.7541748],
+            "港区立芝公園": [35.6555626,139.7465363],
+            "狸穴公園一の橋公": [35.6581285,139.73641],
+            "飯倉公園": [35.6557099,139.7412842],
+            "飯倉公園中ノ橋児童遊園": [35.6557099,139.7412842]
+        }
     }
 ]
 
