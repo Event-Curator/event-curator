@@ -93,6 +93,13 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
     if (!search && !category && !location && !price && !selectedDates) {
       alert("Please enter a search term, price, category, dates, or location!");
       return;
+    } else if (
+      selectedDates !== undefined &&
+      selectedDates[0] > selectedDates[1]
+    ) {
+      alert("Start date must come before end date.");
+      setSelectedDates(undefined);
+      return;
     } else {
       getEvents();
     }
@@ -200,9 +207,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
             onChange={toggleSearchLocType}
             disabled={userRefused}
           />
-          {locSearchType === "latLong"
-            ? "Search near me"
-            : "Search by prefecture"}
+          {locSearchType === "latLong" ? "km from me" : "Search by prefecture"}
         </label>
         {/* Search by prefecture */}
         <select
@@ -227,7 +232,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
           className="relative w-full flex flex-row items-center gap-2"
           hidden={locSearchType === "prefecture"}
         >
-          <label htmlFor="search-radius">Km from me</label>
+          {/* <label htmlFor="search-radius">Km from me</label> */}
           <input
             type="range"
             min={0}
