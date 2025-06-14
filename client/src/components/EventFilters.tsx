@@ -53,7 +53,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       // Get to and from dates. This requires a little extra processsing to account for
       // cases where user can enter undefined. If the user only selects on day, the "to"
       // var is set to that day + 24h to create a meaningful range to search.
-      const from =
+      let from =
         selectedDates !== undefined ? selectedDates[0].toISOString() : "";
       let to = "";
       if (selectedDates !== undefined && selectedDates[1] !== undefined) {
@@ -63,18 +63,13 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
         selectedDates[1] === undefined
       ) {
         to = addOneDay(selectedDates[0]).toISOString();
+      } else {
+        from = new Date().toISOString();
       }
 
-      let query = `${api}/events?name=${search}&
-      category=${category}&
-      budgetMax=${price}&
-      &datetimeFrom=${from}&
-      datetimeTo=${to}&`;
-
+      let query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&datetimeFrom=${from}&datetimeTo=${to}&`;
       if (locSearchType === "latLong") {
-        query += `placeDistanceRange=${searchRadius}&
-          browserLat=${latitude}&
-          browserLong=${longitude}`;
+        query += `placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`;
       } else {
         query += `placeProvince=${prefecture}`;
       }
