@@ -198,7 +198,6 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
           selectedDates={selectedDates}
           setSelectedDates={setSelectedDates}
         />
-        <input type="date" />
       </div>
 
       {/* Search type */}
