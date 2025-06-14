@@ -189,6 +189,13 @@ the response will looks like
 note: in all case, please respect the naming convention of the different object type, which are:
 - ```websiteid``` = take the domainname, all lowercase and ascii letter
 - ```controller name```=  websiteid but in camelCase
- 
+
 As a preliminary step, thinks to consider are:
 - clone the ```server/src/controllers/_templateEventSource.ts``` file
+
+
+### interesting links
+
+- To test if the locationFreeform (+website Language), is going to work or not: ```https://nominatim.openstreetmap.org/ui/search.html```
+- https://wiki.openstreetmap.org/wiki/Key:amenity
+
