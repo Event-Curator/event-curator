@@ -4,6 +4,8 @@ import { Event } from "../models/Event.js";
 import { log } from "./logger.js";
 import { getConfig, sleep } from "./util.js";
 import * as geolib from 'geolib';
+import { geocodingTypeEnum } from "../models/Model.js";
+import { endWith } from "rxjs";
 
 const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
 const OSM_REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
@@ -46,7 +48,10 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         }
     }).exec();
 
-    if (cachedContent.length > 0) {
+    if (cachedContent.length > 0 &&
+        cachedContent[0]._data.long !== 0 &&
+        cachedContent[0]._data.lat !== 0
+     ) {
         log.debug(`cache hit for location: ${event.placeFreeform.toLocaleLowerCase()}`);
         event.placeLongitude = cachedContent[0]._data.long;
         event.placeLattitude = cachedContent[0]._data.lat;
@@ -55,7 +60,26 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     log.warn(`cache miss for location: ${event.placeFreeform.toLocaleLowerCase()}. querying OSM`);
 
     const myConfig = getConfig(eventsourceId);
-    let placeToLookup = `${event.placeFreeform}`;
+    let placeToLookup = `${event.placeFreeform}`.toLowerCase();
+
+    if (myConfig.geocodingLookupType === geocodingTypeEnum.STATICMAP) {
+        let map =  myConfig.geocodingStaticMap || [];
+        for (let key of Object.keys(map)) {
+            if (placeToLookup.startsWith(key.toLocaleLowerCase()) 
+                || placeToLookup.endsWith(key.toLocaleLowerCase())) {
+                event.placeLattitude = map[key][0];
+                event.placeLongitude = map[key][1];
+
+                return event
+            }
+        }
+
+        // fallback to unknow place
+        event.placeLattitude = 0;
+        event.placeLongitude = 0;
+
+        return event
+    }
 
     if (myConfig.homeCountry) {
         // remove other reference of the country in case of
@@ -91,11 +115,13 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         }
 
         // cache if something was found
-        await eaCache.geocoding.insert({
-            id: md5(event.placeFreeform.toLocaleLowerCase()),
-            long: event.placeLongitude,
-            lat: event.placeLattitude,
-        });
+        if (event.placeLattitude !== 0 && event.placeLongitude !== 0) {
+            await eaCache.geocoding.insert({
+                id: md5(event.placeFreeform.toLocaleLowerCase()),
+                long: event.placeLongitude,
+                lat: event.placeLattitude,
+            });
+        }
     }
 
     await sleep(2*1000);

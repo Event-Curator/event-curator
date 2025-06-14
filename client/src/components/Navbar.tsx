@@ -44,6 +44,32 @@ export default function Navbar() {
     return () => unsubscribe();
   }, []);
 
+  // Search logic (similar to EventFilters, but only one input)
+  useEffect(() => {
+    if (!showSearch || !search.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    let ignore = false;
+    setSearchLoading(true);
+    fetch(
+      `${import.meta.env.VITE_API}/events/search?query=${encodeURIComponent(search.trim())}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore) setSearchResults(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (!ignore) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!ignore) setSearchLoading(false);
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [search, showSearch]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -203,6 +229,7 @@ export default function Navbar() {
             <img src={eventIcon} alt="logo" className="h-20 w-20" />
             <span className="text-2xl font-bold text-blue-700 tracking-wide">
               Japan-Events
+              Japan-Events
             </span>
           </Link>
         </div>
@@ -303,6 +330,15 @@ export default function Navbar() {
             </span>
           </Link>
         </div>
+        {/* Magnifying glass icon on the right */}
+        <button
+          className="btn btn-ghost btn-circle ml-2"
+          title="Search events"
+          onClick={() => setShowSearch(true)}
+          aria-label="Search"
+        >
+          <FaSearch className="w-5 h-5 text-blue-700" />
+        </button>
         {/* Magnifying glass icon on the right */}
         <button
           className="btn btn-ghost btn-circle ml-2"
