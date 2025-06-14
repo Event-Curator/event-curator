@@ -31,16 +31,16 @@ export default function Hero() {
       <img
         src={heroImg}
         alt="Events Hero"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover brightness-50"
         draggable={false}
       />
 
       <div className="relative z-10 text-white text-center px-4">
-        <h1 className="text-6xl md:text-6xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-red-outline">
+        <h1 className="text-6xl md:text-8xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-primary-content">
           Events in Japan
         </h1>
-        <p className="text-2xl md:text-2xl drop-shadow mb-3 font-sans tracking-tight text-red-outline">
-          Search from {eventTotal} Festivals, Art, Concerts, Sports & More!
+        <p className="text-2xl md:text-4xl drop-shadow mb-3 font-sans tracking-tight text-primary-content">
+          Search from {eventTotal} Festivals, Concerts, Sports Events & More!
         </p>
       </div>
     </section>
