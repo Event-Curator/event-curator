@@ -4,8 +4,8 @@ type AuthModalProps = {
   mode: "login" | "register";
   onClose: () => void;
   onGoogleLogin: () => void;
-  onAppleLogin: () => void;
-  onFacebookLogin: () => void;
+  //onAppleLogin: () => void;
+  //onFacebookLogin: () => void;
   onEmailLogin?: (e: React.FormEvent) => void;
   onEmailRegister?: (e: React.FormEvent) => void;
   loading: boolean;
@@ -18,8 +18,8 @@ export default function AuthModal({
   mode,
   onClose,
   onGoogleLogin,
-  onAppleLogin,
-  onFacebookLogin,
+  //onAppleLogin,
+  //onFacebookLogin,
   onEmailLogin,
   onEmailRegister,
   loading,
@@ -88,29 +88,8 @@ export default function AuthModal({
             </svg>
             <span>Sign in with Google</span>
           </button>
-          <button
-            onClick={onAppleLogin}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 mb-3 font-medium"
-          >
-            {/* Apple Icon */}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="black">
-              <path d="M16.75 7.76c-1.03 0-2.04-.72-2.7-.72-.66 0-1.72.7-2.83.7-1.01 0-2.1-.67-2.8-.67-1.17 0-2.41.83-3.07 2.25-1.06 2.21-.27 5.46.83 7.25.59.96 1.31 2.04 2.25 2 .89-.03 1.22-.58 2.28-.58 1.05 0 1.35.58 2.28.57.94-.01 1.53-.96 2.13-1.93.68-1.08.96-2.14.96-2.2-.02-.01-1.85-.7-1.87-2.78-.02-1.74 1.38-2.57 1.44-2.61-.78-1.17-2-1.3-2.47-1.3zm1.41-2.77c.49-.59.83-1.41.74-2.23-.72.03-1.58.48-2.09 1.07-.46.54-.87 1.4-.72 2.22.77.06 1.56-.44 2.07-1.06z"/>
-            </svg>
-            <span>Sign in with Apple</span>
-          </button>
-          <button
-            onClick={onFacebookLogin}
-            disabled={loading}
-            className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 mb-3 font-medium"
-          >
-            {/* Facebook Icon */}
-            <svg width="18" height="18" viewBox="0 0 32 32" fill="#1877F3">
-              <path d="M29 0H3C1.3 0 0 1.3 0 3v26c0 1.7 1.3 3 3 3h13.4v-11.3h-3.8v-4.4h3.8V12.1c0-3.7 2.3-5.7 5.6-5.7 1.6 0 3 .1 3.4.2v3.9h-2.3c-1.8 0-2.1.8-2.1 2v2.6h4.3l-.6 4.4h-3.7V32H29c1.7 0 3-1.3 3-3V3c0-1.7-1.3-3-3-3z"/>
-            </svg>
-            <span>Sign in with Facebook</span>
-          </button>
-        </div>
+          
+        </div> 
 
         {/* Divider for email login/register */}
         <div className="flex items-center gap-2 mb-4">
@@ -131,7 +110,7 @@ export default function AuthModal({
               placeholder="Full Name"
               className="input input-bordered w-full"
               autoComplete="name"
-              // You may want to collect/display this!
+              
             />
           )}
           <input

@@ -191,45 +191,7 @@ export default function Navbar() {
     // eslint-disable-next-line
   }, [location.pathname]);
 
-  async function handleFacebookLogin() {
-    setError(null);
-    setLoading(true);
-    try {
-      // Dynamically import FacebookAuthProvider to avoid tree-shaking issues
-      const { FacebookAuthProvider, signInWithPopup } = await import("firebase/auth");
-      const provider = new FacebookAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-      setShowLogin(false);
-      setShowRegister(false);
-    } catch (err) {
-      if (err instanceof Error) {
-        const code = (err as { code?: string }).code;
-        setError(`${err.message}${code ? ` (${code})` : ""}`);
-      } else setError("Something went wrong when logging in with Facebook.");
-    }
-    setLoading(false);
-  }
-
-  async function handleAppleLogin() {
-  setError(null);
-  setLoading(true);
-  try {
-    // Dynamically import OAuthProvider to avoid tree-shaking issues
-    const { OAuthProvider, signInWithPopup } = await import("firebase/auth");
-    const provider = new OAuthProvider("apple.com");
-    const result = await signInWithPopup(auth, provider);
-    setUser(result.user);
-    setShowLogin(false);
-    setShowRegister(false);
-  } catch (err) {
-    if (err instanceof Error) {
-      const code = (err as { code?: string }).code;
-      setError(`${err.message}${code ? ` (${code})` : ""}`);
-    } else setError("Something went wrong when logging in with Apple.");
-  }
-  setLoading(false);
-}
+  
 
   return (
     <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
@@ -368,8 +330,8 @@ export default function Navbar() {
           mode="login"
           onClose={() => setShowLogin(false)}
           onGoogleLogin={handleGoogleLogin}
-          onAppleLogin={handleAppleLogin}
-          onFacebookLogin={handleFacebookLogin}
+          //onAppleLogin={handleAppleLogin}
+          //onFacebookLogin={handleFacebookLogin}
           onEmailLogin={handleLogin}
           loading={loading}
           error={error}
@@ -381,8 +343,8 @@ export default function Navbar() {
         <RegisterModal
           onClose={() => setShowRegister(false)}
           onGoogleRegister={handleGoogleLogin}
-          onAppleRegister={handleAppleLogin}
-          onFacebookRegister={handleFacebookLogin}
+          //onAppleRegister={handleAppleLogin}
+          //onFacebookRegister={handleFacebookLogin}
           onEmailRegister={handleRegister}
           loading={loading}
           error={error}

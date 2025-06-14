@@ -3,8 +3,8 @@ import React, { useState } from "react";
 type RegisterModalProps = {
   onClose: () => void;
   onGoogleRegister: () => void;
-  onAppleRegister: () => void;
-  onFacebookRegister: () => void;
+  //onAppleRegister: () => void;
+  //onFacebookRegister: () => void;
   onEmailRegister: (e: React.FormEvent) => void;
   loading: boolean;
   error: string | null;
@@ -16,8 +16,8 @@ type RegisterModalProps = {
 export default function RegisterModal({
   onClose,
   onGoogleRegister,
-  onAppleRegister,
-  onFacebookRegister,
+  //onAppleRegister,
+  //onFacebookRegister,
   onEmailRegister,
   loading,
   error,
@@ -78,28 +78,7 @@ export default function RegisterModal({
               </svg>
               <span>Sign up with Google</span>
             </button>
-            {/* Apple */}
-            <button
-              onClick={onAppleRegister}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="black">
-                <path d="M16.75,13.63c-0.12-0.1-2.16-1.25-2.14-3.7c0.01-2.27,1.97-3.1,2.04-3.13c-1.1-1.61-2.81-1.84-3.43-1.86 c-1.46-0.15-2.85,0.86-3.59,0.86c-0.75,0-1.87-0.84-3.09-0.82c-1.6,0.02-3.09,0.94-3.92,2.37C0.5,9.51,0.16,13.37,2.27,16.2 c0.9,1.22,2.01,2.6,3.44,2.55c1.38-0.05,1.9-0.81,3.58-0.81c1.67,0,2.13,0.81,3.6,0.79c1.49-0.02,2.42-1.23,3.31-2.44 C17.41,15.25,16.88,13.73,16.75,13.63z M11.77,3.72c0.64-0.78,1.07-1.88,0.96-2.97c-0.93,0.04-2.07,0.62-2.74,1.39 c-0.6,0.69-1.13,1.8-0.93,2.86C9.97,5.11,11.14,4.51,11.77,3.72z"/>
-              </svg>
-              <span>Sign up with Apple</span>
-            </button>
-            {/* Facebook */}
-            <button
-              onClick={onFacebookRegister}
-              disabled={loading}
-              className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium"
-            >
-              <svg width="20" height="20" fill="#1877F3" viewBox="0 0 24 24">
-                <path d="M22.675 0h-21.35C.596 0 0 .592 0 1.326v21.348C0 23.408.596 24 1.326 24h11.495v-9.294H9.692v-3.622h3.129V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.462.099 2.797.143v3.24l-1.918.001c-1.504 0-1.797.715-1.797 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116C23.404 24 24 23.408 24 22.674V1.326C24 .592 23.404 0 22.675 0"/>
-              </svg>
-              <span>Sign up with Facebook</span>
-            </button>
+            
           </div>
         </div>
 
