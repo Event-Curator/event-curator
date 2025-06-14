@@ -1,4 +1,6 @@
 import { DayPicker } from "react-day-picker";
+import { enUS } from "date-fns/locale";
+import "react-day-picker/dist/style.css";
 
 interface CalendarProps {
   selectedDates: Date[] | undefined;
@@ -52,6 +54,7 @@ export default function Calendar({
           min={1}
           max={2}
           required={false}
+          locale={enUS}
         />
       </div>
     </>

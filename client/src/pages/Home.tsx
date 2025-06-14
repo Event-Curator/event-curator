@@ -1,10 +1,21 @@
 import Hero from "../components/Hero";
 import EventSection from "../components/EventSection";
 import EventFilters from "../components/EventFilters";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 
 export default function Home() {
   const [displayHero, setDisplayHero] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.state && typeof location.state === "object" && "hideHero" in location.state) {
+      setDisplayHero(false);
+      // Remove state so it doesn't persist on next navigation
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   return (
     <>
