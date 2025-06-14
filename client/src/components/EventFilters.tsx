@@ -98,6 +98,12 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
     if (!search && !category && !location && !price && !selectedDates) {
       alert("Please enter a search term, price, category, dates, or location!");
       return;
+    } else if (
+      selectedDates !== undefined &&
+      selectedDates[0] > selectedDates[1]
+    ) {
+      alert("Start date must come before end date.");
+      return;
     } else {
       getEvents();
     }
@@ -192,6 +198,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
           selectedDates={selectedDates}
           setSelectedDates={setSelectedDates}
         />
+        <input type="date" />
       </div>
 
       {/* Search type */}
