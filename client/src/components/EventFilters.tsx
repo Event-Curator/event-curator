@@ -206,9 +206,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
             onChange={toggleSearchLocType}
             disabled={userRefused}
           />
-          {locSearchType === "latLong"
-            ? "Search near me"
-            : "Search by prefecture"}
+          {locSearchType === "latLong" ? "km from me" : "Search by prefecture"}
         </label>
         {/* Search by prefecture */}
         <select
@@ -233,7 +231,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
           className="relative w-full flex flex-row items-center gap-2"
           hidden={locSearchType === "prefecture"}
         >
-          <label htmlFor="search-radius">Km from me</label>
+          {/* <label htmlFor="search-radius">Km from me</label> */}
           <input
             type="range"
             min={0}
