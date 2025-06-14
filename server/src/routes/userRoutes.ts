@@ -61,7 +61,7 @@ router.post(
 );
 // ── Publish snapshot ────────────────────────────────────────────
 router.get(
-  "/events/users/timeline/:friendUid",
+  "/events/users/timeline/shared/:friendUid",
   getSharedTimelineCtrl
 );
 export default router;
