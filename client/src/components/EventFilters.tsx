@@ -98,6 +98,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       selectedDates[0] > selectedDates[1]
     ) {
       alert("Start date must come before end date.");
+      setSelectedDates(undefined);
       return;
     } else {
       getEvents();
