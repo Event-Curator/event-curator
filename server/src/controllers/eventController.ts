@@ -312,7 +312,6 @@ const getSearchHits = async function (req: Request, resp: Response) {
     
     log.debug(`hits for ${requestedIndex}`);
 
-    log.debug(moment().startOf('day').toISOString());
     let result = await eaCache.events.find({
         selector: {
             $and: [
