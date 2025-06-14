@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 import { LocalEventSource } from '../controllers/LocalEventSource.js';
 import { JapancheapoEventSource } from '../controllers/JapancheapoEventSource.js';
+import { TokyocheapoEventSource } from '../controllers/TokyocheapoEventSource.js';
 import { DefaultEventSource } from '../controllers/DefaultEventSource.js';
 import { AllsportdbEventSource } from '../controllers/AllsportdbEventSource.js';
 import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
@@ -66,6 +67,16 @@ let _source: Array<EventSourceConfigType> = [
         enabled: true,
         endpoint: "https://japancheapo.com/events",
         controller: new JapancheapoEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: 'japan',
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
+    },
+    {
+        id: "tokyocheapo",
+        enabled: true,
+        endpoint: "https://tokyocheapo.com/events",
+        controller: new TokyocheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: 'japan',
         contentLanguage: languageEnum.EN,
