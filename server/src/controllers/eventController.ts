@@ -234,7 +234,9 @@ const searchEvent = async function (req: Request, res: Response) {
                     { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
-                    { datetimeFrom: { $lt: datetimeTo } }
+                    { datetimeFrom: { $lt: datetimeTo } },
+
+                    { placeCountry: { $in: config.includeOnlyCountry } }
                 ]
             }
         }).exec().then( (documents : Array<RxDocument>) => {
@@ -289,9 +291,12 @@ const getEventById = async function (req: Request, res: Response) {
     let externalId = req.params.eventId;
     let result = await eaCache.events.find({
         selector: {
-            "externalId": {
-                $eq: externalId
-            }
+            $and: [
+                { "externalId": {
+                    $eq: externalId,
+                } },
+                { "placeCountry": { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
 
@@ -314,7 +319,10 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
     let result = await eaCache.events.find({
         selector: {
-            name: { $regex: '.*', $options: 'i' },
+            $and: [
+                { name: { $regex: '.*', $options: 'i' } },
+                { placeCountry: { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
     
