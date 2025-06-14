@@ -7,7 +7,6 @@ import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
 import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 import { EventSourceConfigType, languageEnum } from '../models/EventSource.js';
 import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
-import { ArisugawaParkEventSource } from '../controllers/ArisugawaParkEventSource.js';
 import { geocodingTypeEnum } from '../models/Model.js';
 
 dotenv.config()

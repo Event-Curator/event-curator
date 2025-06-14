@@ -60,17 +60,16 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     log.warn(`cache miss for location: ${event.placeFreeform.toLocaleLowerCase()}. querying OSM`);
 
     const myConfig = getConfig(eventsourceId);
-    let placeToLookup = `${event.placeFreeform}`;
+    let placeToLookup = `${event.placeFreeform}`.toLowerCase();
 
     if (myConfig.geocodingLookupType === geocodingTypeEnum.STATICMAP) {
         let map =  myConfig.geocodingStaticMap || [];
         for (let key of Object.keys(map)) {
-            if (placeToLookup.startsWith(key) || placeToLookup.endsWith(key)) {
+            if (placeToLookup.startsWith(key.toLocaleLowerCase()) 
+                || placeToLookup.endsWith(key.toLocaleLowerCase())) {
                 event.placeLattitude = map[key][0];
                 event.placeLongitude = map[key][1];
 
-                log.debug(event.placeLattitude);
-                log.debug(event.placeLongitude);
                 return event
             }
         }
