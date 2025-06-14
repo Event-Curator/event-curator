@@ -5,8 +5,9 @@ import { DefaultEventSource } from '../controllers/DefaultEventSource.js';
 import { AllsportdbEventSource } from '../controllers/AllsportdbEventSource.js';
 import { MeetupEventSource } from '../controllers/MeetupEventSource.js';
 import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
-import { EventSourceConfigType } from '../models/EventSource.js';
+import { EventSourceConfigType, languageEnum } from '../models/EventSource.js';
 import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
+import { geocodingTypeEnum } from '../models/Model.js';
 
 dotenv.config()
 
@@ -26,7 +27,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://ceciestundefaut.com/",
         controller: new DefaultEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: ""
+        homeCountry: "",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
     {
         id: "allsportdb",
@@ -34,7 +37,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://api.allsportdb.com/v3",
         controller: new AllsportdbEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: ""
+        homeCountry: "",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
     {
         id: "meetup",
@@ -42,7 +47,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://meetup.brol/xxxx",
         controller: new MeetupEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: ""
+        homeCountry: "",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
     {
         id: "local",
@@ -50,7 +57,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "file:///data/dummy.json",
         controller: new LocalEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: ""
+        homeCountry: "",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
     {
         id: "japancheapo",
@@ -58,7 +67,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://japancheapo.com/events",
         controller: new JapancheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: 'japan'
+        homeCountry: 'japan',
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
     {
         id: "japanconcerttickets",
@@ -66,7 +77,9 @@ let _source: Array<EventSourceConfigType> = [
         endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
         controller: new JapanconcertticketsEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
-        homeCountry: "japan"
+        homeCountry: "japan",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP,
     }
 ]
 
