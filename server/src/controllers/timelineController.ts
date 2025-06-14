@@ -10,7 +10,7 @@ import {
   type SharedEntry
 } from '../models/timeline.js';
 import { verifyFriendship } from '../models/friend.js';
-import { getEventById, Event } from '../models/Event.js';
+import { getEventById,Event } from '../models/Event.js';
 import { log } from '../utils/logger.js';
 
 interface CreateBody   { event_external_id: string }
