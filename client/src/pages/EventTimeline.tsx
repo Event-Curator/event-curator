@@ -7,8 +7,8 @@ import { getMonday, getWeekDates } from "../utils/eventUtils";
 import TableView from "../components/TableView";
 import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
-
-
+import moment from "moment";
+import { MdStayCurrentLandscape } from "react-icons/md";
 
 // ShareTimelineButton for timeline (not per event)
 function ShareTimelineButton({ timelineId }: { timelineId: string }) {
@@ -139,7 +139,7 @@ export default function EventTimeline() {
   }, [user, setLikedEvents]);
 
   // Handler for removing liked events (calls backend)
-  const handleRemove = async (e: React.MouseEvent, id: string) => {
+  const handleRemove = async (e: React.MouseEvent, ev: FullEventType) => {
     e.stopPropagation();
     if (!user) {
       alert("Please login to remove from timeline.");
@@ -155,12 +155,48 @@ export default function EventTimeline() {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: id,
+          event_id: ev.externalId,
+          created_at: ev.datetimeSchedule
         }),
       });
-      setLikedEvents((prev) => prev.filter((event) => event.externalId !== id));
+      setLikedEvents((prev) => prev.filter((event) => event.externalId !== ev.externalId));
     } catch (error) {
       alert("Could not remove from timeline.");
+      console.error(error);
+    }
+  };
+
+    // Handler for removing liked events (calls backend)
+  const handleAdd = async (e: React.MouseEvent, ev: FullEventType) => {
+    e.stopPropagation();
+    if (!user) {
+      alert("Please login to add to your timeline.");
+      return;
+    }
+    console.log("PLAN");
+    console.log(ev);
+    console.log(e);
+
+    try {
+      const api = import.meta.env.VITE_API;
+      await fetch(`${api}/events/users/timeline`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          user_uid: user.uid,
+          event_id: ev.externalId,
+          created_at: moment(ev.datetimeOptionalSchedule)
+        }),
+      });
+      // setLikedEvents((prev) => prev.filter((event) => event.externalId !== ev.externalId));
+      likedEvents.push(ev);
+      setLikedEvents(likedEvents);
+
+    } catch (error) {
+      alert("Could not schedule in your timeline.");
       console.error(error);
     }
   };
@@ -183,12 +219,45 @@ export default function EventTimeline() {
     const key = date.toISOString().slice(0, 10);
     eventsByDay[key] = [];
   });
+
   likedEvents.forEach((ev) => {
-    const key = ev.datetimeFrom.toString().slice(0, 10);
-    if (eventsByDay[key]) {
-      eventsByDay[key].push(ev);
+    // FIXME: get the real planned date from the timeline
+    // this date will have the attribute "pined"
+    // all other will have "unpined"
+
+    // !!!! currentDate is JST, with timezone information (isUTC = false)
+    let currentDate = moment(ev.datetimeFrom).startOf('day');
+    console.log(currentDate);
+    console.log("array index will be (should be UTC): " + currentDate.toISOString());
+
+    while (currentDate <= moment(ev.datetimeTo)) {
+      
+      // console.log("loopiong with moment: " + currentDate.toISOString());
+      let cev = {...ev};
+      cev.isPinned = false;
+
+      // FIXME: strange, other datetime are not in the same format ...
+      // datetimeFrom => '2025-07-12T15:00:00.000Z'
+      // datetimeOptionalSchedule => 'Fri Jul 18 2025 00:00:00 GMT+0900 (Japan Standard Time)'
+      cev.datetimeOptionalSchedule = currentDate.toDate();
+
+      if (moment(ev.datetimeSchedule).isSame(currentDate, 'day')) {
+        cev.isPinned = true;
+      }
+      
+      // const key = currentDate.format('YYYY-MM-DD');
+      const key = currentDate.toISOString().slice(0, 10);
+  
+      if (eventsByDay[key]) {
+        eventsByDay[key].push(cev);
+      }
+
+      currentDate.add(1, 'day');
     }
+
   });
+  console.log('final array of events / day');
+  console.log(eventsByDay);  
 
   // Week range string
   const weekStart = weekDates[0];
@@ -261,6 +330,7 @@ export default function EventTimeline() {
                 isMobile={isMobile}
                 setWeekOffset={setWeekOffset}
                 handleRemove={handleRemove}
+                handleAdd={handleAdd}
               />
             )}
           </>

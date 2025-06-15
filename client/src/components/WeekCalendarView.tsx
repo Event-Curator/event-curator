@@ -8,7 +8,8 @@ type WeekCalendarViewProps = {
   weekRangeStr: string;
   isMobile: boolean;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
-  handleRemove: (e: React.MouseEvent, id: string) => void;
+  handleRemove: (e: React.MouseEvent, ev: any) => void;
+  handleAdd: (e: React.MouseEvent, ev: any) => void;
 };
 
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
@@ -29,6 +30,7 @@ export default function WeekCalendarView({
   isMobile,
   setWeekOffset,
   handleRemove,
+  handleAdd,
 }: WeekCalendarViewProps) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
@@ -102,6 +104,7 @@ export default function WeekCalendarView({
                             w-full min-w-0
                             shadow transition cursor-pointer border-2
                             ${isToday ? "border-blue-500 shadow-lg" : "border-gray-200"}
+                            ${ev.isPinned ? "border-red-500" : "bg-gray-100 text-gray-300"}
                           `}
                         >
                           <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
@@ -114,18 +117,32 @@ export default function WeekCalendarView({
                             {getTimeRange(ev)}
                           </div>
                           <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
-                          <button
-                            className="absolute bottom-3 right-3 btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
-                            title="Remove from timeline"
-                            tabIndex={-1}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemove(e, ev.externalId);
-                            }}
-                          >
-                            &#10006;
-                          </button>
-                        </div>
+                            {ev.isPinned ? 
+                              <button
+                                className="absolute top-1 right-1 btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
+                                title="unschedule from your timeline"
+                                tabIndex={-1}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemove(e, ev);
+                                }}
+                              >
+                                &#10006;
+                              </button>
+                              :
+                              <button
+                                className="absolute top-1 right-1 btn btn-xs btn-circle black hover:bg-black-400 text-white shadow"
+                                title="schedule into your timeline"
+                                tabIndex={-1}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAdd(e, ev);
+                                }}
+                              >
+                                &#128204;
+                              </button>
+                            }
+                          </div>
                       );
                     })
                   )}
