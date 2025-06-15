@@ -159,7 +159,13 @@ export default function EventTimeline() {
           created_at: ev.datetimeSchedule
         }),
       });
-      setLikedEvents((prev) => prev.filter((event) => event.externalId !== ev.externalId));
+
+      setLikedEvents((prev) => {
+        return prev.filter((event) => {
+          return !((event.externalId === ev.externalId) && (ev.datetimeSchedule === event.datetimeSchedule))
+        })
+      });
+
     } catch (error) {
       alert("Could not remove from timeline.");
       console.error(error);
@@ -173,9 +179,6 @@ export default function EventTimeline() {
       alert("Please login to add to your timeline.");
       return;
     }
-    console.log("PLAN");
-    console.log(ev);
-    console.log(e);
 
     try {
       const api = import.meta.env.VITE_API;
@@ -191,9 +194,13 @@ export default function EventTimeline() {
           created_at: moment(ev.datetimeOptionalSchedule)
         }),
       });
-      // setLikedEvents((prev) => prev.filter((event) => event.externalId !== ev.externalId));
-      likedEvents.push(ev);
-      setLikedEvents(likedEvents);
+
+      ev.isPinned = true;
+      ev.datetimeSchedule = ev.datetimeOptionalSchedule;
+
+      // let newLikedEvents = [...likedEvents];
+      // let newLikedEvents2 = [...newLikedEvents, ...[ev]]
+      setLikedEvents([...likedEvents, ...[ev]]);
 
     } catch (error) {
       alert("Could not schedule in your timeline.");
@@ -256,7 +263,6 @@ export default function EventTimeline() {
         }
 
         if (cev.isPinned) {
-          console.log("PINNED" + cev.datetimeSchedule);
           // make sure there is only one time the same event if one of them is scheduled
           eventsByDay[key] = eventsByDay[key].filter( ev => ev.externalId !== cev.externalId );
           eventsByDay[key].push(cev);
@@ -266,7 +272,6 @@ export default function EventTimeline() {
       currentDate.add(1, 'day');
     }
 
-    console.log(eventsByDay);
   });
 
   // Week range string

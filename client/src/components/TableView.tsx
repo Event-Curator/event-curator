@@ -34,7 +34,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
               : fallbackImage;
           return (
             <div
-              key={ev.externalId}
+              key={ev.externalId + '-' + ev.datetimeSchedule}
               className="flex items-center gap-3 bg-white rounded-xl shadow px-3 py-3"
               onClick={() =>
                 onRowClick
@@ -108,7 +108,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                   : fallbackImage;
               return (
                 <tr
-                  key={ev.externalId}
+                  key={ev.externalId + '-' + ev.datetimeSchedule}
                   className={`hover:bg-blue-50 transition cursor-pointer ${
                     idx % 2 === 1 ? "bg-blue-100" : "bg-white"
                   }`}
