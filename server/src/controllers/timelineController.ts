@@ -4,28 +4,35 @@ import { log } from '../utils/logger.js';
 import { verifyFriendship } from '../models/friend.js';
 import { Event } from '../models/Event.js';
 import { getEventById } from '../models/Event.js';
+import moment from 'moment';
+import { dateTimestampProvider } from 'rxjs/internal/scheduler/dateTimestampProvider';
 
 interface TimelineRequestBody {
   user_uid: string;
   event_id: string;
+  schedule_date: string;
 }
 
 /**
  * Controller: create a new timeline entry
  */
 export const createTimelineEntry = async (
-  req: Request<{}, {}, TimelineRequestBody>,
+  // req: Request<{}, {}, {}, TimelineRequestBody>,
+  req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { user_uid, event_id } = req.body;
-    if (!user_uid || !event_id) {
-      res.status(400).json({ error: 'Missing user_uid or event_id' });
+    const { user_uid, event_id, created_at } = req.body;
+    if (!user_uid || !event_id || !created_at) {
+      res.status(400).json({ error: 'Missing user_uid or event_id or created_at' });
       return;
     }
 
-    log.info(`Inserting timeline entry for user: ${user_uid}, event: ${event_id}`);
-    const entry = await TimelineModel.addTimelineEntry(user_uid, event_id);
+    // we add one day to take into account the TZ while truncating the timepart
+    // let ymd = moment(created_at).add(1, 'day').toISOString().slice(0,10);
+    
+    log.info(`Inserting timeline entry for user: ${user_uid}, event: ${event_id}, date: ${created_at}`);
+    const entry = await TimelineModel.addTimelineEntry(user_uid, event_id, created_at);
 
     res.status(201).json({
       message: 'Timeline entry created',
@@ -40,18 +47,18 @@ export const createTimelineEntry = async (
  * Controller: delete a new timeline entry
  */
 export const deleteTimelineEntry = async (
-  req: Request<{}, {}, TimelineRequestBody>,
+  req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { user_uid, event_id } = req.body;
-    if (!user_uid || !event_id) {
-      res.status(400).json({ error: 'Missing user_uid or event_id' });
+    const { user_uid, event_id, created_at } = req.body;
+    if (!user_uid || !event_id || !created_at) {
+      res.status(400).json({ error: 'Missing user_uid, event_id or created_at' });
       return;
     }
 
-    log.info(`Removing timeline entry for user: ${user_uid}, event: ${event_id}`);
-    const entry = await TimelineModel.deleteTimelineEntry(user_uid, event_id);
+    log.info(`Removing timeline entry for user: ${user_uid}, event: ${event_id}, date: ${created_at}`);
+    const entry = await TimelineModel.deleteTimelineEntry(user_uid, event_id, created_at);
 
     res.status(201).json({
       message: 'Timeline entry removed',
@@ -81,16 +88,24 @@ export const getEventsForUser = async (
     const events = await TimelineModel.fetchEventsForUser(user_uid.toString());
 
     let fullEvents: Event[] = [];
-    let dups: Event[] = [];
+    let scheduleDedup: string[] = [];
 
     for (let event of events) {
-      if (dups.indexOf(event.event_external_id) < 0) {
+      
+      // FIXME: we don't care about timezone issue for now, but we should at some point.
+      // let datetimeSchedule = moment(event.created_at).format('YYYY-MM-DDT00:00:00.000') + 'Z';
+      let datetimeSchedule = moment(event.created_at).toISOString();
+      
+      // dup checker: avoid the same event more than once for a given day
+      if (scheduleDedup.indexOf(datetimeSchedule) < 0) {
+
         let fullEvent = await getEventById(event.event_external_id);
-        dups.push(event.event_external_id);
+        scheduleDedup.push(datetimeSchedule);
 
         // we don't need all the stuff from RxDB
-        // just get the inner data for the event
-        fullEvents.push({...fullEvent._data});
+        let ev = {...fullEvent._data};
+        ev.datetimeSchedule = datetimeSchedule;
+        fullEvents.push(ev);
       }
     }
     

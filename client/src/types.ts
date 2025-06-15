@@ -1,4 +1,5 @@
 export interface FullEventType {
+  isPinned: any;
   externalId: string;
   originId: string;
   originUrl: string; // this should point to a working page on the source website giving all the event details
@@ -33,6 +34,8 @@ export interface FullEventType {
   datetimeFrom: Date;
   datetimeTo: Date;
   datetimeFreeform: string;
+  datetimeSchedule: Date;
+  datetimeOptionalSchedule: Date;
 
   // category of this event
   category: string;

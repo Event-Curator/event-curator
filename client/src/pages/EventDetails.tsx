@@ -116,6 +116,7 @@ export default function EventDetails(): React.ReactElement {
         body: JSON.stringify({
           user_uid: user.uid,
           event_id: event.externalId,
+          created_at: event.datetimeFrom
         }),
       });
 
@@ -146,6 +147,7 @@ export default function EventDetails(): React.ReactElement {
         body: JSON.stringify({
           user_uid: user.uid,
           event_id: event.externalId,
+          created_at: event.datetimeSchedule
         }),
       });
       setLikedEvents((prev) => prev.filter((e) => e.externalId !== event.externalId));
