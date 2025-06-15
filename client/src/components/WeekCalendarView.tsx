@@ -192,7 +192,6 @@ export default function WeekCalendarView({
                       return (
                         <div
                           key={ev.externalId}
-                          onClick={() => window.location.assign(`/event/${ev.externalId}`)}
                           className={`
                             relative p-6 rounded-xl bg-white flex flex-col gap-2
                             w-full min-w-0
@@ -201,8 +200,16 @@ export default function WeekCalendarView({
                             ${ev.isPinned ? "border-blue-500" : "bg-gray-100 text-gray-300"}
                           `}
                         >
-                          {ev.isPinned ? 
-                            <>
+
+                        {ev.isPinned ? 
+                          (
+                            <div
+                              onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemove(e, ev);
+                            }}
+                            >
+                              {/* <div className="font-bold text-blue-800 text-lg"><a target='_#' href={`/event/${ev.externalId}`}>{ev.name}</a></div> */}
                               <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
                               <div className="text-base text-gray-700">{ev.placeFreeform}</div>
                               <div className="text-base text-blue-600 font-bold">
@@ -212,35 +219,20 @@ export default function WeekCalendarView({
                                 <b>Time:&nbsp;</b>
                                 {getTimeRange(ev)}
                               </div>
-                            </>
-                          : "Click to schedule " + ev.name }
-                          <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
-                            {ev.isPinned ? 
-                              <button
-                                className="absolute top-1 right-1 btn btn-s btn-circle black hover:bg-blue-400 text-white shadow"
-                                title="unschedule from your timeline"
-                                tabIndex={-1}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemove(e, ev);
-                                }}
+                            </div>
+
+                          ) : (
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAdd(e, ev);
+                              }}
                               >
-                                &#10006;
-                              </button>
-                              :
-                              <button
-                                className="absolute top-1 right-1 btn btn-s btn-circle black hover:bg-black-400 text-white shadow"
-                                title="schedule into your timeline"
-                                tabIndex={-1}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAdd(e, ev);
-                                }}
-                              >
-                                &#128204;
-                              </button>
-                            }
-                          </div>
+                              { "Click to schedule " + ev.name }
+                            </div>
+                          )
+                        }
+                        </div>
                       );
                     })
                   )}
