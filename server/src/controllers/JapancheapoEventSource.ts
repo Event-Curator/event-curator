@@ -45,7 +45,7 @@ class JapancheapoEventSource extends DefaultEventSource {
       log.info(`${this.id}: scrapping started`);
 
       // FIXME: get back to 18
-      for (let i = 1; i<18; i++) {
+      for (let i = 1; i<2; i++) {
         log.info(`${this.id}: scrapping ongoing. page ${i}`);
 
         const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
