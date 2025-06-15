@@ -1,6 +1,7 @@
 import React from "react";
 import type { FullEventType } from "../types";
 import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
+import moment from "moment";
 
 type WeekCalendarViewProps = {
   weekDates: Date[];
@@ -14,14 +15,17 @@ type WeekCalendarViewProps = {
 };
 
 function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
-  const start = new Date(ev.datetimeFrom);
-  const end = ev.datetimeTo ? new Date(ev.datetimeTo) : start;
+  const start = moment(ev.datetimeFrom).startOf('day');
+  const end = moment(ev.datetimeTo).endOf('day');
   const indices = weekDates
-    .map((d, i) =>
-      d >= start && d <= end ? i : null
+    .map((d, i) => {
+        let currentDate = moment(d);
+        return currentDate.startOf('day').isSameOrAfter(start) && currentDate.endOf('day').isSameOrBefore(end) ? i : null
+      }
     )
     .filter(i => i !== null) as number[];
-  return indices;
+
+    return indices;
 }
 
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
@@ -51,10 +55,22 @@ export default function WeekCalendarView({
   const weekStart = weekDates[0];
   const weekEnd = weekDates[weekDates.length - 1];
 
-  const multiDayEvents: FullEventType[] = allEvents.filter(ev => {
+  // in some case, it helps to have only the list of events without the duplicates from the timeline
+  let dedup: string[] = [];
+  let allEventsDedup: FullEventType[] = [];
+
+  for (let _e of allEvents) {
+    if (dedup.indexOf(_e.externalId) < 0) {
+      allEventsDedup.push(_e);
+      dedup.push(_e.externalId);
+    }
+  }
+
+  const multiDayEvents: FullEventType[] = allEventsDedup.filter(ev => {
     if (!ev.datetimeTo) return false;
     const start = new Date(ev.datetimeFrom);
     const end = new Date(ev.datetimeTo);
+
     return (
       end > start &&
       end >= weekStart &&
@@ -91,9 +107,7 @@ export default function WeekCalendarView({
         <div
           className="relative w-full mb-2"
           style={{
-            minHeight: "170px", // enough for 6 lines
-            maxHeight: "180px",
-            paddingTop: "6px"
+            marginBottom: "56px"
           }}
         >
           {multiDayEvents.map((ev, idx) => {
@@ -148,7 +162,10 @@ export default function WeekCalendarView({
         >
           {weekDates.map((date) => {
             const key = date.toISOString().slice(0, 10);
-            const events = eventsByDay[key] || [];
+            const allEvents = eventsByDay[key] || [];
+            // to hide the "not scheduled" events
+            // const scheduledEvents = allEvents.filter( e => e.isPinned );
+            const scheduledEvents = allEvents;
             return (
               <div key={key} className="flex flex-col items-center w-full">
                 <div className="text-center font-bold text-blue-700 mb-4 text-xl">
@@ -156,7 +173,7 @@ export default function WeekCalendarView({
                   <div className="text-base text-gray-500">{date.getDate()}</div>
                 </div>
                 <div className="flex flex-col gap-4 w-full items-center">
-                  {events.length === 0 ? (
+                  {scheduledEvents.length === 0 ? (
                     <div
                       className="
                         bg-gray-100 rounded-xl h-24 text-base text-gray-300
@@ -168,7 +185,7 @@ export default function WeekCalendarView({
                       No events
                     </div>
                   ) : (
-                    events.map((ev) => {
+                    scheduledEvents.map((ev) => {
                       const eventDate = new Date(ev.datetimeFrom);
                       eventDate.setHours(0, 0, 0, 0);
                       const isToday = eventDate.getTime() === now.getTime();
@@ -181,22 +198,26 @@ export default function WeekCalendarView({
                             w-full min-w-0
                             shadow transition cursor-pointer border-2
                             ${isToday ? "border-blue-500 shadow-lg" : "border-gray-200"}
-                            ${ev.isPinned ? "border-red-500" : "bg-gray-100 text-gray-300"}
+                            ${ev.isPinned ? "border-blue-500" : "bg-gray-100 text-gray-300"}
                           `}
                         >
-                          <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
-                          <div className="text-base text-gray-700">{ev.placeFreeform}</div>
-                          <div className="text-base text-blue-600 font-bold">
-                            {new Date(ev.datetimeFrom).toLocaleDateString()}
-                          </div>
-                          <div className="text-base">
-                            <b>Time:&nbsp;</b>
-                            {getTimeRange(ev)}
-                          </div>
+                          {ev.isPinned ? 
+                            <>
+                              <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
+                              <div className="text-base text-gray-700">{ev.placeFreeform}</div>
+                              <div className="text-base text-blue-600 font-bold">
+                                {new Date(ev.datetimeFrom).toLocaleDateString()}
+                              </div>
+                              <div className="text-base">
+                                <b>Time:&nbsp;</b>
+                                {getTimeRange(ev)}
+                              </div>
+                            </>
+                          : "Click to schedule " + ev.name }
                           <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
                             {ev.isPinned ? 
                               <button
-                                className="absolute top-1 right-1 btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
+                                className="absolute top-1 right-1 btn btn-s btn-circle black hover:bg-blue-400 text-white shadow"
                                 title="unschedule from your timeline"
                                 tabIndex={-1}
                                 onClick={(e) => {
@@ -208,7 +229,7 @@ export default function WeekCalendarView({
                               </button>
                               :
                               <button
-                                className="absolute top-1 right-1 btn btn-xs btn-circle black hover:bg-black-400 text-white shadow"
+                                className="absolute top-1 right-1 btn btn-s btn-circle black hover:bg-black-400 text-white shadow"
                                 title="schedule into your timeline"
                                 tabIndex={-1}
                                 onClick={(e) => {
