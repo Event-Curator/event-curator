@@ -6,7 +6,7 @@ import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
 import { geocodeAddress, getDistance, reverseGeocodeAddress } from '../utils/geo.js';
-import { isRxDocument, RxDocument } from 'rxdb';
+import { categorizeBulkWriteRows, isRxDocument, RxDocument } from 'rxdb';
 import fs from "fs";
 import md5 from 'md5';
 
@@ -38,11 +38,18 @@ const scrapEvent = async function (req: Request, res: Response) {
     log.info(`caching objects ...`);
     for (let event of result) {
         let cachedEvent = await getEvent(event.externalId);
+
+        // log.warn(event.category);
+        if (!event.category || event.category.length === 0 || event.category === EventCategoryEnum.OTHER) {
+            guessCategoryFromStaticMap(event);
+        }
+
         if (cachedEvent) {
             log.debug(`existing event found, updating data for ${event.externalId}`);
 
             await geocodeAddress(sourceId, event);
             await reverseGeocodeAddress(sourceId, event);
+
             await cachedEvent.update({
                 $set: {
                     name: event.name,
@@ -352,6 +359,52 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
     resp.status(404);
     resp.send();
+}
+
+// if nothing succeeded before, last ressord against a static map.
+// the map is general for all event source
+const guessCategoryFromStaticMap = function (event: Event) {
+    let freeform = event.categoryFreeform;
+    let regexs = {
+        'anime food living': EventCategoryEnum.FOOD,
+        'anime illumination music': EventCategoryEnum.PERFORMANCE,
+        'anime music': EventCategoryEnum.MUSIC,
+        'anime show trade show': EventCategoryEnum.HOBBIES,
+        'anime': EventCategoryEnum.FAMILY,
+        'art': EventCategoryEnum.PERFORMANCE,
+        'beer': EventCategoryEnum.FOOD,
+        'drink': EventCategoryEnum.FOOD,
+        'charity': EventCategoryEnum.CHARITY,
+        'comedy': EventCategoryEnum.PERFORMANCE,
+        'dance': EventCategoryEnum.MUSIC,
+        'cultural': EventCategoryEnum.PERFORMANCE,
+        'exhibition': EventCategoryEnum.PERFORMANCE,
+        'flower': EventCategoryEnum.FAMILY,
+        'festival': EventCategoryEnum.FAMILY,
+        'film': EventCategoryEnum.PERFORMANCE,
+        'illumination': EventCategoryEnum.FAMILY,
+        'market': EventCategoryEnum.FAMILY,
+        'nature': EventCategoryEnum.FAMILY,
+        'parade': EventCategoryEnum.FAMILY,
+        'firework': EventCategoryEnum.FAMILY,
+        'matsuri': EventCategoryEnum.FAMILY,
+        'paradetheatre': EventCategoryEnum.PERFORMANCE,
+        'show': EventCategoryEnum.PERFORMANCE,
+    };
+
+    log.debug("fallback for catefory: " + freeform);
+    for (let i in regexs) {
+        let regex = i;
+        let category = regexs[i];
+
+        let re = new RegExp(regex, 'i');
+        if (re.exec(freeform) !== null) {
+            event.category = category;
+            log.debug("found: [" + event.category + "]");
+            return
+        } 
+    }
+    log.warn("not found");
 }
 
 // -------------------------- utility functions for website implementations
