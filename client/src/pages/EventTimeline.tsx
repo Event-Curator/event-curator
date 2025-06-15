@@ -341,6 +341,7 @@ export default function EventTimeline() {
                 setWeekOffset={setWeekOffset}
                 handleRemove={handleRemove}
                 handleAdd={handleAdd}
+                allEvents={sortedEvents}
               />
             )}
           </>

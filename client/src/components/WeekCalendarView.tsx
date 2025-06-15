@@ -10,7 +10,19 @@ type WeekCalendarViewProps = {
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
   handleRemove: (e: React.MouseEvent, ev: any) => void;
   handleAdd: (e: React.MouseEvent, ev: any) => void;
+  allEvents: FullEventType[];
 };
+
+function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
+  const start = new Date(ev.datetimeFrom);
+  const end = ev.datetimeTo ? new Date(ev.datetimeTo) : start;
+  const indices = weekDates
+    .map((d, i) =>
+      d >= start && d <= end ? i : null
+    )
+    .filter(i => i !== null) as number[];
+  return indices;
+}
 
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
@@ -31,9 +43,24 @@ export default function WeekCalendarView({
   setWeekOffset,
   handleRemove,
   handleAdd,
+  allEvents,
 }: WeekCalendarViewProps) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
+
+  const weekStart = weekDates[0];
+  const weekEnd = weekDates[weekDates.length - 1];
+
+  const multiDayEvents: FullEventType[] = allEvents.filter(ev => {
+    if (!ev.datetimeTo) return false;
+    const start = new Date(ev.datetimeFrom);
+    const end = new Date(ev.datetimeTo);
+    return (
+      end > start &&
+      end >= weekStart &&
+      start <= weekEnd
+    );
+  });
 
   return (
     <div className="w-full">
@@ -58,6 +85,56 @@ export default function WeekCalendarView({
           </button>
         </div>
       )}
+
+      {/* Multi-day event bars */}
+      {!isMobile && (
+        <div
+          className="relative w-full mb-2"
+          style={{
+            minHeight: "170px", // enough for 6 lines
+            maxHeight: "180px",
+            paddingTop: "6px"
+          }}
+        >
+          {multiDayEvents.map((ev, idx) => {
+            const barIndices = getBarSpanIndices(ev, weekDates);
+            if (!barIndices.length) return null;
+            const start = barIndices[0];
+            const end = barIndices[barIndices.length - 1];
+            return (
+              <div
+                key={ev.externalId}
+                className="absolute flex items-center"
+                style={{
+                  left: `calc(${(start / 7) * 100}% + 8px)`,
+                  width: `calc(${((end - start + 1) / 7) * 100}% - 16px)`,
+                  top: `${idx * 26}px`,
+                  height: "24px",
+                  background: "#2761da22",
+                  borderRadius: "9999px",
+                  border: "2px solid #2761da",
+                  color: "#1e3a8a",
+                  fontWeight: 600,
+                  fontSize: "0.97rem",
+                  padding: "0 16px",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0 1px 4px #a5b4fc33",
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                  zIndex: 5,
+                }}
+                onClick={() => window.location.assign(`/event/${ev.externalId}`)}
+                title={ev.name}
+              >
+                <span className="truncate">{ev.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+
       <div className="bg-blue-50 rounded-2xl px-8 py-6 w-full">
         <div
           className="
