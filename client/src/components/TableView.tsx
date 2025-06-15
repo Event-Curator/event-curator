@@ -16,16 +16,18 @@ type TableViewProps = {
 export default function TableView({ events, isMobile, handleRemove, onRowClick }: TableViewProps) {
   const navigate = useNavigate();
 
+  let sortedEvents = events.sort((a, b) => new Date(a.datetimeSchedule).getTime() - new Date(b.datetimeSchedule).getTime())
+
   if (isMobile) {
     // Mobile: stacked card style, no horizontal scroll, all info and delete button visible
     return (
       <div className="w-full flex flex-col gap-3">
-        {events.length === 0 && (
+        {sortedEvents.length === 0 && (
           <div className="text-center text-gray-400 py-10">
             No events in your timeline yet.
           </div>
         )}
-        {events.map((ev) => {
+        {sortedEvents.map((ev) => {
           const category = ev.category || "Other";
           const fallbackImage = categoryImages[category] || categoryImages["Other"];
           const imageSrc =
@@ -99,7 +101,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
             </tr>
           </thead>
           <tbody>
-            {events.map((ev, idx) => {
+            {sortedEvents.map((ev, idx) => {
               const category = ev.category || "Other";
               const fallbackImage = categoryImages[category] || categoryImages["Other"];
               const imageSrc =
@@ -157,7 +159,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                 </tr>
               );
             })}
-            {events.length === 0 && (
+            {sortedEvents.length === 0 && (
               <tr>
                 <td colSpan={5} className="text-center text-gray-400 py-10">
                   No events in your timeline yet.
