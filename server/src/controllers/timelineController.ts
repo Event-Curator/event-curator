@@ -5,7 +5,6 @@ import { verifyFriendship } from '../models/friend.js';
 import { Event } from '../models/Event.js';
 import { getEventById } from '../models/Event.js';
 import moment from 'moment';
-import { dateTimestampProvider } from 'rxjs/internal/scheduler/dateTimestampProvider';
 
 interface TimelineRequestBody {
   user_uid: string;
@@ -17,7 +16,6 @@ interface TimelineRequestBody {
  * Controller: create a new timeline entry
  */
 export const createTimelineEntry = async (
-  // req: Request<{}, {}, {}, TimelineRequestBody>,
   req: Request,
   res: Response,
 ): Promise<void> => {
@@ -28,9 +26,6 @@ export const createTimelineEntry = async (
       return;
     }
 
-    // we add one day to take into account the TZ while truncating the timepart
-    // let ymd = moment(created_at).add(1, 'day').toISOString().slice(0,10);
-    
     log.info(`Inserting timeline entry for user: ${user_uid}, event: ${event_id}, date: ${created_at}`);
     const entry = await TimelineModel.addTimelineEntry(user_uid, event_id, created_at);
 

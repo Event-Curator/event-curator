@@ -8,7 +8,6 @@ import TableView from "../components/TableView";
 import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
 import moment from "moment";
-import { MdStayCurrentLandscape } from "react-icons/md";
 
 // ShareTimelineButton for timeline (not per event)
 function ShareTimelineButton({ timelineId }: { timelineId: string }) {
@@ -198,8 +197,6 @@ export default function EventTimeline() {
       ev.isPinned = true;
       ev.datetimeSchedule = ev.datetimeOptionalSchedule;
 
-      // let newLikedEvents = [...likedEvents];
-      // let newLikedEvents2 = [...newLikedEvents, ...[ev]]
       setLikedEvents([...likedEvents, ...[ev]]);
 
     } catch (error) {
@@ -227,13 +224,12 @@ export default function EventTimeline() {
     eventsByDay[key] = [];
   });
 
+  // !!!! currentDate is JST, with timezone information (isUTC = false)
   likedEvents.forEach((ev) => {
-    // !!!! currentDate is JST, with timezone information (isUTC = false)
     let currentDate = moment(ev.datetimeFrom).startOf('day');
 
     while (currentDate <= moment(ev.datetimeTo)) {
       
-      // console.log("loopiong with moment: " + currentDate.toISOString());
       let cev = {...ev};
       cev.isPinned = false;
 
@@ -246,7 +242,6 @@ export default function EventTimeline() {
         cev.isPinned = true;
       }
       
-      // const key = currentDate.format('YYYY-MM-DD');
       const key = currentDate.toISOString().slice(0, 10);
       
       if (eventsByDay[key]) {
