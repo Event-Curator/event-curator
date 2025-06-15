@@ -19,7 +19,13 @@ type Props = {
   isDayInEventRange: (day: number) => boolean;
   handlePrevMonth: () => void;
   handleNextMonth: () => void;
+  currentMonth: number;
+  currentYear: number;
 };
+
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
 
 export default function EventCalendar({
   monthYear,
@@ -29,7 +35,38 @@ export default function EventCalendar({
   isDayInEventRange,
   handlePrevMonth,
   handleNextMonth,
+  currentMonth,
+  currentYear,
 }: Props) {
+  // Calculate the first day of the week (0=Sunday)
+  const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
+
+  // Previous month info
+  const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const prevMonthDays = getDaysInMonth(prevYear, prevMonth);
+
+  // Build the calendar grid (6 rows of 7 days)
+  const days: { day: number; outside: boolean }[] = [];
+
+  // Days from previous month (faded)
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    days.push({ day: prevMonthDays - firstDayOfWeek + 1 + i, outside: true });
+  }
+  // Days in current month
+  for (let i = 1; i <= calendarDays; i++) {
+    days.push({ day: i, outside: false });
+  }
+  // Days from next month (faded)
+  let nextMonthDay = 1;
+  while (days.length % 7 !== 0) {
+    days.push({ day: nextMonthDay++, outside: true });
+  }
+  // Ensure 6 rows (42 days)
+  while (days.length < 42) {
+    days.push({ day: nextMonthDay++, outside: true });
+  }
+
   return (
     <div className="bg-white p-4 rounded-xl shadow">
       <div className="flex items-center justify-between mb-1">
@@ -52,16 +89,16 @@ export default function EventCalendar({
         </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs w-full">
-        {["M", "T1", "W", "T2", "F", "S1", "S2"].map((d, idx) => (
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, idx) => (
           <div key={d + idx} className="font-bold text-gray-500">
-            {d[0]}
+            {d}
           </div>
         ))}
-        {Array.from({ length: calendarDays }).map((_, i) => {
-          const day = i + 1;
-          const start = isStartDay(day);
-          const end = isEndDay(day);
-          const inRange = isDayInEventRange(day);
+        {days.map((d, idx) => {
+          const isCurrentMonth = !d.outside;
+          const start = isCurrentMonth && isStartDay(d.day);
+          const end = isCurrentMonth && isEndDay(d.day);
+          const inRange = isCurrentMonth && isDayInEventRange(d.day);
 
           let baseClasses = "rounded py-1 border cursor-default";
           if (start) {
@@ -70,12 +107,14 @@ export default function EventCalendar({
             baseClasses += " bg-blue-700 text-white font-bold border-blue-700 hover:bg-blue-800";
           } else if (inRange) {
             baseClasses += " bg-blue-700 text-white font-bold border-blue-700 hover:bg-blue-800";
-          } else {
+          } else if (isCurrentMonth) {
             baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
+          } else {
+            baseClasses += " text-gray-300 bg-white border-blue-50";
           }
           return (
             <div
-              key={day}
+              key={idx}
               title={
                 start
                   ? "🎉 Event Start Day!"
@@ -87,7 +126,7 @@ export default function EventCalendar({
               }
               className={baseClasses}
             >
-              {day}
+              {d.day}
             </div>
           );
         })}

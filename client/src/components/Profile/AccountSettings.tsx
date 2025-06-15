@@ -12,7 +12,6 @@ export default function AccountSettings() {
   const [message, setMessage] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  // Removed handleEmailUpdate and related state
 
   const handlePasswordUpdate = async () => {
     if (!user || !newPassword || newPassword !== confirmPassword) {
