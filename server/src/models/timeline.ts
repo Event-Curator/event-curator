@@ -24,7 +24,7 @@ export async function addTimelineEntry(
     .returning([
       'user_uid',
       'event_external_id',
-      { column: 'created_at', as: 'joined_at' }
+      { column: 'created_at' }
     ]);
   return entry;
 }
