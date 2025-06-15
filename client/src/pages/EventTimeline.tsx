@@ -221,14 +221,8 @@ export default function EventTimeline() {
   });
 
   likedEvents.forEach((ev) => {
-    // FIXME: get the real planned date from the timeline
-    // this date will have the attribute "pined"
-    // all other will have "unpined"
-
     // !!!! currentDate is JST, with timezone information (isUTC = false)
     let currentDate = moment(ev.datetimeFrom).startOf('day');
-    console.log(currentDate);
-    console.log("array index will be (should be UTC): " + currentDate.toISOString());
 
     while (currentDate <= moment(ev.datetimeTo)) {
       
@@ -236,7 +230,7 @@ export default function EventTimeline() {
       let cev = {...ev};
       cev.isPinned = false;
 
-      // FIXME: strange, other datetime are not in the same format ...
+      // FIXME: strange, other datetime are not in the same format ... but anyway, it works.
       // datetimeFrom => '2025-07-12T15:00:00.000Z'
       // datetimeOptionalSchedule => 'Fri Jul 18 2025 00:00:00 GMT+0900 (Japan Standard Time)'
       cev.datetimeOptionalSchedule = currentDate.toDate();
@@ -247,17 +241,33 @@ export default function EventTimeline() {
       
       // const key = currentDate.format('YYYY-MM-DD');
       const key = currentDate.toISOString().slice(0, 10);
-  
+      
       if (eventsByDay[key]) {
-        eventsByDay[key].push(cev);
+        // if same event already found
+        //   and not pinned => ignore it
+        //   and pinned => replace the previous
+        let ignoreBecauseDup = false;
+        for (let _event of eventsByDay[key]) {
+          if (_event.externalId === cev.externalId) ignoreBecauseDup = true;
+        }
+      
+        if (!ignoreBecauseDup) {
+          eventsByDay[key].push(cev);
+        }
+
+        if (cev.isPinned) {
+          console.log("PINNED" + cev.datetimeSchedule);
+          // make sure there is only one time the same event if one of them is scheduled
+          eventsByDay[key] = eventsByDay[key].filter( ev => ev.externalId !== cev.externalId );
+          eventsByDay[key].push(cev);
+        }
       }
 
       currentDate.add(1, 'day');
     }
 
+    console.log(eventsByDay);
   });
-  console.log('final array of events / day');
-  console.log(eventsByDay);  
 
   // Week range string
   const weekStart = weekDates[0];
