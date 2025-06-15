@@ -8,8 +8,6 @@ import TableView from "../components/TableView";
 import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
 
-
-
 // ShareTimelineButton for timeline (not per event)
 function ShareTimelineButton({ timelineId }: { timelineId: string }) {
   const [open, setOpen] = useState(false);
@@ -61,6 +59,7 @@ function ShareTimelineButton({ timelineId }: { timelineId: string }) {
               title="Copy link"
               style={{ lineHeight: 0 }}
             >
+              {/* Share icon */}
               <svg
                 width={32}
                 height={32}
@@ -76,9 +75,11 @@ function ShareTimelineButton({ timelineId }: { timelineId: string }) {
                   background: "transparent"
                 }}
               >
-                <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-                <path d="M16 6l-4-4-4 4" />
-                <path d="M12 2v14" />
+                <circle cx="6" cy="12" r="2" />
+                <circle cx="18" cy="6" r="2" />
+                <circle cx="18" cy="18" r="2" />
+                <path d="M8.59 13.51l6.83 3.98" />
+                <path d="M15.41 6.51l-6.82 3.98" />
               </svg>
             </button>
             <div>
@@ -261,6 +262,7 @@ export default function EventTimeline() {
                 isMobile={isMobile}
                 setWeekOffset={setWeekOffset}
                 handleRemove={handleRemove}
+                allEvents={sortedEvents}
               />
             )}
           </>
