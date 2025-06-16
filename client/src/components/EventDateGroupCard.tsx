@@ -23,10 +23,11 @@ export default function EventDateGroupCard({
           category={event.category}
           categoryFreeform={event.categoryFreeform}
           location={event.placeFreeform}
-          date={moment(event.datetimeFrom).format("LL")}
+          dateFrom={moment(event.datetimeFrom).format("LL")}
+          dateTo={moment(event.datetimeTo).format("LL")}
           price={event.budgetMax}
           link={event.originUrl}
-          imageUrl={event.teaserMedia}  
+          imageUrl={event.teaserMedia}
         />
       ))}
     </>

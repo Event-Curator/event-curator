@@ -30,7 +30,6 @@ class TokyocheapoEventSource extends DefaultEventSource {
 
       let imageUrl = imageUrls[0].split(' ').shift() || '';
 
-      console.log(imageUrl);
       return imageUrl;
     }
 
