@@ -9,25 +9,23 @@ const server = import.meta.env.VITE_API;
 type TableViewProps = {
   events: FullEventType[];
   isMobile: boolean;
-  handleRemove: (e: React.MouseEvent, ev: FullEventType) => void;
+  handleRemove: (e: React.MouseEvent, id: string) => void;
   onRowClick?: (eventId: string) => void;
 };
 
 export default function TableView({ events, isMobile, handleRemove, onRowClick }: TableViewProps) {
   const navigate = useNavigate();
 
-  let sortedEvents = events.sort((a, b) => new Date(a.datetimeSchedule).getTime() - new Date(b.datetimeSchedule).getTime())
-
   if (isMobile) {
-    // Mobile: stacked card style, no horizontal scroll, all info and delete button visible
+    // MOBILE (unchanged)
     return (
       <div className="w-full flex flex-col gap-3">
-        {sortedEvents.length === 0 && (
+        {events.length === 0 && (
           <div className="text-center text-gray-400 py-10">
             No events in your timeline yet.
           </div>
         )}
-        {sortedEvents.map((ev) => {
+        {events.map((ev) => {
           const category = ev.category || "Other";
           const fallbackImage = categoryImages[category] || categoryImages["Other"];
           const imageSrc =
@@ -36,7 +34,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
               : fallbackImage;
           return (
             <div
-              key={ev.externalId + '-' + ev.datetimeSchedule}
+              key={ev.externalId}
               className="flex items-center gap-3 bg-white rounded-xl shadow px-3 py-3"
               onClick={() =>
                 onRowClick
@@ -70,7 +68,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                   tabIndex={-1}
                   onClick={e => {
                     e.stopPropagation();
-                    handleRemove(e, ev);
+                    handleRemove(e, ev.externalId);
                   }}
                 >
                   &#10006;
@@ -83,25 +81,25 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
     );
   }
 
-  // Desktop/tablet: table view
+  // DESKTOP/TABLET: responsive, no scroll, full width
   return (
-    <div className="w-full bg-white rounded-2xl shadow px-80 py-6">
-      <div className="overflow-x-auto w-full">
-        <table className="table table-lg w-full bg-white rounded-2xl shadow">
+    <div className="w-full bg-white rounded-2xl shadow py-6">
+      <div className="w-full px-0">
+        <table className="w-full bg-white rounded-2xl shadow table-fixed">
           <thead>
             <tr>
-              <th></th>
-              <th className="text-lg text-gray-600">Event</th>
-              <th className="text-lg text-gray-600">
+              <th className="w-[110px] md:w-[180px]"></th>
+              <th className="text-lg text-gray-600 w-[32%] min-w-[200px]">Event</th>
+              <th className="text-lg text-gray-600 w-[28%] min-w-[180px]">
                 Date / Time
                 <span className="block md:hidden">&amp; Price</span>
               </th>
-              <th className="text-lg text-gray-600 hidden md:table-cell">Price</th>
-              <th></th>
+              <th className="text-lg text-gray-600 w-[14%] hidden md:table-cell">Price</th>
+              <th className="w-[56px]"></th>
             </tr>
           </thead>
           <tbody>
-            {sortedEvents.map((ev, idx) => {
+            {events.map((ev, idx) => {
               const category = ev.category || "Other";
               const fallbackImage = categoryImages[category] || categoryImages["Other"];
               const imageSrc =
@@ -110,19 +108,18 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                   : fallbackImage;
               return (
                 <tr
-                  key={ev.externalId + '-' + ev.datetimeSchedule}
-                  className={`hover:bg-blue-50 transition cursor-pointer ${
-                    idx % 2 === 1 ? "bg-blue-100" : "bg-white"
-                  }`}
+                  key={ev.externalId}
+                  className={`hover:bg-blue-50 transition cursor-pointer ${idx % 2 === 1 ? "bg-blue-100" : "bg-white"}`}
                   onClick={() =>
                     onRowClick
                       ? onRowClick(ev.externalId)
                       : navigate(`/event/${ev.externalId}`)
                   }
+                  style={{ minHeight: 112 }}
                 >
-                  <td>
-                    <div className="avatar relative">
-                      <div className="rounded-xl w-24 h-24 md:w-40 md:h-40 relative">
+                  <td className="py-3 px-3">
+                    <div className="avatar relative w-full h-full">
+                      <div className="rounded-xl w-20 h-20 md:w-28 md:h-28 relative overflow-hidden mx-auto">
                         <img
                           src={imageSrc}
                           alt={ev.name}
@@ -131,26 +128,24 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                       </div>
                     </div>
                   </td>
-                  <td>
-                    <div className="font-bold text-blue-700 text-base">{ev.name}</div>
-                    <div className="text-m text-gray-800">{ev.placeFreeform}</div>
+                  <td className="py-3 px-3">
+                    <div className="font-bold text-blue-700 text-base truncate">{ev.name}</div>
+                    <div className="text-m text-gray-800 truncate">{ev.placeFreeform}</div>
                   </td>
-                  <td>
-                    <div className="font-bold text-gray-700">
-                      {ev.datetimeSchedule ? new Date(ev.datetimeSchedule).toLocaleDateString() : new Date(ev.datetimeFrom).toLocaleDateString()}
-                    </div>
+                  <td className="py-3 px-3">
+                    <div className="font-bold text-gray-700">{new Date(ev.datetimeFrom).toLocaleDateString()}</div>
                     <div className="text-m text-gray-500">{getTimeRange(ev)}</div>
                     <div className="mt-1 font-bold block md:hidden">{getPriceLabel(ev.budgetMax)}</div>
                   </td>
-                  <td className="font-bold hidden md:table-cell align-middle">{getPriceLabel(ev.budgetMax)}</td>
-                  <td>
+                  <td className="font-bold hidden md:table-cell py-3 px-3 align-middle">{getPriceLabel(ev.budgetMax)}</td>
+                  <td className="py-3 px-3">
                     <button
                       className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
                       title="Remove from timeline"
                       tabIndex={-1}
                       onClick={e => {
                         e.stopPropagation();
-                        handleRemove(e, ev);
+                        handleRemove(e, ev.externalId);
                       }}
                     >
                       &#10006;
@@ -159,7 +154,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                 </tr>
               );
             })}
-            {sortedEvents.length === 0 && (
+            {events.length === 0 && (
               <tr>
                 <td colSpan={5} className="text-center text-gray-400 py-10">
                   No events in your timeline yet.
