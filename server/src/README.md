@@ -82,16 +82,33 @@ As for now, there is only to exposed methods:
 
 ## Scraping
 
-Doc: https://cheerio.js.org/docs/api
-https://webscrapingsite.com/blog/mastering-attribute-selectors-in-cheerio-the-ultimate-guide/
-https://proxiesapi.com/articles/the-ultimate-cheerio-web-scraping-cheat-sheet
-https://cheerio.js.org/docs/basics/selecting?ref=pixeljets.com
-https://zetcode.com/javascript/cheerio/
+### to setup up a new data source / website:
 
-    "name": selector("h3").first().text(),    
-    "price": selector(".price>span").text(),    
-    "priceFull": selector(".product-price-full").text(),    
-    "description": selector(".product-description").text(),  
+note: in all case, please respect the naming convention of the different object type, which are:
+- ```websiteid``` = take the domainname, all lowercase and ascii letter
+- ```controller name```=  websiteid but in camelCase
+
+As a preliminary step, thinks to consider are:
+- clone the ```server/src/controllers/_templateEventSource.ts``` file
+
+### links and docs:
+
+- Doc: https://cheerio.js.org/docs/api
+- https://webscrapingsite.com/blog/-mastering-attribute-selectors-in-cheerio-the-ultimate-guide/
+- https://proxiesapi.com/articles/the-ultimate-cheerio-web-scraping-cheat-sheet
+- https://cheerio.js.org/docs/basics/selecting?ref=pixeljets.com
+- https://zetcode.com/javascript/cheerio/
+
+- To test if the locationFreeform (+website Language), is going to work or not: ```https://nominatim.openstreetmap.org/ui/search.html```
+- https://wiki.openstreetmap.org/wiki/Key:amenity
+
+#### some cheerio selector:
+
+- "name": selector("h3").first().text(),
+- "price": selector(".price>span").text(),    
+- "priceFull": selector(".product-price-full").text(),
+- "description": selector(".product-description").text(),  
+
 
 ## backup/restore
 
@@ -181,3 +198,22 @@ the response will looks like
     }
 ]
 ```
+
+## config entries:
+
+### geocoding
+
+there is three options related to geocoding (address -> lat/long) and reverse geocoding (lat/long -> adress)
+
+for each website config entry: 
+
+- ```geocodingLookupType: geocodingTypeEnum```
+    it has 2 types (see enum) to target a resolution from Open street map or a static map
+
+- ```geocodingStaticMap: { "placename": [lat, long], ... }```
+
+ look up is done by comparing the placeFreeform name from the original website with the placename. it can start with or ends with. 
+ note: comparaison is done after lowercase() to both placename and placeFreeform.
+ note: those result are not cached, since they are fast to get
+
+

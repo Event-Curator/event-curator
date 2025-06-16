@@ -1,15 +1,17 @@
 import { useState, useContext, useEffect } from "react";
-import { prefectures } from "./constants";
 import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
+import usePrefectureList from "../hooks/usePrefectureList";
 import addOneDay from "../utils/addOneDay";
-import type { LocationSearchType, CategoryMetaData } from "../types";
+import type { LocationSearchType, MetaData } from "../types";
 
-export default function EventFilters() {
-  const [eventCategories, setEventCategories] = useState<CategoryMetaData[]>(
-    []
-  );
+interface EventFiltersProps {
+  setDisplayHero: (value: boolean) => void;
+}
+
+export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
+  const [eventCategories, setEventCategories] = useState<MetaData[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
@@ -21,6 +23,7 @@ export default function EventFilters() {
   const [locSearchType, setLocSearchType] =
     useState<LocationSearchType>("latLong");
   const { latitude, longitude, userRefused } = useGetPosition();
+  const { prefectureList, prefectureListError } = usePrefectureList();
   const [error, setError] = useState(false);
 
   const { setEvents } = useContext(EventContext);
@@ -50,7 +53,7 @@ export default function EventFilters() {
       // Get to and from dates. This requires a little extra processsing to account for
       // cases where user can enter undefined. If the user only selects on day, the "to"
       // var is set to that day + 24h to create a meaningful range to search.
-      const from =
+      let from =
         selectedDates !== undefined ? selectedDates[0].toISOString() : "";
       let to = "";
       if (selectedDates !== undefined && selectedDates[1] !== undefined) {
@@ -60,22 +63,24 @@ export default function EventFilters() {
         selectedDates[1] === undefined
       ) {
         to = addOneDay(selectedDates[0]).toISOString();
+      } else {
+        from = new Date().toISOString();
       }
 
-      // Query string with all data from user.
-      const query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}&datetimeFrom=${from}&datetimeTo=${to}`;
-
-      console.log("query string:", query);
+      let query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&datetimeFrom=${from}&datetimeTo=${to}&`;
+      if (locSearchType === "latLong") {
+        query += `placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`;
+      } else {
+        query += `placeProvince=${prefecture}`;
+      }
 
       const response = await fetch(query);
-
       if (!response.ok) {
         console.error(response);
         setError(true);
       }
       const data = await response.json();
-      console.log(data);
-
+      setDisplayHero(false);
       setEvents(data);
     } catch (error) {
       console.error(error);
@@ -88,9 +93,14 @@ export default function EventFilters() {
     if (!search && !category && !location && !price && !selectedDates) {
       alert("Please enter a search term, price, category, dates, or location!");
       return;
+    } else if (
+      selectedDates !== undefined &&
+      selectedDates[0] > selectedDates[1]
+    ) {
+      alert("Start date must come before end date.");
+      setSelectedDates(undefined);
+      return;
     } else {
-      console.log(selectedDates);
-
       getEvents();
     }
   };
@@ -109,7 +119,7 @@ export default function EventFilters() {
     }
   };
 
-  if (error) {
+  if (error || prefectureListError) {
     return (
       <h1 className="text-2xl text-red-500">
         We're sorry, something went wrong. Please try again later.
@@ -197,9 +207,7 @@ export default function EventFilters() {
             onChange={toggleSearchLocType}
             disabled={userRefused}
           />
-          {locSearchType === "latLong"
-            ? "Search near me"
-            : "Search by prefecture"}
+          {locSearchType === "latLong" ? "km from me" : "Search by prefecture"}
         </label>
         {/* Search by prefecture */}
         <select
@@ -209,18 +217,22 @@ export default function EventFilters() {
           hidden={locSearchType === "latLong"}
         >
           <option value="">All prefectures</option>
-          {prefectures.map((pref) => (
-            <option key={pref} value={pref}>
-              {pref} Prefecture
-            </option>
-          ))}
+          {prefectureList.map(
+            (pref) =>
+              pref.name !== "undefined" &&
+              pref.name !== "unsorted" && (
+                <option key={pref.name} value={pref.name}>
+                  {pref.label}
+                </option>
+              )
+          )}
         </select>
         {/* Search by radius */}
         <div
           className="relative w-full flex flex-row items-center gap-2"
           hidden={locSearchType === "prefecture"}
         >
-          <label htmlFor="search-radius">Km from me</label>
+          {/* <label htmlFor="search-radius">Km from me</label> */}
           <input
             type="range"
             min={0}

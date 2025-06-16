@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+   themes: light --default light;
+ }
 
 .text-red-outline {
   text-shadow:
@@ -8,3 +10,6 @@
     -1px  1px 0 #752a2a,
      4px  2px 0 #ef4444;
 }
+
+
+@import "leaflet/dist/leaflet.css";

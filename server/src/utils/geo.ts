@@ -4,8 +4,11 @@ import { Event } from "../models/Event.js";
 import { log } from "./logger.js";
 import { getConfig, sleep } from "./util.js";
 import * as geolib from 'geolib';
+import { geocodingTypeEnum } from "../models/Model.js";
+import { endWith } from "rxjs";
 
 const OSM_GEOCODING_URL="https://nominatim.openstreetmap.org/search"
+const OSM_REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
 
 async function getDistance(event: Event, lat: number, long: number): Promise<number> {
     if (lat === 0 || long === 0) return 0;
@@ -45,7 +48,10 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         }
     }).exec();
 
-    if (cachedContent.length > 0) {
+    if (cachedContent.length > 0 &&
+        cachedContent[0]._data.long !== 0 &&
+        cachedContent[0]._data.lat !== 0
+     ) {
         log.debug(`cache hit for location: ${event.placeFreeform.toLocaleLowerCase()}`);
         event.placeLongitude = cachedContent[0]._data.long;
         event.placeLattitude = cachedContent[0]._data.lat;
@@ -54,7 +60,26 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     log.warn(`cache miss for location: ${event.placeFreeform.toLocaleLowerCase()}. querying OSM`);
 
     const myConfig = getConfig(eventsourceId);
-    let placeToLookup = `${event.placeFreeform}`;
+    let placeToLookup = `${event.placeFreeform}`.toLowerCase();
+
+    if (myConfig.geocodingLookupType === geocodingTypeEnum.STATICMAP) {
+        let map =  myConfig.geocodingStaticMap || [];
+        for (let key of Object.keys(map)) {
+            if (placeToLookup.startsWith(key.toLocaleLowerCase()) 
+                || placeToLookup.endsWith(key.toLocaleLowerCase())) {
+                event.placeLattitude = map[key][0];
+                event.placeLongitude = map[key][1];
+
+                return event
+            }
+        }
+
+        // fallback to unknow place
+        event.placeLattitude = 0;
+        event.placeLongitude = 0;
+
+        return event
+    }
 
     if (myConfig.homeCountry) {
         // remove other reference of the country in case of
@@ -90,11 +115,13 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         }
 
         // cache if something was found
-        await eaCache.geocoding.insert({
-            id: md5(event.placeFreeform.toLocaleLowerCase()),
-            long: event.placeLongitude,
-            lat: event.placeLattitude,
-        });
+        if (event.placeLattitude !== 0 && event.placeLongitude !== 0) {
+            await eaCache.geocoding.insert({
+                id: md5(event.placeFreeform.toLocaleLowerCase()),
+                long: event.placeLongitude,
+                lat: event.placeLattitude,
+            });
+        }
     }
 
     await sleep(2*1000);
@@ -102,4 +129,72 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
     return event;
 }
 
-export { geocodeAddress, getDistance };
+async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promise<Event> {
+
+    // return the same event if nothing is available for reverse geocoding
+    if (event.placeLongitude === 0 || event.placeLattitude === 0) {
+        log.debug(`no lat/long for ${event.externalId}. unable to process reverse geocoding.`);
+        return new Promise((resolve) => resolve(event));
+    }
+
+    const cacheKey = md5(`${event.placeLongitude}:${event.placeLattitude}`);
+    let cachedContent = await eaCache.reverseGeocoding.find({
+        selector: {
+            "id": {
+                $eq: cacheKey
+            }
+        }
+    }).exec();
+
+    if (cachedContent.length > 0) {
+        log.debug(`cache hit for reverse geocoding: ${event.externalId}`);
+        event.placeSuburb = cachedContent[0]._data.placeSuburb;
+        event.placeCity = cachedContent[0]._data.placeCity;
+        event.placeProvince = cachedContent[0]._data.placeProvince;
+        event.placeCountry = cachedContent[0]._data.placeCountry;
+        return new Promise((resolve) => resolve(event))
+    }
+
+    log.warn(`cache miss for reverse geocoding of event: ${event.externalId}. querying OSM`);
+
+    const myConfig = getConfig(eventsourceId);
+
+    let url = `${OSM_REVERSE_GEOCODING_URL}?format=jsonv2&lat=${event.placeLattitude}&lon=${event.placeLongitude}`;
+    log.debug(`geocoding call is: ${url}`);
+    let resp = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Accept-Language": "en"
+        }
+    });
+    
+    if (resp.status === 200) {
+        let osmReply = await resp.json();
+        
+        if (! osmReply.address) {
+            log.debug(`OSM was unable to process the request for ${event.externalId}: ${osmReply}`);
+            return new Promise((resolve) => resolve(event))
+        }
+
+        event.placeSuburb = osmReply.address.suburb;
+        event.placeCity = osmReply.address.city;
+        event.placeProvince = osmReply.address.province;
+        event.placeCountry = osmReply.address.country
+
+        // cache if something was found
+        await eaCache.reverseGeocoding.insert({
+            id: cacheKey,
+            placeSuburb: event.placeSuburb || "",
+            placeCity: event.placeCity || "",
+            placeProvince: event.placeProvince || "",
+            placeCountry: event.placeCountry || "",
+        });
+    }
+
+    // OSM mandatory throttling
+    await sleep(2*1000);
+
+    return event;
+}
+
+export { geocodeAddress, reverseGeocodeAddress, getDistance };

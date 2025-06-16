@@ -1,4 +1,5 @@
 import * as pe from "./Event.js";
+import { geocodingTypeEnum } from "./Model.js";
 
 /**
  * every event source must implement this interface
@@ -13,11 +14,19 @@ export interface IEventSource {
   scrapEvent: () => Promise<Array<pe.EventType>>;
 }
 
+export enum languageEnum {
+  EN = "en",
+  JP = "jp",
+}
+
 export type EventSourceConfigType = {
   id: string,
   enabled: boolean,
   endpoint: string
   controller: IEventSource,
   searchType: number,
-  homeCountry: string
+  homeCountry: string,
+  contentLanguage: languageEnum,
+  geocodingLookupType: geocodingTypeEnum,
+  geocodingStaticMap?: any
 }

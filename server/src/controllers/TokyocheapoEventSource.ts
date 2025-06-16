@@ -4,23 +4,18 @@ import * as cheerio from "cheerio";
 import moment, { Moment } from 'moment';
 import { log } from "../utils/logger.js";
 import * as ec from "./eventController.js";
-
+import { RXDB_UTILS_GLOBAL } from "rxdb";
+import * as utils from "../utils/util.js"
 moment().format();
 
-class JapancheapoEventSource extends DefaultEventSource {
+class TokyocheapoEventSource extends DefaultEventSource {
 
-    id = "japancheapo";
+    id = "tokyocheapo";
     CURRENCY = 'YEN';
-    
+
     public getId(): string {
       return this.id
     };
-
-    async searchEvent(query): Promise<Array<EventType>> {
-      let events = [];
-      // console.log("QUERY !!");
-      return new Promise((resolve, reject) => resolve(events));
-    }
 
     async getThumbnailHiresUrl(url: string): Promise<string> {
       let detailPageContent = await ec.throtthledFetch(url, 0);
@@ -41,25 +36,27 @@ class JapancheapoEventSource extends DefaultEventSource {
 
     async scrapEvent(): Promise<Array<EventType>> {
       let events = new Array();
-
+      let myConfig = utils.getConfig(this.id);
+      let currentPage = 1;
       log.info(`${this.id}: scrapping started`);
 
-      // FIXME: get back to 18
-      for (let i = 1; i<18; i++) {
-        log.info(`${this.id}: scrapping ongoing. page ${i}`);
+      while (1) {
+        log.info(`${this.id}: scrapping ongoing. page ${currentPage}`);
 
-        const res = await fetch(`https://japancheapo.com/events/page/${i}/`);
+        const res = await fetch(`${myConfig.endpoint}/page/${currentPage}/`);
         const html = await res.text();
 
         const $ = cheerio.load(html);
-        
-        for (let element of $(".article.card--event")) {
+        const pageEvent = $(".article.card--event");
+        if (pageEvent.length === 0) break;
+
+        for (let element of pageEvent) {
           let val = $(element).find('.card__cta').find('a').attr('href') || "";
           let anEvent = new Event(val);
 
           val = $(element).find(".cheapo-archive-thumb").attr("alt") || "";
           anEvent.teaserText = val.trim();
-          
+
           // go get the detail page to get the hires url of the thumbnail
           anEvent.teaserMedia = await this.getThumbnailHiresUrl(anEvent.originUrl);
           if (!anEvent.teaserMedia.length) {
@@ -82,7 +79,7 @@ class JapancheapoEventSource extends DefaultEventSource {
           // - split by space
           // - if only a month name: assume full month
           // - if more than 2 elements: assume a two days+ event
-          val = $(element).find(".card--event__date-box").text() || "";          
+          val = $(element).find(".card--event__date-box").text() || "";
           let monthList: string [] = ['jan', 'feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
           let dates: string[] = val
             .toLowerCase()
@@ -114,10 +111,10 @@ class JapancheapoEventSource extends DefaultEventSource {
             begin = moment([eventYear, eventMonthIndex]);
             end = moment(begin).endOf('month');
 
-          } else if (dates.length === 2 
+          } else if (dates.length === 2
             && monthList.indexOf(dates[0]) >= 0
             && monthList.indexOf(dates[1]) >= 0) {
-            // 2 months long (ex: nov - dec)  
+            // 2 months long (ex: nov - dec)
             begin = moment([eventYear, monthList.indexOf(dates[0])]);
             end = moment([eventYear, monthList.indexOf(dates[1])]).endOf('month');
 
@@ -134,7 +131,7 @@ class JapancheapoEventSource extends DefaultEventSource {
 
             begin = moment([eventYear, eventMonthIndex, eventDay]);
             end = moment(begin).endOf('day');
-            
+
           } else if (dates.length === 4) {
             // event span more than 1 day.
             // FIXME: begin/end assumed to be on the same year ...
@@ -156,7 +153,7 @@ class JapancheapoEventSource extends DefaultEventSource {
             end = moment([eventYear, eventEndMonthIndex, eventEndDay]).endOf('day');
 
           }
-          
+
           // SCHEDULE time
           val = $(element).find('[title*="end time"]').next().text().toLocaleLowerCase() || "";
           anEvent.datetimeFreeform = val.trim();
@@ -184,7 +181,7 @@ class JapancheapoEventSource extends DefaultEventSource {
           // SCHEDULE time and date are saved in combo
           anEvent.datetimeFrom = begin.toDate();
           anEvent.datetimeTo = end.toDate();
-          
+
           // FEE
           val = $(element).find('[title*="Entry"]').parent().text() || "";
           anEvent.budgetFreeform = val.trim();
@@ -229,13 +226,15 @@ class JapancheapoEventSource extends DefaultEventSource {
           anEvent.placeFreeform = val.trim();
 
           events.push(anEvent);
-        };
 
+        };
+        currentPage++;
       }
+
       log.info(`${this.id}: scrapping done. ${events.length} found.`);
 
       return new Promise((resolve, reject) => resolve(events));
     }
   }
 
-export { JapancheapoEventSource }
+export { TokyocheapoEventSource }

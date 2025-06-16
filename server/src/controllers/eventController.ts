@@ -5,7 +5,7 @@ import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event } from "../mode
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
-import { geocodeAddress, getDistance } from '../utils/geo.js';
+import { geocodeAddress, getDistance, reverseGeocodeAddress } from '../utils/geo.js';
 import { isRxDocument, RxDocument } from 'rxdb';
 import fs from "fs";
 import md5 from 'md5';
@@ -37,12 +37,12 @@ const scrapEvent = async function (req: Request, res: Response) {
     
     log.info(`caching objects ...`);
     for (let event of result) {
-
         let cachedEvent = await getEvent(event.externalId);
         if (cachedEvent) {
             log.debug(`existing event found, updating data for ${event.externalId}`);
 
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
             await cachedEvent.update({
                 $set: {
                     name: event.name,
@@ -55,6 +55,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                     placeLattitude: event.placeLattitude,
                     placeLongitude: event.placeLongitude,
                     placeFreeform: event.placeFreeform,
+                    placeSuburb: event.placeSuburb,
+                    placeCity: event.placeCity,
+                    placeProvince: event.placeProvince,
+                    placeCountry: event.placeCountry,
 
                     budgetMin: event.budgetMin,
                     budgetMax: event.budgetMax,
@@ -75,6 +79,7 @@ const scrapEvent = async function (req: Request, res: Response) {
 
         } else {
             await geocodeAddress(sourceId, event);
+            await reverseGeocodeAddress(sourceId, event);
 
             await eaCache.events.insert({
                 id: event.externalId,
@@ -91,6 +96,10 @@ const scrapEvent = async function (req: Request, res: Response) {
                 placeLattitude: event.placeLattitude,
                 placeLongitude: event.placeLongitude,
                 placeFreeform: event.placeFreeform,
+                placeSuburb: event.placeSuburb,
+                placeCity: event.placeCity,
+                placeProvince: event.placeProvince,
+                placeCountry: event.placeCountry,
 
                 budgetMin: event.budgetMin,
                 budgetMax: event.budgetMax,
@@ -152,6 +161,10 @@ const searchEvent = async function (req: Request, res: Response) {
         || moment().add(10, "years").toISOString();
     const datetimeRange = req.query.datetimeRange || '.*';
     const placeDistanceRange = Number(req.query.placeDistanceRange) || 0;
+    const placeSuburb = req.query.placeSuburb || '.*';
+    const placeCity = req.query.placeCity || '.*';
+    const placeProvince = req.query.placeProvince || '.*';
+    const placeCountry = req.query.placeCountry || '.*';
     const browserLat = Number(req.query.browserLat) || 0;
     const browserLong = Number(req.query.browserLong) || 0;
 
@@ -192,6 +205,10 @@ const searchEvent = async function (req: Request, res: Response) {
     searchTerms.push({"datetimeTo": datetimeTo});
     searchTerms.push({"datetimeRange": datetimeRange});
     searchTerms.push({"placeDistanceRange": placeDistanceRange});
+    searchTerms.push({"placeSuburb": placeSuburb});
+    searchTerms.push({"placeCity": placeCity});
+    searchTerms.push({"placeProvince": placeProvince});
+    searchTerms.push({"placeCountry": placeCountry});
     searchTerms.push({"browserLat": browserLat});
     searchTerms.push({"browserLong": browserLong});
 
@@ -209,10 +226,17 @@ const searchEvent = async function (req: Request, res: Response) {
                     { description: { $regex: description, $options: 'i' } },
                     { category: { $regex: category, $options: 'i' } },
 
+                    { placeSuburb: { $regex: placeSuburb, $options: 'i' } },
+                    { placeCity: { $regex: placeCity, $options: 'i' } },
+                    { placeProvince: { $regex: placeProvince, $options: 'i' } },
+                    { placeCountry: { $regex: placeCountry, $options: 'i' } },
+                    
                     { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
-                    { datetimeFrom: { $lt: datetimeTo } }
+                    { datetimeFrom: { $lt: datetimeTo } },
+
+                    { placeCountry: { $in: config.includeOnlyCountry } }
                 ]
             }
         }).exec().then( (documents : Array<RxDocument>) => {
@@ -242,10 +266,15 @@ const searchEvent = async function (req: Request, res: Response) {
     log.debug(`filtering events in the range (meters): ${placeDistanceRange}`);
     let events: Array<EventType> = [];
     for (let foundEvent of foundEvents) {
-        foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
-        if (
-            placeDistanceRange === 0 ||
-            (placeDistanceRange > 0 && foundEvent.placeDistance <= placeDistanceRange)) {
+        if (placeDistanceRange > 0) {
+            foundEvent.placeDistance = await getDistance(foundEvent, browserLat, browserLong);
+            if (
+                foundEvent.placeDistance > 0
+                && foundEvent.placeDistance <= placeDistanceRange) {
+                events.push(foundEvent);
+            }
+
+        } else {
             events.push(foundEvent);
         }
     }
@@ -262,19 +291,24 @@ const getEventById = async function (req: Request, res: Response) {
     let externalId = req.params.eventId;
     let result = await eaCache.events.find({
         selector: {
-            "externalId": {
-                $eq: externalId
-            }
+            $and: [
+                { "externalId": {
+                    $eq: externalId,
+                } },
+                { "placeCountry": { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
 
     if (result.length === 0) {
         res.status(404);
         res.send("the requested ressource is not found");
+        return
     }
 
     res.status(200);
     res.send(result);
+    return
 };
 
 const getSearchHits = async function (req: Request, resp: Response) {
@@ -285,7 +319,11 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
     let result = await eaCache.events.find({
         selector: {
-            name: { $regex: '.*', $options: 'i' },
+            $and: [
+                { name: { $regex: '.*', $options: 'i' } },
+                { datetimeFrom: { $gt: moment().startOf('day').toISOString() }},
+                { placeCountry: { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
     
@@ -322,6 +360,41 @@ const getSearchHits = async function (req: Request, resp: Response) {
 
 // -------------------------- utility functions for website implementations
 
+// wait for x ms and handle 3 fetch retry counts if something fails
+// returns the html content as a string
+const throtthledFetch = async function (url: string, ms: number ): Promise<string> {
+    if (url === '') {
+        log.error("Oops, requesting a blank url");
+        return "";
+    }
+
+    let ok = false;
+    let html = "";
+
+    for (let retryCount = 0; retryCount<=3; retryCount++) {
+        await sleep(ms);
+
+        const res = await fetch(url);
+        html = await res.text();
+
+        ok = (html.indexOf("Error 1015") < 0 && html.length > 0) ? true : false;
+        if (ok) break;
+
+        log.warn(`looks we are rate limited from cloudflare, pause for 2 seconds before retrying (#${retryCount})`);
+    }
+    
+    if (!ok) {
+        log.error("looks like fetch is still blocked (error 1015) by cloudflare after 3 retry.");
+    }
+
+    return html;
+}
+
+// await this to block for x milliseconds.
+const sleep = async function (s: number) {
+    return new Promise( resolve => setTimeout( resolve, s ));
+}
+
 // save the media behind a given url locally and return the "local url" (or undefined if error)
 // the return path can be used as the new filepath below express static "/media"
 const saveMedia = async function (url: string) {
@@ -337,7 +410,12 @@ const saveMedia = async function (url: string) {
         const mediaBlob = await mediaResp.blob();
         const buffer = Buffer.from( await mediaBlob.arrayBuffer() );
         
-        const fileExtension = url.split('.').pop();
+        let fileExtension = "blob";
+        let lastUrlPart = url.split('/').pop() || "";
+        if (lastUrlPart.indexOf('.') > 0 && lastUrlPart.indexOf('/') < 0) {
+            fileExtension = lastUrlPart.split('.').pop() || "blob";
+        }
+
         const fileName = `${md5(url)}.${fileExtension}`.toLocaleLowerCase();
         const filePath = `${config.mediaStoragePath}/${fileName}`;
         
@@ -362,5 +440,30 @@ const saveMedia = async function (url: string) {
     }
 }
 
+const debugHtml = function(t: unknown): undefined | string {
+    if (t === undefined) return undefined
+    else if (t === null) return 'null'
+    else if (typeof t == 'bigint') throw TypeError('stringifyJSON cannot serialize BigInt')
+    else if (typeof t == 'number') return String(t)
+    else if (typeof t == 'boolean') return t ? 'true' : 'false'
+    else if (typeof t == 'string') return '"' + t.replace(/"/g, '\\"') + '"'
+    else if (typeof t == 'object') return Array.isArray(t) 
+        ? '[' + Array.from(t, v => debugHtml(v) ?? 'null').join(',') + ']'
+        : '{' + Object.entries(t)
+                .map(([k,v]) => [debugHtml(k), debugHtml(v)])
+                .filter(([k,v]) => v !== undefined)
+                .map(entry => entry.join(':'))
+                .join(',') + '}'
+    else return undefined
+}
 
-export { scrapEvent, searchEvent, getEventById, getSearchHits, saveMedia }
+export { 
+    scrapEvent,
+    searchEvent,
+    getEventById,
+    getSearchHits,
+    throtthledFetch,
+    sleep,
+    saveMedia,
+    debugHtml
+}

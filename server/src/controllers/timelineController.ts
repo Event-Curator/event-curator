@@ -10,8 +10,17 @@ import {
   type SharedEntry
 } from '../models/timeline.js';
 import { verifyFriendship } from '../models/friend.js';
-import { getEventById,Event } from '../models/Event.js';
-import { log } from '../utils/logger.js';
+import { Event } from '../models/Event.js';
+import { getEventById } from '../models/Event.js';
+
+interface TimelineRequestBody {
+  user_uid: string;
+  event_id: string;
+}
+
+/**
+ * Controller: create a new timeline entry
+ */
 
 interface CreateBody   { event_external_id: string }
 interface PublishBody  { timestamp: string }

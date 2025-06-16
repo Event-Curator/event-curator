@@ -4,6 +4,8 @@ type AuthModalProps = {
   mode: "login" | "register";
   onClose: () => void;
   onGoogleLogin: () => void;
+  //onAppleLogin: () => void;
+  //onFacebookLogin: () => void;
   onEmailLogin?: (e: React.FormEvent) => void;
   onEmailRegister?: (e: React.FormEvent) => void;
   loading: boolean;
@@ -16,6 +18,8 @@ export default function AuthModal({
   mode,
   onClose,
   onGoogleLogin,
+  //onAppleLogin,
+  //onFacebookLogin,
   onEmailLogin,
   onEmailRegister,
   loading,
@@ -62,7 +66,7 @@ export default function AuthModal({
           )}
         </div>
 
-        {/* Divider & Google Auth */}
+        {/* Divider & Social Auth */}
         <div className="mb-6">
           <div className="mb-2 font-semibold text-xs text-gray-600 text-left">
             {mode === "register" ? "QUICKLY SIGN UP WITH" : "CONTINUE WITH"}
@@ -70,8 +74,9 @@ export default function AuthModal({
           <button
             onClick={onGoogleLogin}
             disabled={loading}
-            className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 mb-4 font-medium"
+            className="flex items-center justify-center gap-2 w-full py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 mb-3 font-medium"
           >
+            {/* Google Icon */}
             <svg width="20" height="20" viewBox="0 0 48 48">
               <g>
                 <path fill="#4285F4" d="M24 9.5c3.54 0 6.65 1.22 9.14 3.61l6.81-6.81C36.54 2.36 30.81 0 24 0 14.77 0 6.71 5.51 2.69 13.44l7.98 6.19C13.07 13.18 18.14 9.5 24 9.5z"/>
@@ -83,7 +88,8 @@ export default function AuthModal({
             </svg>
             <span>Sign in with Google</span>
           </button>
-        </div>
+          
+        </div> 
 
         {/* Divider for email login/register */}
         <div className="flex items-center gap-2 mb-4">
@@ -104,7 +110,7 @@ export default function AuthModal({
               placeholder="Full Name"
               className="input input-bordered w-full"
               autoComplete="name"
-              // You may want to collect/display this!
+              
             />
           )}
           <input

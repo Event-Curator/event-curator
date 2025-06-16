@@ -1,108 +1,36 @@
 import { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import type { FullEventType } from "../types";
-import FormattedPrice from "../components/FormattedPrice";
 import getDaysInMonth from "../utils/getDaysInMonth";
 import Loading from "../components/Loading";
 import EventContext from "../context/EventContext";
-import { auth } from "../firebase"; 
+import { auth } from "../firebase";
+import EventInfo from "../components/EventInfo";
+import EventActions from "../components/EventActions";
+import EventDescriptionBox from "../components/EventDescriptionBox";
+import EventLocationMap from "../components/EventLocationMap";
+import EventCalendar from "../components/EventCalendar";
+import { categoryImages } from "../assets/categoryImages";
+import { FaHome } from "react-icons/fa";
+import { MdCategory } from "react-icons/md";
 
-import musicImg from "../assets/music.jpg";
-import businessImg from "../assets/business.jpg";
-import foodImg from "../assets/food.jpg";
-import communityImg from "../assets/community.jpg";
-import performanceImg from "../assets/performance.jpg";
-import mediaImg from "../assets/media.jpg";
-import sportImg from "../assets/sport.jpg";
-import healthImg from "../assets/health.jpg";
-import scienceImg from "../assets/science.jpg";
-import travelImg from "../assets/travel.jpg";
-import charityImg from "../assets/charity.jpg";
-import religionImg from "../assets/religion.jpg";
-import familyImg from "../assets/family.jpg";
-import seasonalImg from "../assets/seasonal.jpg";
-import governmentImg from "../assets/government.jpg";
-import fashionImg from "../assets/fashion.jpg";
-import homeImg from "../assets/home.jpg";
-import autoImg from "../assets/auto.jpg";
-import hobbiesImg from "../assets/hobbies.jpg";
-import schoolImg from "../assets/school.jpg";
-import otherImg from "../assets/other.jpg";
+const server = import.meta.env.VITE_API;
 
-const categoryImages: Record<string, string> = {
-  "Music": musicImg,
-  "Business & Professional": businessImg,
-  "Food & Drink": foodImg,
-  "Community & Culture": communityImg,
-  "Performing & Visual Arts": performanceImg,
-  "Film, Media & Entertainment": mediaImg,
-  "Sports & Fitness": sportImg,
-  "Health & Wellness": healthImg,
-  "Science & Technology": scienceImg,
-  "Travel & Outdoor": travelImg,
-  "Charity & Causes": charityImg,
-  "Religion & Spirituality": religionImg,
-  "Family & Education": familyImg,
-  "Seasonal & Holiday": seasonalImg,
-  "Government & Politics": governmentImg,
-  "Fashion & Beauty": fashionImg,
-  "Home & Lifestyle": homeImg,
-  "Auto, Boat & Air": autoImg,
-  "Hobbies & Special Interest": hobbiesImg,
-  "School Activities": schoolImg,
-  "Other": otherImg,
-};
-
-// LinkIcon component
-const LinkIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    fill={"#2761da"}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M9.88 18.36a3 3 0 0 1-4.24 0 3 3 0 0 1 0-4.24l2.83-2.83-1.41-1.41-2.83 2.83a5.003 5.003 0 0 0 0 7.07c.98.97 2.25 1.46 3.54 1.46s2.56-.49 3.54-1.46l2.83-2.83-1.41-1.41-2.83 2.83ZM12.71 4.22 9.88 7.05l1.41 1.41 2.83-2.83a3 3 0 0 1 4.24 0 3 3 0 0 1 0 4.24l-2.83 2.83 1.41 1.41 2.83-2.83a5.003 5.003 0 0 0 0-7.07 5.003 5.003 0 0 0-7.07 0Z"></path>
-    <path d="m16.95 8.46-.71-.7-.7-.71-4.25 4.24-4.24 4.25.71.7.7.71 4.25-4.24z"></path>
-  </svg>
-);
-
-// AddIcon component (small plus icon)
-const AddIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    fill={"#2761da"}
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M19 11h-6V5a1 1 0 1 0-2 0v6H5a1 1 0 1 0 0 2h6v6a1 1 0 1 0 2 0v-6h6a1 1 0 1 0 0-2z" />
-  </svg>
-);
-
-// DeleteIcon component
-const DeleteIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
-    fill="#e53e3e"
-    viewBox="0 0 24 24"
-    {...props}
-  >
-    <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
-  </svg>
-);
-
-export default function EventDetails() {
+import React from "react";
+export default function EventDetails(): React.ReactElement {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { likedEvents, setLikedEvents } = useContext(EventContext);
+  const { events, likedEvents, setLikedEvents } = useContext(EventContext);
   const [event, setEvent] = useState<FullEventType | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdded, setIsAdded] = useState(false);
+
+  // Calendar state
+  const [calendarMonth, setCalendarMonth] = useState<number | null>(null);
+  const [calendarYear, setCalendarYear] = useState<number | null>(null);
+
+  // OSM address state
+  const [osmAddress, setOsmAddress] = useState<string | null>(null);
 
   const api = import.meta.env.VITE_API;
 
@@ -126,7 +54,43 @@ export default function EventDetails() {
     if (!event) return;
     const alreadyLiked = likedEvents.some((e) => e.externalId === event.externalId);
     setIsAdded(alreadyLiked);
+
+    // Set calendar to event start month on load
+    if (event.datetimeFrom) {
+      const start = new Date(event.datetimeFrom);
+      setCalendarMonth(start.getMonth());
+      setCalendarYear(start.getFullYear());
+    }
   }, [event, likedEvents]);
+
+  // Fetch OSM address
+  useEffect(() => {
+    let ignore = false;
+    const lat =
+      event?.placeLattitude && !isNaN(event.placeLattitude) ? event.placeLattitude : null;
+    const lng =
+      event?.placeLongitude && !isNaN(event.placeLongitude) ? event.placeLongitude : null;
+    if (!lat || !lng) {
+      setOsmAddress(null);
+      return;
+    }
+    async function fetchAddress() {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch address");
+        const data = await res.json();
+        if (!ignore) setOsmAddress(data.display_name || null);
+      } catch {
+        if (!ignore) setOsmAddress(null);
+      }
+    }
+    fetchAddress();
+    return () => {
+      ignore = true;
+    };
+  }, [event?.placeLattitude, event?.placeLongitude]);
 
   const handleAdd = async () => {
     if (!event) return;
@@ -207,22 +171,124 @@ export default function EventDetails() {
     );
   }
 
+  // Find previous and next event IDs from the events context (sorted by datetimeFrom)
+  let prevEventId: string | null = null;
+  let nextEventId: string | null = null;
+  if (Array.isArray(events) && events.length > 0) {
+    const sorted = [...events].sort(
+      (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
+    );
+    const idx = sorted.findIndex(e => e.externalId === event.externalId);
+    if (idx > 0) prevEventId = sorted[idx - 1].externalId;
+    if (idx !== -1 && idx < sorted.length - 1) nextEventId = sorted[idx + 1].externalId;
+  }
+
   const startDate = event.datetimeFrom ? new Date(event.datetimeFrom) : null;
   const endDate = event.datetimeTo ? new Date(event.datetimeTo) : null;
-  const calendarDays = startDate ? getDaysInMonth(startDate) : 31;
-  const eventStartDay = startDate ? startDate.getDate() : -1;
-  const eventEndDay = endDate ? endDate.getDate() : -1;
+
+  // Calendar month/year state fallback
+  const currentMonth = calendarMonth !== null ? calendarMonth : (startDate ? startDate.getMonth() : new Date().getMonth());
+  const currentYear = calendarYear !== null ? calendarYear : (startDate ? startDate.getFullYear() : new Date().getFullYear());
+
+  const calendarDays = getDaysInMonth(new Date(currentYear, currentMonth));
+  // For multi-month events, highlight days in blue
+  function isDayInEventRange(day: number) {
+    if (!startDate || !endDate) return false;
+    const thisDay = new Date(currentYear, currentMonth, day);
+    return thisDay >= startDate && thisDay <= endDate;
+  }
+
+  function isStartDay(day: number) {
+    return !!(startDate && startDate.getFullYear() === currentYear && startDate.getMonth() === currentMonth && startDate.getDate() === day);
+  }
+  function isEndDay(day: number) {
+    return !!(endDate && endDate.getFullYear() === currentYear && endDate.getMonth() === currentMonth && endDate.getDate() === day);
+  }
 
   const monthYear =
-    startDate?.toLocaleDateString(undefined, {
+    new Date(currentYear, currentMonth).toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
-    }) || "";
+    });
 
-  const imageSrc = categoryImages[event.category] || categoryImages["Other"];
+  // Use categoryImages for fallback
+  const category = event.category || "Other";
+  const categoryFreeform = event.categoryFreeform;
+  const displayCategory = category === "Other" && categoryFreeform ? categoryFreeform : category;
+  const fallbackImage = categoryImages[category];
+  const imageSrc =
+    event.teaserMedia && event.teaserMedia.trim() !== ""
+      ? (server + "/.." + event.teaserMedia)
+      : fallbackImage;
 
+  // Map setup: use event latitude/longitude if available, else Tokyo (35.6895, 139.6917)
+  const lat =
+    event.placeLattitude && !isNaN(event.placeLattitude) ? event.placeLattitude : 35.6895;
+  const lng =
+    event.placeLongitude && !isNaN(event.placeLongitude) ? event.placeLongitude : 139.6917;
+  // OSM iframe url
+  const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.02}%2C${lat-0.01}%2C${lng+0.02}%2C${lat+0.01}&layer=mapnik&marker=${lat}%2C${lng}`;
+
+  // Calendar navigation
+  const handlePrevMonth = () => {
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear((prev) => (prev !== null ? prev - 1 : currentYear - 1));
+    } else {
+      setCalendarMonth((prev) => (prev !== null ? prev - 1 : currentMonth - 1));
+    }
+  };
+  const handleNextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear((prev) => (prev !== null ? prev + 1 : currentYear + 1));
+    } else {
+      setCalendarMonth((prev) => (prev !== null ? prev + 1 : currentMonth + 1));
+    }
+  };
+
+  // SVG icons
+  const BackIcon = () => (
+    <button
+      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-100 transition"
+      onClick={() => prevEventId && navigate(`/event/${prevEventId}`)}
+      aria-label="Previous event"
+      style={{ visibility: prevEventId ? "visible" : "hidden" }}
+    >
+      <svg width={28} height={28} fill="none" stroke="#2761da" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path d="M15 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+  const ForwardIcon = () => (
+    <button
+      className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-blue-100 transition"
+      onClick={() => nextEventId && navigate(`/event/${nextEventId}`)}
+      aria-label="Next event"
+      style={{ visibility: nextEventId ? "visible" : "hidden" }}
+    >
+      <svg width={28} height={28} fill="none" stroke="#2761da" strokeWidth={2.5} viewBox="0 0 24 24">
+        <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+
+  // Breadcrumbs logic
+  // Show Home > Category (with icons)
   return (
     <main className="max-w-7xl mx-auto px-4 py-10">
+      {/* Breadcrumbs */}
+      <nav className="mb-2 flex items-center space-x-2 text-gray-500 text-sm">
+        <Link to="/" className="flex items-center hover:text-blue-700">
+          <FaHome className="mr-1" />
+          Home
+        </Link>
+        <span>/</span>
+        <span className="flex items-center">
+          <MdCategory className="mr-1" />
+          {displayCategory}
+        </span>
+      </nav>
       <div className="relative mb-6">
         <img
           src={imageSrc}
@@ -231,122 +297,43 @@ export default function EventDetails() {
           draggable={false}
         />
       </div>
+      {/* Navigation icons row */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          {prevEventId && <BackIcon />}
+        </div>
+        <div />
+        <div>
+          {nextEventId && <ForwardIcon />}
+        </div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10">
         <section>
           <h1 className="text-4xl font-bold text-blue-700 mb-4">
             {event.name || "-"}
           </h1>
-          <div className="space-y-2 text-gray-700 text-sm mb-6">
-            <p>
-              <b>Category:</b> {event.category || "-"}
-            </p>
-            <p>
-              <b>Location:</b> {event.placeFreeform || "-"}
-            </p>
-            <p>
-              <b>Date:&nbsp;</b>
-              {startDate ? startDate.toLocaleDateString() : "-"} —{" "}
-              {endDate ? endDate.toLocaleDateString() : "-"}
-            </p>
-            <p>
-              <b>Time:&nbsp;</b>
-              {startDate
-                ? startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                : "-"}
-              {" — "}
-              {endDate
-                ? endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                : "-"}
-            </p>
-            <p>
-              <b>Price:</b> <FormattedPrice price={event.budgetMin} />
-              {event.budgetMax > 0 && (
-                <span> — {<FormattedPrice price={event.budgetMax} />}</span>
-              )}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="btn btn-outline flex items-center gap-2"
-                onClick={handleAdd}
-                disabled={isAdded}
-              >
-                <AddIcon />
-                {isAdded ? "Added" : "Add to Timeline"}
-              </button>
-              {isAdded && (
-                <button
-                  type="button"
-                  className="btn btn-outline flex items-center gap-2"
-                  onClick={handleDelete}
-                >
-                  <DeleteIcon />
-                  Remove
-                </button>
-              )}
-              {event.originUrl && (
-                <a
-                  href={event.originUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-outline flex items-center gap-2"
-                >
-                  <LinkIcon />
-                  Link to Source
-                </a>
-              )}
-            </div>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow prose max-w-none">
-            <h2 className="text-blue-700 font-bold mb-2">Event Description</h2>
-            <p>{event.description || "No description available."}</p>
-          </div>
+          <EventInfo event={event} />
+          <EventActions
+            isAdded={isAdded}
+            handleAdd={handleAdd}
+            handleDelete={handleDelete}
+            originUrl={event.originUrl}
+          />
+          <EventDescriptionBox event={event} osmAddress={osmAddress} />
         </section>
         <aside className="space-y-6">
-          <div className="bg-white p-4 rounded-xl shadow">
-            <h2 className="text-lg font-bold text-blue-700 mb-3">Location</h2>
-            <div className="mt-4 flex items-center justify-center text-blue-500 text-xs bg-blue-50 border border-blue-100 rounded h-24">
-              [Map integration coming soon]
-            </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl shadow">
-            <h3 className="text-lg font-bold text-blue-700 mb-1">{monthYear}</h3>
-            <div className="grid grid-cols-7 gap-1 text-center text-xs w-full">
-              {["M", "T1", "W", "T2", "F", "S1", "S2"].map((d, idx) => (
-                <div key={d + idx} className="font-bold text-gray-500">
-                  {d[0]}
-                </div>
-              ))}
-              {Array.from({ length: calendarDays }).map((_, i) => {
-                const day = i + 1;
-                const isStartDay = day === eventStartDay;
-                const isEndDay = day === eventEndDay;
-                let baseClasses = "rounded py-1 border cursor-default";
-                if (isStartDay) {
-                  baseClasses += " bg-green-500 text-white font-bold border-green-600 hover:bg-green-600";
-                } else if (isEndDay) {
-                  baseClasses += " bg-orange-400 text-white font-bold border-orange-500 hover:bg-orange-500";
-                } else {
-                  baseClasses += " bg-blue-50 text-gray-700 border-blue-100";
-                }
-                return (
-                  <div
-                    key={day}
-                    title={
-                      isStartDay
-                        ? "🎉 Event Start Day!"
-                        : isEndDay
-                        ? "🏁 Event End Day!"
-                        : undefined
-                    }
-                    className={baseClasses}
-                  >
-                    {day}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <EventLocationMap lat={lat} lng={lng} mapSrc={mapSrc} />
+          <EventCalendar
+            monthYear={monthYear}
+            calendarDays={calendarDays}
+            isStartDay={isStartDay}
+            isEndDay={isEndDay}
+            isDayInEventRange={isDayInEventRange}
+            handlePrevMonth={handlePrevMonth}
+            handleNextMonth={handleNextMonth}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+          />
         </aside>
       </div>
     </main>
