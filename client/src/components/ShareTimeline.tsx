@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ShareIcon from "../svgs/ShareIcon";
 
 export default function ShareTimeline({ timelineId }: { timelineId: string }) {
   const [open, setOpen] = useState(false);
@@ -17,7 +18,7 @@ export default function ShareTimeline({ timelineId }: { timelineId: string }) {
     <>
       <button
         type="button"
-        className="btn btn-outline btn-sm rounded-md"
+        className="btn btn-outline btn-sm rounded-md flex items-center gap-2"
         title="Share timeline"
         onClick={e => {
           e.stopPropagation();
@@ -25,6 +26,7 @@ export default function ShareTimeline({ timelineId }: { timelineId: string }) {
         }}
         style={{ lineHeight: 0 }}
       >
+        <ShareIcon width={20} height={20} />
         Share
       </button>
       {open && (
@@ -50,28 +52,7 @@ export default function ShareTimeline({ timelineId }: { timelineId: string }) {
               title="Copy link"
               style={{ lineHeight: 0 }}
             >
-              {/* Share icon */}
-              <svg
-                width={32}
-                height={32}
-                fill="none"
-                stroke="#2761da"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                style={{
-                  display: "block",
-                  border: "2px solid white",
-                  borderRadius: "50%",
-                  boxSizing: "border-box",
-                  background: "transparent"
-                }}
-              >
-                <circle cx="6" cy="12" r="2" />
-                <circle cx="18" cy="6" r="2" />
-                <circle cx="18" cy="18" r="2" />
-                <path d="M8.59 13.51l6.83 3.98" />
-                <path d="M15.41 6.51l-6.82 3.98" />
-              </svg>
+              <ShareIcon width={32} height={32} />
             </button>
             <div>
               <div className="font-bold text-blue-700 mb-1">Share your timeline</div>

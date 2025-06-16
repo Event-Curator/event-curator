@@ -1,10 +1,13 @@
+
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import type { FullEventType } from "../types";
+import { categoryImages } from "../assets/categoryImages";
+import { getDefaultImg } from "../utils/getDefaultImg";
 
-type Props = {
-  events: FullEventType[];
-};
+interface UpcomingEventsCarouselProps {
+  events?: FullEventType[];
+}
 
 type TooltipData = {
   x: number;
@@ -15,10 +18,26 @@ type TooltipData = {
   key: string; // externalId + i
 };
 
-export default function UpcomingEventsCarousel({ events }: Props) {
+export default function UpcomingEventsCarousel({ events: propEvents }: UpcomingEventsCarouselProps) {
   const navigate = useNavigate();
+  const [events, setEvents] = useState<FullEventType[]>(propEvents || []);
   const carouselEvents = [...events, ...events];
 
+  // Fetch 30 most upcoming events in Japan for the carousel if no propEvents
+  useEffect(() => {
+    if (propEvents && propEvents.length > 0) return;
+    async function fetchUpcomingEvents() {
+      try {
+        const api = import.meta.env.VITE_API;
+        const res = await fetch(`${api}/events?country=Japan&limit=30&sort=datetimeFrom`);
+        const data = await res.json();
+        setEvents(data);
+      } catch {
+        setEvents([]);
+      }
+    }
+    fetchUpcomingEvents();
+  }, [propEvents]);
   // Animation
   const [scroll, setScroll] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -116,66 +135,70 @@ export default function UpcomingEventsCarousel({ events }: Props) {
           width: "9999px",
         }}
       >
-        {carouselEvents.map((ev, i) => (
-          <div
-            key={ev.externalId + "-" + i}
-            style={{
-              minWidth: 180,
-              width: 180,
-              height: 120,
-              borderRadius: 12,
-              overflow: "hidden",
-              boxShadow: "0 2px 10px #1e40af11",
-              cursor: "pointer",
-              border: "1px solid #e0e7ff",
-              background: "#fff",
-              flex: "0 0 auto",
-              display: "flex",
-              position: "relative",
-            }}
-            onClick={() => navigate(`/event/${ev.externalId}`)}
-            onMouseEnter={e =>
-              showTooltip(
-                e,
-                ev.name,
-                ev.placeFreeform || "",
-                ev.externalId + "-" + i
-              )
-            }
-            onMouseMove={e =>
-              tooltip.visible &&
-              tooltip.key === ev.externalId + "-" + i &&
-              showTooltip(
-                e,
-                ev.name,
-                ev.placeFreeform || "",
-                ev.externalId + "-" + i
-              )
-            }
-            onMouseLeave={hideTooltip}
-            onTouchStart={e =>
-              showTooltip(
-                e,
-                ev.name,
-                ev.placeFreeform || "",
-                ev.externalId + "-" + i
-              )
-            }
-            onTouchEnd={hideTooltip}
-            title=""
-          >
-            <img
-              src={
-                ev.teaserMedia
-                  ? import.meta.env.VITE_API + "/.." + ev.teaserMedia
-                  : "/fallback.jpg"
+        {carouselEvents.map((ev, i) => {
+          const fallbackImage = categoryImages[ev.category] || categoryImages["Other"];
+          const imageSrc =
+            ev.teaserMedia && ev.teaserMedia.trim() !== ""
+              ? import.meta.env.VITE_API + "/.." + ev.teaserMedia
+              : fallbackImage;
+          return (
+            <div
+              key={ev.externalId + "-" + i}
+              style={{
+                minWidth: 180,
+                width: 180,
+                height: 120,
+                borderRadius: 12,
+                overflow: "hidden",
+                boxShadow: "0 2px 10px #1e40af11",
+                cursor: "pointer",
+                border: "1px solid #e0e7ff",
+                background: "#fff",
+                flex: "0 0 auto",
+                display: "flex",
+                position: "relative",
+              }}
+              onClick={() => navigate(`/event/${ev.externalId}`)}
+              onMouseEnter={e =>
+                showTooltip(
+                  e,
+                  ev.name,
+                  ev.placeFreeform || "",
+                  ev.externalId + "-" + i
+                )
               }
-              alt={ev.name}
-              className="object-cover w-full h-full"
-              loading="lazy"
-            />
-          </div>
-        ))}
+              onMouseMove={e =>
+                tooltip.visible &&
+                tooltip.key === ev.externalId + "-" + i &&
+                showTooltip(
+                  e,
+                  ev.name,
+                  ev.placeFreeform || "",
+                  ev.externalId + "-" + i
+                )
+              }
+              onMouseLeave={hideTooltip}
+              onTouchStart={e =>
+                showTooltip(
+                  e,
+                  ev.name,
+                  ev.placeFreeform || "",
+                  ev.externalId + "-" + i
+                )
+              }
+              onTouchEnd={hideTooltip}
+              title=""
+            >
+              <img
+                src={imageSrc}
+                onError={e => getDefaultImg(e, fallbackImage)}
+                alt={ev.name}
+                className="object-cover w-full h-full"
+                loading="lazy"
+              />
+            </div>
+          );
+        })}
       </div>
       {/* Custom Tooltip */}
       {tooltip.visible && (
