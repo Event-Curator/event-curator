@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import config from '../utils/config.js'
 import { log } from '../utils/logger.js'
-import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event } from "../models/Event.js"
+import { ES_SEARCH_IN_CACHE, datetimeRangeEnum, EventType, Event, EventCategoryEnum } from "../models/Event.js"
 import { LocalEventSource } from './LocalEventSource.js';
 import { eaCache } from '../middlewares/apiGateway.js';
 import moment from 'moment';
@@ -234,7 +234,9 @@ const searchEvent = async function (req: Request, res: Response) {
                     { budgetMax: { $lt: Number(budgetMax) } },
 
                     { datetimeFrom: { $gt: datetimeFrom } },
-                    { datetimeFrom: { $lt: datetimeTo } }
+                    { datetimeFrom: { $lt: datetimeTo } },
+
+                    { placeCountry: { $in: config.includeOnlyCountry } }
                 ]
             }
         }).exec().then( (documents : Array<RxDocument>) => {
@@ -289,9 +291,12 @@ const getEventById = async function (req: Request, res: Response) {
     let externalId = req.params.eventId;
     let result = await eaCache.events.find({
         selector: {
-            "externalId": {
-                $eq: externalId
-            }
+            $and: [
+                { "externalId": {
+                    $eq: externalId,
+                } },
+                { "placeCountry": { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
 
@@ -309,12 +314,17 @@ const getEventById = async function (req: Request, res: Response) {
 const getSearchHits = async function (req: Request, resp: Response) {
     let requestedIndex = req.query.key || "";
     let hits: object = {};
-    
+    hits[EventCategoryEnum.OTHER] = 0;
+
     log.debug(`hits for ${requestedIndex}`);
 
     let result = await eaCache.events.find({
         selector: {
-            name: { $regex: '.*', $options: 'i' },
+            $and: [
+                { name: { $regex: '.*', $options: 'i' } },
+                { datetimeFrom: { $gt: moment().startOf('day').toISOString() }},
+                { placeCountry: { $in: config.includeOnlyCountry } }
+            ]
         }
     }).exec();
     
@@ -324,11 +334,12 @@ const getSearchHits = async function (req: Request, resp: Response) {
             let eventCategory = event[requestedIndex.toString()];
             let eventCategoryFreeform = event.eventCategoryFreeform;
 
-            if (eventCategory === "") {
-                hits["unsorted"]++ || 0;
+            if (!eventCategory) {
+                hits[EventCategoryEnum.OTHER]++;
+
             } else {
                 if (hits[eventCategory] === undefined) hits[eventCategory] = 0;
-                hits[eventCategory]++ || 0;
+                hits[eventCategory]++;
             }
         }
 

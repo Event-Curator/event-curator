@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { categoryImages } from "../assets/categoryImages";
+import { getDefaultImg } from "../utils/getDefaultImg";
 
 interface EventPreviewCardProps {
   id: string;
@@ -10,7 +11,7 @@ interface EventPreviewCardProps {
   date: string;
   price: number;
   link: string;
-  imageUrl?: string; 
+  imageUrl?: string;
 }
 
 export default function EventPreviewCard({
@@ -33,7 +34,7 @@ export default function EventPreviewCard({
 
   const imageSrc =
     imageUrl && imageUrl.trim() !== ""
-      ? (server + "/.." + imageUrl)
+      ? server + "/.." + imageUrl
       : fallbackImage;
 
   return (
@@ -45,6 +46,7 @@ export default function EventPreviewCard({
       <div className="w-42 h-42 flex-shrink-0">
         <img
           src={imageSrc}
+          onError={(e) => getDefaultImg(e, fallbackImage)}
           alt={name}
           className="w-full h-full object-cover"
           loading="lazy"
