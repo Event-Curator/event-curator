@@ -29,7 +29,10 @@ export default function UpcomingEventsCarousel({ events: propEvents }: UpcomingE
     async function fetchUpcomingEvents() {
       try {
         const api = import.meta.env.VITE_API;
-        const res = await fetch(`${api}/events?country=Japan&limit=30&sort=datetimeFrom`);
+        const today = new Date().toISOString();
+        const res = await fetch(
+          `${api}/events?country=Japan&limit=30&sort=datetimeFrom&datetimeFrom=${encodeURIComponent(today)}`
+        );
         const data = await res.json();
         setEvents(data);
       } catch {
