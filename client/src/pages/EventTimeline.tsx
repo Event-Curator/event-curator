@@ -132,7 +132,7 @@ export default function EventTimeline() {
           });
           if (!res.ok) throw new Error("Failed to fetch timeline events");
           const events = await res.json();
-          setLikedEvents(events.events); // events should be an array of FullEventType
+          setLikedEvents(events.fullEvents); // events should be an array of FullEventType
         }
       } catch (err) {
         console.error("Error fetching timeline events:", err);

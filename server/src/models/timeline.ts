@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 export interface TimelineEntry {
   user_uid: string;
   event_external_id: string;
-  joined_at: Date;
+  created_at: Date;
 }
 
 export interface SharedEntry {
@@ -18,15 +18,16 @@ export interface SharedEntry {
  */
 export async function addTimelineEntry(
   userUid: string,
-  eventExternalId: string
+  eventExternalId: string,
+  createdAt: Date
 ): Promise<TimelineEntry> {
 
   const [entry] = await knex('user_events')
-    .insert({ user_uid: userUid, event_external_id: eventExternalId })
+    .insert({ user_uid: userUid, event_external_id: eventExternalId, created_at: createdAt })
     .returning([
       'user_uid',
       'event_external_id',
-      { column: 'created_at' }
+      'created_at'
     ]);
   return entry;
 }
@@ -36,9 +37,9 @@ export async function addTimelineEntry(
  */
 export async function fetchEventsForUser(
   userUid: string
-): Promise<{ event_external_id: string }[]> {
+): Promise<{ event_external_id: string, created_at: Date }[]> {
   return knex('user_events')
-    .select('event_external_id')
+    .select(['event_external_id', 'created_at'])
     .where('user_uid', userUid);
 }
 

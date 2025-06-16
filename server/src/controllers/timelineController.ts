@@ -25,7 +25,7 @@ interface TimelineRequestBody {
  * Controller: create a new timeline entry
  */
 
-interface CreateBody   { event_external_id: string }
+interface CreateBody   { event_external_id: string, created_at: Date }
 interface DeleteBody   { event_external_id: string, created_at: Date }
 interface PublishBody  { timestamp: string }
 interface FriendParams { friendUid: string }
@@ -39,7 +39,7 @@ async (req, res, next) => {
   }
 
   const userUid = req.user.uid;
-  const { event_external_id } = req.body;
+  const { event_external_id, created_at } = req.body;
   if (!event_external_id) {
     res.status(400).json({ error: 'Missing event_external_id' });
     return;
@@ -47,7 +47,7 @@ async (req, res, next) => {
 
   try {
     log.info(`Inserting timeline entry for ${userUid} → ${event_external_id}`);
-    const entry = await addTimelineEntry(userUid, event_external_id);
+    const entry = await addTimelineEntry(userUid, event_external_id, created_at);
     res.status(201).json({ message: 'Created', data: entry });
   } catch (err) {
     log.error('createTimelineEntry error:', err);
@@ -89,23 +89,39 @@ export const getEventsForUserCtrl: RequestHandler = async (req, res, next) => {
 
   const userUid = req.user.uid;
   try {
-    log.info(`Fetching timeline for ${userUid}`);
-    const rows = await fetchEventsForUser(userUid);
+    if (!userUid) {
+      res.status(400).json({ error: 'Missing user_uid in URL params' });
+      return;
+    }
+    log.info(`Fetching events for user: ${userUid}`);
+    const events = await fetchEventsForUser(userUid.toString());
 
-    const seen: string[] = [];
-    const fullEvents: Event[] = [];
-    for (const { event_external_id } of rows) {
-      if (!seen.includes(event_external_id)) {
-        seen.push(event_external_id);
-        const ev = await getEventById(event_external_id);
-        fullEvents.push(ev._data);
+    let fullEvents: Event[] = [];
+    let scheduleDedup: string[] = [];
+
+    for (let event of events) {
+
+      // FIXME: we don't care about timezone issue for now, but we should at some point.
+      // let datetimeSchedule = moment(event.created_at).format('YYYY-MM-DDT00:00:00.000') + 'Z';
+      let datetimeSchedule = moment(event.created_at).toISOString();
+
+      // dup checker: avoid the same event more than once for a given day
+      if (scheduleDedup.indexOf(datetimeSchedule) < 0) {
+
+        let fullEvent = await getEventById(event.event_external_id);
+        scheduleDedup.push(datetimeSchedule);
+
+        // we don't need all the stuff from RxDB
+        let ev = {...fullEvent._data};
+        ev.datetimeSchedule = datetimeSchedule;
+        fullEvents.push(ev);
       }
     }
-    fullEvents.sort((a, b) =>
-      new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
-    );
+    
+    fullEvents.sort( (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime() )
 
-    res.status(200).json({ user_uid: userUid, events: fullEvents });
+    res.status(200).json({ userUid, fullEvents });
+
   } catch (err) {
     log.error(`getEventsForUser error for ${userUid}:`, err);
     next(err);
