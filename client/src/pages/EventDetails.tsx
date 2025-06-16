@@ -331,6 +331,8 @@ export default function EventDetails(): React.ReactElement {
             isDayInEventRange={isDayInEventRange}
             handlePrevMonth={handlePrevMonth}
             handleNextMonth={handleNextMonth}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
           />
         </aside>
       </div>
