@@ -105,7 +105,7 @@ export async function shareTimeline(
     shared_at: knex.fn.now(),
   }));
 
-// 4. Insert snapshot into shared_events
+  // 4. Insert snapshot into shared_events
   await knex('shared_timeline')
   .insert(payload);
 

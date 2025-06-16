@@ -9,16 +9,62 @@ import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
 import moment from "moment";
 
+
+let dummyEvent: FullEventType[] = [{
+            "id": "45ad8aefe13de5aa6d11ae87cb497e6c",
+            "externalId": "45ad8aefe13de5aa6d11ae87cb497e6c",
+            "originId": "45ad8aefe13de5aa6d11ae87cb497e6c",
+            "originUrl": "https://tokyocheapo.com/events/sawara-summer-grand-festival/",
+            "name": "TEST EVENT",
+            "description": "TEST EVENT",
+            "teaserText": "you name it !",
+            "teaserMedia": "/media/b37fb26dace9268f4e5c06ed1cf586bc.jpg",
+            "teaserFreeform": "",
+            "placeLattitude": 35,
+            "placeLongitude": 140,
+            "placeFreeform": "OOOPS !!",
+            "placeSuburb": "",
+            "placeCity": "Minamiboso",
+            "placeProvince": "Tokyo Prefecture",
+            "placeCountry": "Japan",
+            "budgetMin": 0,
+            "budgetMax": 0,
+            "budgetCurrency": "YEN",
+            "budgetFreeform": "Free",
+            "datetimeFrom": new Date(),
+            "datetimeTo": new Date(),
+            "datetimeFreeform": "10:00am – 10:00pm",
+            "category": "Other",
+            "categoryFreeform": "Festival",
+            "size": "M",
+            "sizeFreeform": "",
+        }];
+
 // ShareTimelineButton for timeline (not per event)
-function ShareTimelineButton({ timelineId }: { timelineId: string }) {
+//function ShareTimelineButton() {
+const ShareTimelineButton = () => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const shareUrl = `${window.location.origin}/timeline/${timelineId}`;
-
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = async (e: React.MouseEvent) =>  {
     e.stopPropagation();
-    navigator.clipboard.writeText(shareUrl);
+
+    let user = auth.currentUser;
+  
+    if (!user) return;
+  
+    const api = import.meta.env.VITE_API;
+    const token = await user.getIdToken();
+    const res = await fetch(`${api}/events/users/timeline/publish`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    if (!res.ok) throw new Error("Failed to fetch sharing key");
+    const key = await res.json();
+    console.log("GOT: " + key);
+
+    navigator.clipboard.writeText('shareUrl');
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -102,7 +148,7 @@ function ShareTimelineButton({ timelineId }: { timelineId: string }) {
 
 export default function EventTimeline() {
   const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
-  const { likedEvents, setLikedEvents, setEvents, isSharedTimeline } = useContext(EventContext);
+  const { likedEvents, setLikedEvents, setEvents, isSharedTimeline, sharedTimelineId } = useContext(EventContext);
   const [user, setUser] = useState(() => auth.currentUser);
   const navigate = useNavigate();
 
@@ -117,11 +163,17 @@ export default function EventTimeline() {
 
   // Sync timeline from backend when user is available
   useEffect(() => {
-    if (!user) return;
+    if (!user && !isSharedTimeline) return;
     const fetchTimelineEvents = async () => {
       try {
+        console.log("hey !");
+
         if (isSharedTimeline) {
-          console.log("SHARED MODE");
+
+          console.log("setting to dummy");
+          setLikedEvents(dummyEvent);
+
+
         } else {
           const api = import.meta.env.VITE_API;
           const token = await user.getIdToken();
@@ -139,7 +191,7 @@ export default function EventTimeline() {
       }
     };
     fetchTimelineEvents();
-  }, [user, setLikedEvents]);
+  }, [user, sharedTimelineId]);
 
   // Handler for removing liked events (calls backend)
   const handleRemove = async (e: React.MouseEvent, ev: FullEventType) => {
@@ -177,6 +229,8 @@ export default function EventTimeline() {
 
     // Handler for removing liked events (calls backend)
   const handleAdd = async (e: React.MouseEvent, ev: FullEventType) => {
+
+    console.log("entering HANDLEADD");
     e.stopPropagation();
     if (!user) {
       alert("Please login to add to your timeline.");

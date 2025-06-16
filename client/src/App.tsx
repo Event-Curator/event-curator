@@ -14,9 +14,10 @@ export default function App() {
   const [events, setEvents] = useState<FullEventType[]>([]);
   const [likedEvents, setLikedEvents] = useState<FullEventType[]>([]); 
   const [isSharedTimeline, setIsSharedTimeline] = useState<boolean>(false); 
+  const [sharedTimelineId, setSharedTimelineId] = useState<string>(''); 
 
   return (
-    <EventContext.Provider value={{ events, setEvents, likedEvents, setLikedEvents, isSharedTimeline, setIsSharedTimeline }}>
+    <EventContext.Provider value={{ events, setEvents, likedEvents, setLikedEvents, isSharedTimeline, setIsSharedTimeline, sharedTimelineId, setSharedTimelineId  }}>
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>

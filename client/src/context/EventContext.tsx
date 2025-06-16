@@ -8,13 +8,17 @@ const EventContext = createContext<{
   setLikedEvents: React.Dispatch<React.SetStateAction<FullEventType[]>>; 
   isSharedTimeline: boolean;
   setIsSharedTimeline: React.Dispatch<React.SetStateAction<boolean>>;
+  sharedTimelineId: string | null;
+  setSharedTimelineId: React.Dispatch<React.SetStateAction<string>>;
 }>({
   events: [],
   setEvents: () => {},
   likedEvents: [],          
   setLikedEvents: () => {},  
   isSharedTimeline: false,
-  setIsSharedTimeline: () => {}
+  setIsSharedTimeline: () => {},
+  sharedTimelineId: '',
+  setSharedTimelineId: () => {}
 });
 
 export default EventContext;

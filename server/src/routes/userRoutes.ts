@@ -56,7 +56,7 @@ router.get(
 // ── Publish snapshot ────────────────────────────────────────────
 router.post(
   "/events/users/timeline/publish",
-  authenticateFirebaseToken,
+  // authenticateFirebaseToken,
   publishTimelineCtrl
 );
 // ── Publish snapshot ────────────────────────────────────────────
