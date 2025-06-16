@@ -9,6 +9,7 @@ export async function up(knex) {
     table.foreign('event_external_id').references('events.external_id').onDelete('CASCADE');
 
     table.timestamp('shared_at').defaultTo(knex.fn.now()); // Optional: when the user joined the event
+    
   });
 }
 

@@ -1,4 +1,5 @@
 import knex from '../knex.js';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface TimelineEntry {
   user_uid: string;
@@ -59,42 +60,43 @@ export async function deleteTimelineEntry(
  */
 export async function shareTimeline(
   userUid: string
-): Promise<SharedEntry[]> {
-  // Grab the user's current event_external_id list
+): Promise<string> {
+  // 1. Grab the user's current event list
   const events = await knex('user_events')
     .select('event_external_id')
     .where('user_uid', userUid);
 
-  // Prepare payload for shared_timeline
+  if (events.length === 0) {
+    // No events to snapshot; still generate a signature for consistency
+    return uuidv4();
+  }
+
+  // 2. Generate a unique signature for this snapshot
+  const signature = uuidv4();
+
+  // 3. Prepare payload for shared_events
   const payload = events.map(e => ({
     user_uid: userUid,
     event_external_id: e.event_external_id,
+    signature,
+    shared_at: knex.fn.now(),
   }));
 
-  // Clear old snapshot
+  // 4. Insert snapshot into shared_events
   await knex('shared_timeline')
-    .where('user_uid', userUid)
-    .del();
+    .insert(payload);
 
-  // Insert new snapshot and return it
-  const inserted = await knex('shared_timeline')
-    .insert(payload)
-    .returning([
-      'user_uid',
-      'event_external_id',
-      'shared_at'
-    ]);
-
-  return inserted as SharedEntry[];
+  // 5. Return the snapshot signature
+  return signature;
 }
 
 /**
  * Fetches the latest public snapshot for a user.
  */
 export async function getSharedTimeline(
-  userUid: string
+  signature: string
 ): Promise<SharedEntry[]> {
   return knex('shared_timeline')
-    .select('user_uid', 'event_external_id', 'shared_at')
-    .where('user_uid', userUid);
+    .select('user_uid', 'event_external_id', 'shared_at', 'signature')
+    .where({signature });
 }

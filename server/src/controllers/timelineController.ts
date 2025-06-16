@@ -133,21 +133,11 @@ async (req, res, next) => {
   }
 
   const userUid = req.user.uid;
-  const { timestamp } = req.body;
-  if (!timestamp) {
-    res.status(400).json({ error: 'Missing timestamp' });
-    return;
-  }
-  const publishAt = new Date(timestamp);
-  if (isNaN(publishAt.getTime())) {
-    res.status(400).json({ error: 'Invalid timestamp' });
-    return;
-  }
-
   try {
-    log.info(`Publishing timeline for ${userUid} at ${publishAt.toISOString()}`);
-    const shared = await shareTimeline(userUid);
-    res.status(201).json({ shared });
+    
+    const signature = await shareTimeline(userUid);
+    log.info(`Publishing timeline for ${userUid} at ${signature}`);
+    res.status(201).json({ signature });
   } catch (err) {
     log.error('publishTimeline error:', err);
     next(err);
@@ -155,15 +145,14 @@ async (req, res, next) => {
 };
 
 // ── Fetch the latest public snapshot for a user ─────────────────
-export const getSharedTimelineCtrl: RequestHandler<FriendParams> =
+export const getSharedTimelineCtrl: RequestHandler<any> =
 async (req, res, next) => {
-  const userUid = req.params.friendUid;
+  const signature = req.params.signature;
   try {
-    log.info(`Fetching shared timeline for ${userUid}`);
-    const shared: SharedEntry[] = await getSharedTimeline(userUid);
-    res.status(200).json({ user_uid: userUid, shared });
+    log.info(`signature ${signature}`);
+    const shared: SharedEntry[] = await getSharedTimeline(signature);
+    res.status(200).json({ shared });
   } catch (err) {
-    log.error(`getSharedTimeline error for ${userUid}:`, err);
     next(err);
   }
 };

@@ -12,8 +12,6 @@ const fakeUser = {
 };
 
 const testEventId = 'test-event-id'; // maps to events.external_id
-const testTimestamp = new Date().toISOString();
-
 let token = null;
 let uid = null;
 
@@ -38,17 +36,13 @@ async function login() {
 }
 
 async function insertTestEvent() {
-  console.log(' TEST: Inserting test event into `events` table...');
+  console.log('🔧 TEST: Inserting test event into `events` table...');
   try {
-    // Remove existing test event if exists
     await knex('events').where({ external_id: testEventId }).del();
-
-    // Insert new test event
     await knex('events').insert({
       external_id: testEventId,
       created_at: knex.fn.now()
     });
-
     console.log('Event inserted.\n');
   } catch (err) {
     console.error('Failed to insert test event:', err, '\n');
@@ -56,7 +50,7 @@ async function insertTestEvent() {
 }
 
 async function createTimelineEntry() {
-  console.log('TEST: Creating timeline entry...');
+  console.log('📝 TEST: Creating timeline entry...');
   try {
     const res = await fetch(`${baseURL}/events/users/timeline`, {
       method: 'POST',
@@ -75,7 +69,7 @@ async function createTimelineEntry() {
 }
 
 async function getTimeline() {
-  console.log('TEST: Fetching timeline...');
+  console.log('🔎 TEST: Fetching timeline...');
   try {
     const res = await fetch(`${baseURL}/events/users/timeline`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -89,7 +83,7 @@ async function getTimeline() {
 }
 
 async function publishTimeline() {
-  console.log('TEST: Publishing timeline snapshot...');
+  console.log('🚀 TEST: Publishing timeline snapshot...');
   try {
     const res = await fetch(`${baseURL}/events/users/timeline/publish`, {
       method: 'POST',
@@ -97,20 +91,25 @@ async function publishTimeline() {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ timestamp: testTimestamp })
+      body: JSON.stringify({}) // timestamp no longer required
     });
 
     const data = await res.json();
     console.log('Published:', data, '\n');
+    return data.signature;
   } catch (err) {
     console.error('Failed to publish timeline:', err, '\n');
   }
 }
 
-async function getSharedTimeline() {
-  console.log('TEST: Fetching shared timeline snapshot...');
+async function getSharedTimeline(signature) {
+  console.log('🔗 TEST: Fetching shared timeline snapshot...');
   try {
-    const res = await fetch(`${baseURL}/events/users/timeline/shared/${uid}`);
+    const res = await fetch(
+      `${baseURL}/events/users/timeline/shared/${signature}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
     const data = await res.json();
     console.log('Shared Timeline:', data, '\n');
   } catch (err) {
@@ -119,7 +118,7 @@ async function getSharedTimeline() {
 }
 
 async function deleteTimelineEntry() {
-  console.log('TEST: Deleting timeline entry...');
+  console.log('❌ TEST: Deleting timeline entry...');
   try {
     const res = await fetch(`${baseURL}/events/users/timeline`, {
       method: 'DELETE',
@@ -144,14 +143,14 @@ async function runTests() {
     return;
   }
 
-  await insertTestEvent();         
+  await insertTestEvent();
   await createTimelineEntry();
   await getTimeline();
-  await publishTimeline();
-  await getSharedTimeline();
+  const signature = await publishTimeline();
+  if (signature) await getSharedTimeline(signature);
   await deleteTimelineEntry();
 
-  console.log('All test cases executed.');
+  console.log('✅ All test cases executed.');
 }
 
 runTests();
