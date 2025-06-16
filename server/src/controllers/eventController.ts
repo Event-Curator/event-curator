@@ -321,6 +321,7 @@ const getSearchHits = async function (req: Request, resp: Response) {
         selector: {
             $and: [
                 { name: { $regex: '.*', $options: 'i' } },
+                { datetimeFrom: { $gt: moment().startOf('day').toISOString() }},
                 { placeCountry: { $in: config.includeOnlyCountry } }
             ]
         }
