@@ -11,6 +11,7 @@ export interface SharedEntry {
   user_uid: string;
   event_external_id: string;
   shared_at: Date;
+  created_at: Date;
 }
 
 /**
@@ -86,7 +87,7 @@ export async function shareTimeline(
 ): Promise<string> {
   // 1. Grab the user's current event list
   const events = await knex('user_events')
-    .select('event_external_id')
+    .select(['event_external_id', 'created_at'])
     .where('user_uid', userUid);
 
   if (events.length === 0) {
@@ -98,11 +99,13 @@ export async function shareTimeline(
   const signature = uuidv4();
 
   // 3. Prepare payload for shared_events
+  let ts = new Date();
   const payload = events.map(e => ({
     user_uid: userUid,
     event_external_id: e.event_external_id,
     signature,
-    shared_at: knex.fn.now(),
+    created_at: e.created_at,
+    shared_at: ts
   }));
 
   // 4. Insert snapshot into shared_events
@@ -120,6 +123,6 @@ export async function getSharedTimeline(
   signature: string
 ): Promise<SharedEntry[]> {
   return knex('shared_timeline')
-    .select('user_uid', 'event_external_id', 'shared_at', 'signature')
+    .select('user_uid', 'event_external_id', 'created_at', 'signature')
     .where({signature });
 }

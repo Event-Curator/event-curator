@@ -179,8 +179,34 @@ async (req, res, next) => {
   const signature = req.params.signature;
   try {
     log.info(`signature ${signature}`);
-    const shared: SharedEntry[] = await getSharedTimeline(signature);
-    res.status(200).json({ shared });
+    const events = await getSharedTimeline(signature);
+
+    let fullEvents: Event[] = [];
+    let scheduleDedup: string[] = [];
+
+    for (let event of events) {
+
+      // FIXME: we don't care about timezone issue for now, but we should at some point.
+      // let datetimeSchedule = moment(event.created_at).format('YYYY-MM-DDT00:00:00.000') + 'Z';
+      let datetimeSchedule = moment(event.created_at).toISOString();
+
+      // dup checker: avoid the same event more than once for a given day
+      if (scheduleDedup.indexOf(datetimeSchedule) < 0) {
+
+        let fullEvent = await getEventById(event.event_external_id);
+        scheduleDedup.push(datetimeSchedule);
+
+        // we don't need all the stuff from RxDB
+        let ev = {...fullEvent._data};
+        ev.datetimeSchedule = datetimeSchedule;
+        fullEvents.push(ev);
+      }
+    }
+    
+    fullEvents.sort( (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime() )
+
+    res.status(200).json( fullEvents );
+
   } catch (err) {
     next(err);
   }

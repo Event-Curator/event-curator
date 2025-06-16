@@ -55,16 +55,18 @@ const ShareTimelineButton = () => {
   
     const api = import.meta.env.VITE_API;
     const token = await user.getIdToken();
+    console.log(token);
     const res = await fetch(`${api}/events/users/timeline/publish`, {
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
     if (!res.ok) throw new Error("Failed to fetch sharing key");
     const key = await res.json();
-    console.log("GOT: " + key);
+    let signature = key.signature;
 
-    navigator.clipboard.writeText('shareUrl');
+    navigator.clipboard.writeText(`${api}/events/users/timeline/shared/${signature}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -166,18 +168,20 @@ export default function EventTimeline() {
     if (!user && !isSharedTimeline) return;
     const fetchTimelineEvents = async () => {
       try {
-        console.log("hey !");
+
+        const api = import.meta.env.VITE_API;
 
         if (isSharedTimeline) {
-
           console.log("setting to dummy");
           setLikedEvents(dummyEvent);
-
+          const res = await fetch(`${api}/events/users/timeline/shared/${sharedTimelineId}`);
+          if (!res.ok) throw new Error("Failed to fetch timeline events");
+          const events = await res.json();
+          setLikedEvents(events);
 
         } else {
-          const api = import.meta.env.VITE_API;
-          const token = await user.getIdToken();
-          const res = await fetch(`${api}/events/users/timeline?user_uid=${user.uid}`, {
+          const token = await user!.getIdToken();
+          const res = await fetch(`${api}/events/users/timeline?user_uid=${user!.uid}`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
