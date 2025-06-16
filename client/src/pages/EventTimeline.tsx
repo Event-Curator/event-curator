@@ -158,7 +158,7 @@ export default function EventTimeline() {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: ev.externalId,
+          event_external_id: ev.externalId,
           created_at: ev.datetimeSchedule
         }),
       });
@@ -193,7 +193,7 @@ export default function EventTimeline() {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: ev.externalId,
+          event_external_id: ev.externalId,
           created_at: moment(ev.datetimeOptionalSchedule)
         }),
       });
