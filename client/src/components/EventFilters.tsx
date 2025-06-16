@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import Calendar from "./Calendar";
 import EventContext from "../context/EventContext";
 import useGetPosition from "../hooks/useGetUserLoc";
@@ -28,6 +28,9 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
 
   const { setEvents } = useContext(EventContext);
   const api = import.meta.env.VITE_API;
+
+  // Ref for calendar popover
+  const calendarPopoverRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
   useEffect(() => {
     async function getEventCategories() {
@@ -90,11 +93,12 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
 
   const handleSearch = () => {
     // Allow search if there is text in the search bar, or a category, price, or a location
-    if (!search && !category && !location && !price && !selectedDates) {
+    if (!search && !category && !prefecture && !price && !selectedDates) {
       alert("Please enter a search term, price, category, dates, or location!");
       return;
     } else if (
       selectedDates !== undefined &&
+      selectedDates[1] !== undefined &&
       selectedDates[0] > selectedDates[1]
     ) {
       alert("Start date must come before end date.");
@@ -116,6 +120,14 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       setLocSearchType("prefecture");
     } else {
       setLocSearchType("latLong");
+    }
+  };
+
+  // Calendar close on end date selection
+  const handleCalendarDates = (dates: Date[] | undefined) => {
+    setSelectedDates(dates);
+    if (dates && dates.length === 2 && calendarPopoverRef.current) {
+      calendarPopoverRef.current.removeAttribute("open");
     }
   };
 
@@ -190,10 +202,13 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       {/* Search by dates */}
       <div className="flex flex-row items-center gap-2 mb-2">
         <p>Dates</p>
-        <Calendar
-          selectedDates={selectedDates}
-          setSelectedDates={setSelectedDates}
-        />
+        <div style={{ position: "relative" }}>
+          <Calendar
+            selectedDates={selectedDates}
+            setSelectedDates={handleCalendarDates}
+            popoverRef={calendarPopoverRef}
+          />
+        </div>
       </div>
 
       {/* Search type */}
@@ -238,7 +253,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
             min={0}
             max="30"
             value={searchRadius}
-            className="range range-primary"
+            className="range range-primary flex-1 max-w-[200px] sm:max-w-[100px] md:max-w-[400px]"
             onChange={(e) => setSearchRadius(parseInt(e.target.value))}
           />
           <input
@@ -247,7 +262,7 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
             inputMode="numeric"
             pattern="[0-9]*"
             placeholder="kilometers"
-            className="input input-bordered w-full pr-8 text-right flex-1/6"
+            className="input input-bordered pr-8 text-right w-[80px] sm:w-[100px] md:w-[120px]"
             value={searchRadius}
             onChange={(e) => setSearchRadius(parseInt(e.target.value))}
             style={{
