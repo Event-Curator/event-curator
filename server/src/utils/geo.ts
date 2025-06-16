@@ -172,7 +172,6 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
         }
     }).exec();
 
-
     if (cachedContent.length > 0) {
         log.debug(`cache hit for reverse geocoding: ${event.externalId}`);
         event.placeSuburb = cachedContent[0]._data.placeSuburb;
@@ -180,7 +179,7 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
         event.placeProvince = cachedContent[0]._data.placeProvince;
         event.placeCountry = cachedContent[0]._data.placeCountry;
 
-        if (myConfig.forceProvince) {
+        if (myConfig.forceProvince && event.placeProvince.length === 0) {
             event.placeProvince = myConfig.forceProvince;
             log.debug('forcing province for cached content: ' + event.placeProvince);
         }
@@ -210,7 +209,7 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
         event.placeSuburb = osmReply.address.suburb;
         event.placeCity = osmReply.address.city;
 
-        if (myConfig.forceProvince) {
+        if (myConfig.forceProvince && event.placeProvince.length === 0) {
             event.placeProvince = myConfig.forceProvince;
         } else {
             event.placeProvince = osmReply.address.province;
