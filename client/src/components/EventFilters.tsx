@@ -76,11 +76,6 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
         query += `placeProvince=${prefecture}`;
       }
 
-      console.log(query);
-
-      console.log("lat:", latitude);
-      console.log("long:", longitude);
-
       const response = await fetch(query);
       if (!response.ok) {
         console.error(response);
@@ -88,7 +83,6 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       }
       const data = await response.json();
       setDisplayHero(false);
-      console.log(data);
 
       setEvents(data);
     } catch (error) {
