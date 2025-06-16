@@ -32,7 +32,7 @@ const ShareTimelineButton = () => {
     const key = await res.json();
     let signature = key.signature;
 
-    navigator.clipboard.writeText(`${api}/events/users/timeline/shared/${signature}`);
+    navigator.clipboard.writeText(`${api}/timeline/public/${signature}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
