@@ -83,7 +83,6 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       }
       const data = await response.json();
       setDisplayHero(false);
-
       setEvents(data);
     } catch (error) {
       console.error(error);
