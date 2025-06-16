@@ -86,7 +86,11 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         placeToLookup = `${placeToLookup.replace(myConfig.homeCountry, '')}, ${myConfig.homeCountry.toLowerCase()}`;
     }
 
-    let url = `${OSM_GEOCODING_URL}?format=jsonv2&q=${placeToLookup}`;
+    // we must normalize the string
+    let placeToLookupN = placeToLookup.normalize('NFD').split('').filter( e => e.charCodeAt(0) < 128).join('');
+    log.debug(`normalizing from ${placeToLookup} to ${placeToLookupN}`);
+
+    let url = `${OSM_GEOCODING_URL}?format=jsonv2&q=${placeToLookupN}`;
     log.debug(`geocoding call is: ${url}`);
     let resp = await fetch(url, {
         method: "GET",
@@ -114,13 +118,28 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
             }
         }
 
-        // cache if something was found
-        if (event.placeLattitude !== 0 && event.placeLongitude !== 0) {
-            await eaCache.geocoding.insert({
-                id: md5(event.placeFreeform.toLocaleLowerCase()),
-                long: event.placeLongitude,
-                lat: event.placeLattitude,
-            });
+        // fallback on what's left. it can be a railway or bus stop, for example.
+        // what does matter is to get the prefecture at the end. so it's ok.
+        if (event.placeLattitude === 0 && event.placeLongitude === 0) {
+            for (let city of osmReplies) {
+                event.placeLattitude = parseInt(city.lat, 10);
+                event.placeLongitude = parseInt(city.lon, 10);
+                break;
+            }
+        }
+
+        // cache if something was found. we can get conflict we the coordinates are too loose.
+        // FIXME: like 123/43 (no decimal numbers)
+        try {
+            if (event.placeLattitude !== 0 && event.placeLongitude !== 0) {
+                await eaCache.geocoding.insert({
+                    id: md5(event.placeFreeform.toLocaleLowerCase()),
+                    long: event.placeLongitude,
+                    lat: event.placeLattitude,
+                });
+            }
+        } catch (e) {
+            log.error(`conflict while saving the geo cache: ` + e);
         }
     }
 
@@ -131,9 +150,16 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
 
 async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promise<Event> {
 
+    const myConfig = getConfig(eventsourceId);
+
     // return the same event if nothing is available for reverse geocoding
     if (event.placeLongitude === 0 || event.placeLattitude === 0) {
         log.debug(`no lat/long for ${event.externalId}. unable to process reverse geocoding.`);
+
+        if (myConfig.forceProvince) {
+            event.placeProvince = myConfig.forceProvince;
+            log.debug('forcing province for 0/0 content: ' + event.placeProvince);
+        }
         return new Promise((resolve) => resolve(event));
     }
 
@@ -146,18 +172,23 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
         }
     }).exec();
 
+
     if (cachedContent.length > 0) {
         log.debug(`cache hit for reverse geocoding: ${event.externalId}`);
         event.placeSuburb = cachedContent[0]._data.placeSuburb;
         event.placeCity = cachedContent[0]._data.placeCity;
         event.placeProvince = cachedContent[0]._data.placeProvince;
         event.placeCountry = cachedContent[0]._data.placeCountry;
+
+        if (myConfig.forceProvince) {
+            event.placeProvince = myConfig.forceProvince;
+            log.debug('forcing province for cached content: ' + event.placeProvince);
+        }
+
         return new Promise((resolve) => resolve(event))
     }
 
     log.warn(`cache miss for reverse geocoding of event: ${event.externalId}. querying OSM`);
-
-    const myConfig = getConfig(eventsourceId);
 
     let url = `${OSM_REVERSE_GEOCODING_URL}?format=jsonv2&lat=${event.placeLattitude}&lon=${event.placeLongitude}`;
     log.debug(`geocoding call is: ${url}`);
@@ -178,7 +209,13 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
 
         event.placeSuburb = osmReply.address.suburb;
         event.placeCity = osmReply.address.city;
-        event.placeProvince = osmReply.address.province;
+
+        if (myConfig.forceProvince) {
+            event.placeProvince = myConfig.forceProvince;
+        } else {
+            event.placeProvince = osmReply.address.province;
+        }
+
         event.placeCountry = osmReply.address.country
 
         // cache if something was found
@@ -193,6 +230,8 @@ async function reverseGeocodeAddress(eventsourceId: string, event: Event): Promi
 
     // OSM mandatory throttling
     await sleep(2*1000);
+
+    log.debug('forcing province for live content: ' + event.placeProvince);
 
     return event;
 }

@@ -28,5 +28,6 @@ export type EventSourceConfigType = {
   homeCountry: string,
   contentLanguage: languageEnum,
   geocodingLookupType: geocodingTypeEnum,
-  geocodingStaticMap?: any
+  geocodingStaticMap?: any,
+  forceProvince?: string
 }
