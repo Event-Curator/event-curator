@@ -55,10 +55,9 @@ export default function WeekCalendarView({
   const weekStart = weekDates[0];
   const weekEnd = weekDates[weekDates.length - 1];
 
-  // in some case, it helps to have only the list of events without the duplicates from the timeline
+  // Remove duplicates in allEvents (keep only 1 per externalId)
   let dedup: string[] = [];
   let allEventsDedup: FullEventType[] = [];
-
   for (let _e of allEvents) {
     if (dedup.indexOf(_e.externalId) < 0) {
       allEventsDedup.push(_e);
@@ -66,20 +65,26 @@ export default function WeekCalendarView({
     }
   }
 
-  const multiDayEvents: FullEventType[] = allEventsDedup.filter(ev => {
-    if (!ev.datetimeTo) return false;
-    const start = new Date(ev.datetimeFrom);
-    const end = new Date(ev.datetimeTo);
+  // Collect multi-day events that overlap this week
+ const multiDayEvents: FullEventType[] = allEventsDedup.filter(ev => {
+  if (!ev.datetimeTo) return false;
+  const start = moment(ev.datetimeFrom).startOf('day');
+  const end = moment(ev.datetimeTo).startOf('day');
+  // Only include if end is after start (at least 1 day apart)
+  return (
+    end.diff(start, 'days') >= 1 &&
+    end.toDate() >= weekStart &&
+    start.toDate() <= weekEnd
+  );
+});
 
-    return (
-      end > start &&
-      end >= weekStart &&
-      start <= weekEnd
-    );
-  });
+  // Calculate height for the bars wrapper
+  const eventBarHeight = 26;
+  const barsTotalHeight = multiDayEvents.length * eventBarHeight;
 
   return (
     <div className="w-full">
+      {/* Week navigation */}
       {!isMobile && (
         <div className="flex items-center justify-center gap-4 mb-6">
           <button
@@ -105,9 +110,11 @@ export default function WeekCalendarView({
       {/* Multi-day event bars */}
       {!isMobile && (
         <div
-          className="relative w-full mb-2"
+          className="relative w-full"
           style={{
-            marginBottom: "56px"
+            height: barsTotalHeight,
+            marginBottom: barsTotalHeight > 0 ? "8px" : "0",
+            transition: "height 0.2s cubic-bezier(.42,0,.58,1)"
           }}
         >
           {multiDayEvents.map((ev, idx) => {
@@ -122,7 +129,7 @@ export default function WeekCalendarView({
                 style={{
                   left: `calc(${(start / 7) * 100}% + 8px)`,
                   width: `calc(${((end - start + 1) / 7) * 100}% - 16px)`,
-                  top: `${idx * 26}px`,
+                  top: `${idx * eventBarHeight}px`,
                   height: "24px",
                   background: "#2761da22",
                   borderRadius: "9999px",
@@ -137,6 +144,7 @@ export default function WeekCalendarView({
                   cursor: "pointer",
                   pointerEvents: "auto",
                   zIndex: 5,
+                  transition: "top 0.2s"
                 }}
                 onClick={() => window.location.assign(`/event/${ev.externalId}`)}
                 title={ev.name}
@@ -148,7 +156,20 @@ export default function WeekCalendarView({
         </div>
       )}
 
+      {/* Weekday header (always directly below multi-day bars) */}
+      <div className="w-full flex flex-row gap-8 px-8" style={{ marginBottom: "0.5rem" }}>
+        {weekDates.map(date => (
+          <div
+            key={date.toISOString()}
+            className="flex-1 text-center font-bold text-blue-700 text-xl"
+          >
+            {date.toLocaleDateString(undefined, { weekday: "short" })}
+            <div className="text-base text-gray-500">{date.getDate()}</div>
+          </div>
+        ))}
+      </div>
 
+      {/* Event grid (cards per day) */}
       <div className="bg-blue-50 rounded-2xl px-8 py-6 w-full">
         <div
           className="
@@ -163,15 +184,9 @@ export default function WeekCalendarView({
           {weekDates.map((date) => {
             const key = date.toISOString().slice(0, 10);
             const allEvents = eventsByDay[key] || [];
-            // to hide the "not scheduled" events
-            // const scheduledEvents = allEvents.filter( e => e.isPinned );
             const scheduledEvents = allEvents;
             return (
               <div key={key} className="flex flex-col items-center w-full">
-                <div className="text-center font-bold text-blue-700 mb-4 text-xl">
-                  {date.toLocaleDateString(undefined, { weekday: "short" })}
-                  <div className="text-base text-gray-500">{date.getDate()}</div>
-                </div>
                 <div className="flex flex-col gap-4 w-full items-center">
                   {scheduledEvents.length === 0 ? (
                     <div
@@ -209,7 +224,6 @@ export default function WeekCalendarView({
                               handleRemove(e, ev);
                             }}
                             >
-                              {/* <div className="font-bold text-blue-800 text-lg"><a target='_#' href={`/event/${ev.externalId}`}>{ev.name}</a></div> */}
                               <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
                               <div className="text-base text-gray-700">{ev.placeFreeform}</div>
                               <div className="text-base text-blue-600 font-bold">
