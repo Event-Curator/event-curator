@@ -102,7 +102,7 @@ function ShareTimelineButton({ timelineId }: { timelineId: string }) {
 
 export default function EventTimeline() {
   const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
-  const { likedEvents, setLikedEvents, setEvents } = useContext(EventContext);
+  const { likedEvents, setLikedEvents, setEvents, isSharedTimeline } = useContext(EventContext);
   const [user, setUser] = useState(() => auth.currentUser);
   const navigate = useNavigate();
 
@@ -120,16 +120,20 @@ export default function EventTimeline() {
     if (!user) return;
     const fetchTimelineEvents = async () => {
       try {
-        const api = import.meta.env.VITE_API;
-        const token = await user.getIdToken();
-        const res = await fetch(`${api}/events/users/timeline?user_uid=${user.uid}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error("Failed to fetch timeline events");
-        const events = await res.json();
-        setLikedEvents(events.events); // events should be an array of FullEventType
+        if (isSharedTimeline) {
+          console.log("SHARED MODE");
+        } else {
+          const api = import.meta.env.VITE_API;
+          const token = await user.getIdToken();
+          const res = await fetch(`${api}/events/users/timeline?user_uid=${user.uid}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (!res.ok) throw new Error("Failed to fetch timeline events");
+          const events = await res.json();
+          setLikedEvents(events.events); // events should be an array of FullEventType
+        }
       } catch (err) {
         console.error("Error fetching timeline events:", err);
       }

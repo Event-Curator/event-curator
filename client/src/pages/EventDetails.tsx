@@ -115,7 +115,7 @@ export default function EventDetails(): React.ReactElement {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: event.externalId,
+          event_external_id: event.externalId,
           created_at: event.datetimeFrom
         }),
       });
