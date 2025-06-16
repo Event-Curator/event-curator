@@ -69,10 +69,17 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
 
       let query = `${api}/events?name=${search}&category=${category}&budgetMax=${price}&datetimeFrom=${from}&datetimeTo=${to}&`;
       if (locSearchType === "latLong") {
-        query += `placeDistanceRange=${searchRadius}&browserLat=${latitude}&browserLong=${longitude}`;
+        query += `placeDistanceRange=${
+          searchRadius * 1000
+        }&browserLat=${latitude}&browserLong=${longitude}`;
       } else {
         query += `placeProvince=${prefecture}`;
       }
+
+      console.log(query);
+
+      console.log("lat:", latitude);
+      console.log("long:", longitude);
 
       const response = await fetch(query);
       if (!response.ok) {
@@ -81,6 +88,8 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       }
       const data = await response.json();
       setDisplayHero(false);
+      console.log(data);
+
       setEvents(data);
     } catch (error) {
       console.error(error);
