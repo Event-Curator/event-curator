@@ -39,6 +39,19 @@ export async function deleteTimelineEntry(
   eventExternalId: string,
   createdAt: Date
 ): Promise<number> {
+
+  if (!createdAt) {
+    // we delete all the events linked to this user/event
+    const deletedCount = await knex('user_events')
+    .where({
+      user_uid: userUid,
+      event_external_id: eventExternalId
+    })
+    .del();
+    return deletedCount;
+  }
+
+  // we delete only this particular schedule user/event/datetime
   const deletedCount = await knex('user_events')
   .where({
     user_uid: userUid,

@@ -138,6 +138,7 @@ export default function EventDetails(): React.ReactElement {
     }
     try {
       const api = import.meta.env.VITE_API;
+      console.log(event);
       await fetch(`${api}/events/users/timeline`, {
         method: "DELETE",
         headers: {
@@ -147,7 +148,7 @@ export default function EventDetails(): React.ReactElement {
         body: JSON.stringify({
           user_uid: user.uid,
           event_id: event.externalId,
-          created_at: event.datetimeSchedule
+          created_at: null                      // null means for the backend to remove all entries for this event/user
         }),
       });
       setLikedEvents((prev) => prev.filter((e) => e.externalId !== event.externalId));

@@ -47,8 +47,8 @@ export const deleteTimelineEntry = async (
 ): Promise<void> => {
   try {
     const { user_uid, event_id, created_at } = req.body;
-    if (!user_uid || !event_id || !created_at) {
-      res.status(400).json({ error: 'Missing user_uid, event_id or created_at' });
+    if (!user_uid || !event_id) {
+      res.status(400).json({ error: 'Missing user_uid, event_id' });
       return;
     }
 
