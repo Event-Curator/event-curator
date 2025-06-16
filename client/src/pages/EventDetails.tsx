@@ -138,7 +138,6 @@ export default function EventDetails(): React.ReactElement {
     }
     try {
       const api = import.meta.env.VITE_API;
-      console.log(event);
       await fetch(`${api}/events/users/timeline`, {
         method: "DELETE",
         headers: {

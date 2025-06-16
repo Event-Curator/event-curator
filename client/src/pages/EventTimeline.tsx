@@ -9,39 +9,6 @@ import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
 import moment from "moment";
 
-
-let dummyEvent: FullEventType[] = [{
-            "id": "45ad8aefe13de5aa6d11ae87cb497e6c",
-            "externalId": "45ad8aefe13de5aa6d11ae87cb497e6c",
-            "originId": "45ad8aefe13de5aa6d11ae87cb497e6c",
-            "originUrl": "https://tokyocheapo.com/events/sawara-summer-grand-festival/",
-            "name": "TEST EVENT",
-            "description": "TEST EVENT",
-            "teaserText": "you name it !",
-            "teaserMedia": "/media/b37fb26dace9268f4e5c06ed1cf586bc.jpg",
-            "teaserFreeform": "",
-            "placeLattitude": 35,
-            "placeLongitude": 140,
-            "placeFreeform": "OOOPS !!",
-            "placeSuburb": "",
-            "placeCity": "Minamiboso",
-            "placeProvince": "Tokyo Prefecture",
-            "placeCountry": "Japan",
-            "budgetMin": 0,
-            "budgetMax": 0,
-            "budgetCurrency": "YEN",
-            "budgetFreeform": "Free",
-            "datetimeFrom": new Date(),
-            "datetimeTo": new Date(),
-            "datetimeFreeform": "10:00am – 10:00pm",
-            "category": "Other",
-            "categoryFreeform": "Festival",
-            "size": "M",
-            "sizeFreeform": "",
-        }];
-
-// ShareTimelineButton for timeline (not per event)
-//function ShareTimelineButton() {
 const ShareTimelineButton = () => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -55,7 +22,6 @@ const ShareTimelineButton = () => {
   
     const api = import.meta.env.VITE_API;
     const token = await user.getIdToken();
-    console.log(token);
     const res = await fetch(`${api}/events/users/timeline/publish`, {
       method: 'POST',
       headers: {
@@ -172,8 +138,6 @@ export default function EventTimeline() {
         const api = import.meta.env.VITE_API;
 
         if (isSharedTimeline) {
-          console.log("setting to dummy");
-          setLikedEvents(dummyEvent);
           const res = await fetch(`${api}/events/users/timeline/shared/${sharedTimelineId}`);
           if (!res.ok) throw new Error("Failed to fetch timeline events");
           const events = await res.json();
@@ -234,7 +198,6 @@ export default function EventTimeline() {
     // Handler for removing liked events (calls backend)
   const handleAdd = async (e: React.MouseEvent, ev: FullEventType) => {
 
-    console.log("entering HANDLEADD");
     e.stopPropagation();
     if (!user) {
       alert("Please login to add to your timeline.");
@@ -336,9 +299,6 @@ export default function EventTimeline() {
   const weekEnd = weekDates[6];
   const weekRangeStr = `${weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} - ${weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 
-  //Real anonymous ID?
-  const timelineId = user?.uid || "demo";
-
   // Ensure back/forward navigation works from timeline
   const handleRowClick = (eventId: string) => {
     setEvents(sortedEvents); // Set context events to timeline events
@@ -356,7 +316,7 @@ export default function EventTimeline() {
           {/* Buttons: Only Share on mobile, all on desktop */}
           <div className="flex gap-2 items-center">
             {isMobile ? (
-              <ShareTimelineButton timelineId={timelineId} />
+              <ShareTimelineButton />
             ) : (
               <>
                 <button
@@ -371,7 +331,7 @@ export default function EventTimeline() {
                 >
                   Week View
                 </button>
-                <ShareTimelineButton timelineId={timelineId} />
+                <ShareTimelineButton />
               </>
             )}
           </div>

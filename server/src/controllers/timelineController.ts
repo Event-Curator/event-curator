@@ -1,5 +1,3 @@
-// src/controllers/timelineController.ts
-
 import { RequestHandler } from 'express';
 import {
   addTimelineEntry,

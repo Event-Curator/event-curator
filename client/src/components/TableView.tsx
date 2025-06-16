@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import type { FullEventType } from "../types";
 import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
 import { categoryImages } from "../assets/categoryImages";
+import { auth } from "../firebase";
 
 const server = import.meta.env.VITE_API;
 
@@ -15,7 +16,8 @@ type TableViewProps = {
 
 export default function TableView({ events, isMobile, handleRemove, onRowClick }: TableViewProps) {
   const navigate = useNavigate();
-
+  const user = auth.currentUser;
+  
   let sortedEvents = events.sort((a, b) => new Date(a.datetimeSchedule).getTime() - new Date(b.datetimeSchedule).getTime())
 
   if (isMobile) {
@@ -64,6 +66,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                 <div className="mt-1 font-bold text-xs">{getPriceLabel(ev.budgetMax)}</div>
               </div>
               <div className="flex-shrink-0 pl-2">
+                { user ?
                 <button
                   className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
                   title="Remove from timeline"
@@ -74,7 +77,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                   }}
                 >
                   &#10006;
-                </button>
+                </button> : "" }
               </div>
             </div>
           );
@@ -144,7 +147,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                   </td>
                   <td className="font-bold hidden md:table-cell align-middle">{getPriceLabel(ev.budgetMax)}</td>
                   <td>
-                    <button
+                    { user ? <button
                       className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
                       title="Remove from timeline"
                       tabIndex={-1}
@@ -154,7 +157,7 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                       }}
                     >
                       &#10006;
-                    </button>
+                    </button> : "" }
                   </td>
                 </tr>
               );
