@@ -19,6 +19,7 @@ interface Config {
     backupSchedule: string;
     backupTarget: string;
     mediaStoragePath: string;
+    includeOnlyCountry: string[];
     sources: Array<EventSourceConfigType>;
 }
 
@@ -80,6 +81,7 @@ let _source: Array<EventSourceConfigType> = [
         controller: new TokyocheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: 'japan',
+        forceProvince: 'Tokyo Prefecture',
         contentLanguage: languageEnum.EN,
         geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
@@ -100,6 +102,7 @@ let _source: Array<EventSourceConfigType> = [
         controller: new ArisugawaParkEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: "japan",
+        forceProvince: "Tokyo Prefecture",
         contentLanguage: languageEnum.JP,
         geocodingLookupType: geocodingTypeEnum.STATICMAP,
         geocodingStaticMap: {
@@ -136,7 +139,8 @@ const config: Config = {
     // in all case, the latest file or record will be restored at startup
     // backupTarget: "file:../backups",
     backupTarget: "sql:backups",
-    mediaStoragePath: process.env.MEDIA_STORAGE_PATH || "../media"
+    mediaStoragePath: process.env.MEDIA_STORAGE_PATH || "../media",
+    includeOnlyCountry: ['Japan']
 }
 
 // some sanity checks
