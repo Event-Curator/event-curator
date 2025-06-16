@@ -81,6 +81,7 @@ let _source: Array<EventSourceConfigType> = [
         controller: new TokyocheapoEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: 'japan',
+        forceProvince: 'Tokyo Prefecture',
         contentLanguage: languageEnum.EN,
         geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP
     },
@@ -101,6 +102,7 @@ let _source: Array<EventSourceConfigType> = [
         controller: new ArisugawaParkEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: "japan",
+        forceProvince: "Tokyo Prefecture",
         contentLanguage: languageEnum.JP,
         geocodingLookupType: geocodingTypeEnum.STATICMAP,
         geocodingStaticMap: {
