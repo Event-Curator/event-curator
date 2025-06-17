@@ -8,31 +8,34 @@ import TableView from "../components/TableView";
 import WeekCalendarView from "../components/WeekCalendarView";
 import { useNavigate } from "react-router";
 import moment from "moment";
+import ShareIcon from "../svgs/ShareIcon";
 
 const ShareTimelineButton = () => {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async (e: React.MouseEvent) =>  {
+  const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
     let user = auth.currentUser;
-  
+
     if (!user) return;
-  
+
     const api = import.meta.env.VITE_API;
     const token = await user.getIdToken();
     const res = await fetch(`${api}/events/users/timeline/publish`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Authorization: `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
     if (!res.ok) throw new Error("Failed to fetch sharing key");
     const key = await res.json();
     let signature = key.signature;
 
-    navigator.clipboard.writeText(`${window.location.origin}/timeline/public/${signature}`);
+    navigator.clipboard.writeText(
+      `${window.location.origin}/timeline/public/${signature}`
+    );
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -43,23 +46,26 @@ const ShareTimelineButton = () => {
         type="button"
         className="btn btn-outline btn-sm rounded-md"
         title="Share timeline"
-        onClick={e => {
+        onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
         }}
         style={{ lineHeight: 0 }}
       >
-        Share
+        <div className="flex flex-row items-center gap-1">
+          Share
+          <ShareIcon />
+        </div>
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div
             className="bg-white rounded-xl shadow-lg p-6 flex items-center gap-4 min-w-[260px] relative"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 setOpen(false);
                 setCopied(false);
@@ -74,28 +80,12 @@ const ShareTimelineButton = () => {
               title="Copy link"
               style={{ lineHeight: 0 }}
             >
-              <svg
-                width={32}
-                height={32}
-                fill="none"
-                stroke="#2761da"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-                style={{
-                  display: "block",
-                  border: "2px solid white",
-                  borderRadius: "50%",
-                  boxSizing: "border-box",
-                  background: "transparent"
-                }}
-              >
-                <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-                <path d="M16 6l-4-4-4 4" />
-                <path d="M12 2v14" />
-              </svg>
+              <ShareIcon />
             </button>
             <div>
-              <div className="font-bold text-blue-700 mb-1">Share your timeline</div>
+              <div className="font-bold text-blue-700 mb-1">
+                Share your timeline
+              </div>
               <button
                 className="btn btn-outline btn-sm"
                 onClick={handleCopy}
@@ -112,11 +102,17 @@ const ShareTimelineButton = () => {
       )}
     </>
   );
-}
+};
 
 export default function EventTimeline() {
   const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
-  const { likedEvents, setLikedEvents, setEvents, isSharedTimeline, sharedTimelineId } = useContext(EventContext);
+  const {
+    likedEvents,
+    setLikedEvents,
+    setEvents,
+    isSharedTimeline,
+    sharedTimelineId,
+  } = useContext(EventContext);
   const [user, setUser] = useState(() => auth.currentUser);
   const navigate = useNavigate();
 
@@ -134,22 +130,25 @@ export default function EventTimeline() {
     if (!user && !isSharedTimeline) return;
     const fetchTimelineEvents = async () => {
       try {
-
         const api = import.meta.env.VITE_API;
 
         if (isSharedTimeline) {
-          const res = await fetch(`${api}/events/users/timeline/shared/${sharedTimelineId}`);
+          const res = await fetch(
+            `${api}/events/users/timeline/shared/${sharedTimelineId}`
+          );
           if (!res.ok) throw new Error("Failed to fetch timeline events");
           const events = await res.json();
           setLikedEvents(events);
-
         } else {
           const token = await user!.getIdToken();
-          const res = await fetch(`${api}/events/users/timeline?user_uid=${user!.uid}`, {
-            headers: {
-              Authorization: `Bearer ${token}`
+          const res = await fetch(
+            `${api}/events/users/timeline?user_uid=${user!.uid}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
             }
-          });
+          );
           if (!res.ok) throw new Error("Failed to fetch timeline events");
           const events = await res.json();
           setLikedEvents(events.fullEvents); // events should be an array of FullEventType
@@ -179,25 +178,26 @@ export default function EventTimeline() {
         body: JSON.stringify({
           user_uid: user.uid,
           event_external_id: ev.externalId,
-          created_at: ev.datetimeSchedule
+          created_at: ev.datetimeSchedule,
         }),
       });
 
       setLikedEvents((prev) => {
         return prev.filter((event) => {
-          return !((event.externalId === ev.externalId) && (ev.datetimeSchedule === event.datetimeSchedule))
-        })
+          return !(
+            event.externalId === ev.externalId &&
+            ev.datetimeSchedule === event.datetimeSchedule
+          );
+        });
       });
-
     } catch (error) {
       alert("Could not remove from timeline.");
       console.error(error);
     }
   };
 
-    // Handler for removing liked events (calls backend)
+  // Handler for removing liked events (calls backend)
   const handleAdd = async (e: React.MouseEvent, ev: FullEventType) => {
-
     e.stopPropagation();
     if (!user) {
       alert("Please login to add to your timeline.");
@@ -215,7 +215,7 @@ export default function EventTimeline() {
         body: JSON.stringify({
           user_uid: user.uid,
           event_external_id: ev.externalId,
-          created_at: moment(ev.datetimeOptionalSchedule)
+          created_at: moment(ev.datetimeOptionalSchedule),
         }),
       });
 
@@ -223,7 +223,6 @@ export default function EventTimeline() {
       ev.datetimeSchedule = ev.datetimeOptionalSchedule;
 
       setLikedEvents([...likedEvents, ...[ev]]);
-
     } catch (error) {
       alert("Could not schedule in your timeline.");
       console.error(error);
@@ -234,12 +233,19 @@ export default function EventTimeline() {
 
   // Sort events by date/time ascending
   const sortedEvents = [...likedEvents].sort(
-    (a, b) => new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
+    (a, b) =>
+      new Date(a.datetimeFrom).getTime() - new Date(b.datetimeFrom).getTime()
   );
 
   // Calendar logic
   const today = new Date();
-  const baseMonday = getMonday(new Date(today.getFullYear(), today.getMonth(), today.getDate() + weekOffset * 7));
+  const baseMonday = getMonday(
+    new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate() + weekOffset * 7
+    )
+  );
   const weekDates = getWeekDates(baseMonday);
 
   // Group events by day for week calendar
@@ -251,11 +257,10 @@ export default function EventTimeline() {
 
   // !!!! currentDate is JST, with timezone information (isUTC = false)
   likedEvents.forEach((ev) => {
-    let currentDate = moment(ev.datetimeFrom).startOf('day');
+    let currentDate = moment(ev.datetimeFrom).startOf("day");
 
     while (currentDate <= moment(ev.datetimeTo)) {
-      
-      let cev = {...ev};
+      let cev = { ...ev };
       cev.isPinned = false;
 
       // FIXME: strange, other datetime are not in the same format ... but anyway, it works.
@@ -263,12 +268,12 @@ export default function EventTimeline() {
       // datetimeOptionalSchedule => 'Fri Jul 18 2025 00:00:00 GMT+0900 (Japan Standard Time)'
       cev.datetimeOptionalSchedule = currentDate.toDate();
 
-      if (moment(ev.datetimeSchedule).isSame(currentDate, 'day')) {
+      if (moment(ev.datetimeSchedule).isSame(currentDate, "day")) {
         cev.isPinned = true;
       }
-      
+
       const key = currentDate.toISOString().slice(0, 10);
-      
+
       if (eventsByDay[key]) {
         // if same event already found
         //   and not pinned => ignore it
@@ -277,27 +282,36 @@ export default function EventTimeline() {
         for (let _event of eventsByDay[key]) {
           if (_event.externalId === cev.externalId) ignoreBecauseDup = true;
         }
-      
+
         if (!ignoreBecauseDup) {
           eventsByDay[key].push(cev);
         }
 
         if (cev.isPinned) {
           // make sure there is only one time the same event if one of them is scheduled
-          eventsByDay[key] = eventsByDay[key].filter( ev => ev.externalId !== cev.externalId );
+          eventsByDay[key] = eventsByDay[key].filter(
+            (ev) => ev.externalId !== cev.externalId
+          );
           eventsByDay[key].push(cev);
         }
       }
 
-      currentDate.add(1, 'day');
+      currentDate.add(1, "day");
     }
-
   });
 
   // Week range string
   const weekStart = weekDates[0];
   const weekEnd = weekDates[6];
-  const weekRangeStr = `${weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} - ${weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+  const weekRangeStr = `${weekStart.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })} - ${weekEnd.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })}`;
 
   // Ensure back/forward navigation works from timeline
   const handleRowClick = (eventId: string) => {
@@ -320,13 +334,17 @@ export default function EventTimeline() {
             ) : (
               <>
                 <button
-                  className={`btn btn-outline btn-sm rounded-md ${viewMode === "table" ? "btn-active btn-primary" : ""}`}
+                  className={`btn btn-outline btn-sm rounded-md ${
+                    viewMode === "table" ? "btn-active btn-primary" : ""
+                  }`}
                   onClick={() => setViewMode("table")}
                 >
                   Table View
                 </button>
                 <button
-                  className={`btn btn-outline btn-sm rounded-md ${viewMode === "calendar" ? "btn-active btn-primary" : ""}`}
+                  className={`btn btn-outline btn-sm rounded-md ${
+                    viewMode === "calendar" ? "btn-active btn-primary" : ""
+                  }`}
                   onClick={() => setViewMode("calendar")}
                 >
                   Week View
