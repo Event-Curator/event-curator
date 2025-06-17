@@ -94,6 +94,9 @@ class ArisugawaParkEventSource extends DefaultEventSource {
             anEvent.placeFreeform = eventDetail.placeFreeform;
 
             anEvent.teaserMedia = eventDetail.teaserMedia;
+            let localUrl = await ec.saveMedia(anEvent.teaserMedia);
+            if (localUrl) { anEvent.teaserMedia = localUrl };
+
             anEvent.teaserText = eventDetail.teaserText;
 
             anEvent.category = EventCategoryEnum.FAMILY;
