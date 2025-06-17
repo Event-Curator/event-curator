@@ -115,7 +115,8 @@ export default function EventDetails(): React.ReactElement {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: event.externalId,
+          event_external_id: event.externalId,
+          created_at: event.datetimeFrom
         }),
       });
 
@@ -145,7 +146,8 @@ export default function EventDetails(): React.ReactElement {
         },
         body: JSON.stringify({
           user_uid: user.uid,
-          event_id: event.externalId,
+          event_external_id: event.externalId,
+          created_at: null                      // null means for the backend to remove all entries for this event/user
         }),
       });
       setLikedEvents((prev) => prev.filter((e) => e.externalId !== event.externalId));

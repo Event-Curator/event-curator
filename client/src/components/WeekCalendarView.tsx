@@ -1,18 +1,7 @@
 import React from "react";
 import type { FullEventType } from "../types";
-import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
-
-// Util: Find which days the event spans this week (indices in weekDates)
-function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
-  const start = new Date(ev.datetimeFrom);
-  const end = ev.datetimeTo ? new Date(ev.datetimeTo) : start;
-  const indices = weekDates
-    .map((d, i) =>
-      d >= start && d <= end ? i : null
-    )
-    .filter(i => i !== null) as number[];
-  return indices;
-}
+import { getTimeRange } from "../utils/eventUtils";
+import moment from "moment";
 
 type WeekCalendarViewProps = {
   weekDates: Date[];
@@ -20,11 +9,25 @@ type WeekCalendarViewProps = {
   weekRangeStr: string;
   isMobile: boolean;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
-  handleRemove: (e: React.MouseEvent, id: string) => void;
-  allEvents: FullEventType[]; // <-- ADD THIS LINE IN THE PARENT AND PASS ALL EVENTS
+  handleRemove: (e: React.MouseEvent, ev: any) => void;
+  handleAdd: (e: React.MouseEvent, ev: any) => void;
+  allEvents: FullEventType[];
 };
 
-// SVG Arrows
+function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
+  const start = moment(ev.datetimeFrom).startOf('day');
+  const end = moment(ev.datetimeTo).endOf('day');
+  const indices = weekDates
+    .map((d, i) => {
+        let currentDate = moment(d);
+        return currentDate.startOf('day').isSameOrAfter(start) && currentDate.endOf('day').isSameOrBefore(end) ? i : null
+      }
+    )
+    .filter(i => i !== null) as number[];
+
+    return indices;
+}
+
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
     <path d="M15 19l-7-7 7-7" stroke="#2761da" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
@@ -43,32 +46,45 @@ export default function WeekCalendarView({
   isMobile,
   setWeekOffset,
   handleRemove,
+  handleAdd,
   allEvents,
 }: WeekCalendarViewProps) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // --- The *only* part you need to update: ---
-  // Find multi-day events (duration > 1 day) that overlap this week, from ALL events in timeline
   const weekStart = weekDates[0];
   const weekEnd = weekDates[weekDates.length - 1];
 
-  const multiDayEvents: FullEventType[] = allEvents.filter(ev => {
-    if (!ev.datetimeTo) return false;
-    const start = new Date(ev.datetimeFrom);
-    const end = new Date(ev.datetimeTo);
-    return (
-      end > start &&
-      end >= weekStart &&
-      start <= weekEnd
-    );
-  });
+  // Remove duplicates in allEvents (keep only 1 per externalId)
+  let dedup: string[] = [];
+  let allEventsDedup: FullEventType[] = [];
+  for (let _e of allEvents) {
+    if (dedup.indexOf(_e.externalId) < 0) {
+      allEventsDedup.push(_e);
+      dedup.push(_e.externalId);
+    }
+  }
 
-  // -------------------------------------------------
+  // Collect multi-day events that overlap this week
+ const multiDayEvents: FullEventType[] = allEventsDedup.filter(ev => {
+  if (!ev.datetimeTo) return false;
+  const start = moment(ev.datetimeFrom).startOf('day');
+  const end = moment(ev.datetimeTo).startOf('day');
+  // Only include if end is after start (at least 1 day apart)
+  return (
+    end.diff(start, 'days') >= 1 &&
+    end.toDate() >= weekStart &&
+    start.toDate() <= weekEnd
+  );
+});
+
+  // Calculate height for the bars wrapper
+  const eventBarHeight = 26;
+  const barsTotalHeight = multiDayEvents.length * eventBarHeight;
 
   return (
     <div className="w-full">
-      {/* Nav */}
+      {/* Week navigation */}
       {!isMobile && (
         <div className="flex items-center justify-center gap-4 mb-2">
           <button
@@ -94,11 +110,11 @@ export default function WeekCalendarView({
       {/* Multi-day event bars */}
       {!isMobile && (
         <div
-          className="relative w-full mb-2"
+          className="relative w-full"
           style={{
-            minHeight: "170px", // enough for 6 lines
-            maxHeight: "180px",
-            paddingTop: "6px"
+            height: barsTotalHeight,
+            marginBottom: barsTotalHeight > 0 ? "8px" : "0",
+            transition: "height 0.2s cubic-bezier(.42,0,.58,1)"
           }}
         >
           {multiDayEvents.map((ev, idx) => {
@@ -113,7 +129,7 @@ export default function WeekCalendarView({
                 style={{
                   left: `calc(${(start / 7) * 100}% + 8px)`,
                   width: `calc(${((end - start + 1) / 7) * 100}% - 16px)`,
-                  top: `${idx * 26}px`,
+                  top: `${idx * eventBarHeight}px`,
                   height: "24px",
                   background: "#2761da22",
                   borderRadius: "9999px",
@@ -128,6 +144,7 @@ export default function WeekCalendarView({
                   cursor: "pointer",
                   pointerEvents: "auto",
                   zIndex: 5,
+                  transition: "top 0.2s"
                 }}
                 onClick={() => window.location.assign(`/event/${ev.externalId}`)}
                 title={ev.name}
@@ -139,7 +156,20 @@ export default function WeekCalendarView({
         </div>
       )}
 
-      {/* Grid */}
+      {/* Weekday header (always directly below multi-day bars) */}
+      <div className="w-full flex flex-row gap-8 px-8" style={{ marginBottom: "0.5rem" }}>
+        {weekDates.map(date => (
+          <div
+            key={date.toISOString()}
+            className="flex-1 text-center font-bold text-blue-700 text-xl"
+          >
+            {date.toLocaleDateString(undefined, { weekday: "short" })}
+            <div className="text-base text-gray-500">{date.getDate()}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Event grid (cards per day) */}
       <div className="bg-blue-50 rounded-2xl px-8 py-6 w-full">
         <div
           className="
@@ -153,15 +183,12 @@ export default function WeekCalendarView({
         >
           {weekDates.map((date) => {
             const key = date.toISOString().slice(0, 10);
-            const events = eventsByDay[key] || [];
+            const allEvents = eventsByDay[key] || [];
+            const scheduledEvents = allEvents;
             return (
               <div key={key} className="flex flex-col items-center w-full">
-                <div className="text-center font-bold text-blue-700 mb-4 text-xl">
-                  {date.toLocaleDateString(undefined, { weekday: "short" })}
-                  <div className="text-base text-gray-500">{date.getDate()}</div>
-                </div>
                 <div className="flex flex-col gap-4 w-full items-center">
-                  {events.length === 0 ? (
+                  {scheduledEvents.length === 0 ? (
                     <div
                       className="
                         bg-gray-100 rounded-xl h-24 text-base text-gray-300
@@ -173,42 +200,52 @@ export default function WeekCalendarView({
                       No events
                     </div>
                   ) : (
-                    events.map((ev) => {
+                    scheduledEvents.map((ev) => {
                       const eventDate = new Date(ev.datetimeFrom);
                       eventDate.setHours(0, 0, 0, 0);
                       const isToday = eventDate.getTime() === now.getTime();
                       return (
                         <div
                           key={ev.externalId}
-                          onClick={() => window.location.assign(`/event/${ev.externalId}`)}
                           className={`
                             relative p-6 rounded-xl bg-white flex flex-col gap-2
                             w-full min-w-0
                             shadow transition cursor-pointer border-2
                             ${isToday ? "border-blue-500 shadow-lg" : "border-gray-200"}
+                            ${ev.isPinned ? "border-blue-500" : "bg-gray-100 text-gray-300"}
                           `}
                         >
-                          <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
-                          <div className="text-base text-gray-700">{ev.placeFreeform}</div>
-                          <div className="text-base text-blue-600 font-bold">
-                            {new Date(ev.datetimeFrom).toLocaleDateString()}
-                          </div>
-                          <div className="text-base">
-                            <b>Time:&nbsp;</b>
-                            {getTimeRange(ev)}
-                          </div>
-                          <div className="text-base">{getPriceLabel(ev.budgetMax)}</div>
-                          <button
-                            className="absolute bottom-3 right-3 btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
-                            title="Remove from timeline"
-                            tabIndex={-1}
-                            onClick={(e) => {
+
+                        {ev.isPinned ? 
+                          (
+                            <div
+                              onClick={(e) => {
                               e.stopPropagation();
-                              handleRemove(e, ev.externalId);
+                              handleRemove(e, ev);
                             }}
-                          >
-                            &#10006;
-                          </button>
+                            >
+                              <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
+                              <div className="text-base text-gray-700">{ev.placeFreeform}</div>
+                              <div className="text-base text-blue-600 font-bold">
+                                {new Date(ev.datetimeFrom).toLocaleDateString()}
+                              </div>
+                              <div className="text-base">
+                                <b>Time:&nbsp;</b>
+                                {getTimeRange(ev)}
+                              </div>
+                            </div>
+
+                          ) : (
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAdd(e, ev);
+                              }}
+                              >
+                              { "Click to schedule " + ev.name }
+                            </div>
+                          )
+                        }
                         </div>
                       );
                     })
