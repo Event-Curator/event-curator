@@ -78,15 +78,18 @@ class JpeventfeedEventSource extends DefaultEventSource {
 
 
           // location stuff
-          _r = [];
           event.placeLattitude = upstreamEvent.latitude;
           event.placeLongitude = upstreamEvent.longitude;
+
+          _r = [];
           if (this.safeGetAttr(upstreamEvent, "Place")) _r.push(this.safeGetAttr(upstreamEvent, "Place"));
           if (upstreamEvent.venue) _r.push(upstreamEvent.venue)
-          event.placeFreeform = _r.join(',');
-
-          event.placeLongitude = upstreamEvent.longitude;
-          event.placeLattitude = upstreamEvent.latitude;
+          _r.push(upstreamEvent.address.address);
+          _r.push(upstreamEvent.address.city);
+          _r.push(upstreamEvent.address.postalCode);
+          _r.push(upstreamEvent.ward);
+          _r.push(upstreamEvent.prefecture);
+          event.placeFreeform = _r.join(' ');
 
 
           // timings
@@ -126,7 +129,7 @@ class JpeventfeedEventSource extends DefaultEventSource {
 
           event.budgetCurrency = this.CURRENCY;
 
-          if (upstreamEvent.thumbnailImage) event.teaserMedia = upstreamEvent.thumbnailImage;          
+          if (upstreamEvent.thumbnailImage) event.teaserMedia = upstreamEvent.thumbnailImage;
           if (event.teaserMedia && event.teaserMedia.length > 0) {
             let localUrl = await ec.saveMedia(event.teaserMedia);
             if (localUrl) { event.teaserMedia = localUrl };
