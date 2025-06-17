@@ -25,10 +25,9 @@ export default function App() {
             <Route path="event">
               <Route path=":id" element={<EventDetails />} />
             </Route>
-            {/* <Route path="timeline" element={<EventTimeline />} > */}
             <Route path="timeline" >
               <Route path="public/:shareId" element={<SharedEventTimeline />} />
-              <Route path="/timeline/" element={<EventTimeline />} />
+              <Route path="/timeline" element={<EventTimeline />} />
             </Route>
             <Route path="/profile" element={<Profile />} />
           </Route>

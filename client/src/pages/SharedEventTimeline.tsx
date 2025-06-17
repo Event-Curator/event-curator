@@ -11,18 +11,15 @@ function SharedEventTimeline() {
     if (shareId !== undefined) {        
         setIsSharedTimeline(true);
         setSharedTimelineId(shareId);
-        console.log("SHARE ID from anonymous: " + shareId);
 
     } else {
         setIsSharedTimeline(false);
         setSharedTimelineId('');
-        console.log("SHARE ID: " + shareId);
     }
 
     return (
         <>
             <EventTimeline/>
-            {/* TEST */}
         </>
     )
 }
