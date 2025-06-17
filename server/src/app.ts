@@ -24,6 +24,10 @@ if (process.env.NODE_ENV === 'development') {
   absolutePathStatic = "../client/dist";
 }
 
+log.info('using those paths for express');
+log.info('absolutePathReact: ' + absolutePathReact);
+log.info('absolutePathStatic: ' + absolutePathStatic);
+
 // to fix the static url problem (sharing link)
 let myHandler = function(req, res) {
   res.sendFile((path.join(absolutePathReact, './client/dist/index.html')), function(err) {
