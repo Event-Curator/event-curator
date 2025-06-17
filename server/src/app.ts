@@ -19,7 +19,7 @@ app.use(cors());
 
 // to fix the static url problem (sharing link)
 let myHandler = function(req, res) {
-  res.sendFile((path.join(process.cwd(), '../client/dist/index.html')), function(err) {
+  res.sendFile((path.join(process.cwd(), './client/dist/index.html')), function(err) {
     if (err) {
       res.status(500).send(err)
     }

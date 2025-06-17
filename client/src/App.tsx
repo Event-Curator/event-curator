@@ -9,6 +9,7 @@ import EventContext from "./context/EventContext";
 import type { FullEventType } from "./types";
 import { SharedEventTimeline } from "./pages/SharedEventTimeline";
 
+
 export default function App() {
   const [events, setEvents] = useState<FullEventType[]>([]);
   const [likedEvents, setLikedEvents] = useState<FullEventType[]>([]); 
