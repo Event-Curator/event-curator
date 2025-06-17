@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { categoryImages } from "../assets/categoryImages";
+import { getDefaultImg } from "../utils/getDefaultImg";
 
 interface EventPreviewCardProps {
   id: string;
@@ -7,10 +8,11 @@ interface EventPreviewCardProps {
   category: string;
   categoryFreeform: string;
   location: string;
-  date: string;
+  dateFrom: string;
+  dateTo: string;
   price: number;
   link: string;
-  imageUrl?: string; 
+  imageUrl?: string;
 }
 
 export default function EventPreviewCard({
@@ -19,7 +21,8 @@ export default function EventPreviewCard({
   category,
   categoryFreeform,
   location,
-  date,
+  dateFrom,
+  dateTo,
   price,
   imageUrl,
 }: EventPreviewCardProps) {
@@ -33,7 +36,7 @@ export default function EventPreviewCard({
 
   const imageSrc =
     imageUrl && imageUrl.trim() !== ""
-      ? (server + "/.." + imageUrl)
+      ? server + "/.." + imageUrl
       : fallbackImage;
 
   return (
@@ -45,6 +48,7 @@ export default function EventPreviewCard({
       <div className="w-42 h-42 flex-shrink-0">
         <img
           src={imageSrc}
+          onError={(e) => getDefaultImg(e, fallbackImage)}
           alt={name}
           className="w-full h-full object-cover"
           loading="lazy"
@@ -55,7 +59,13 @@ export default function EventPreviewCard({
           {displayCategory}
         </span>
         <h3 className="text-lg font-bold text-gray-800 mb-1">{name}</h3>
-        <div className="text-gray-500 text-m mb-2">{date}</div>
+        {/* <div className="text-gray-500 text-m mb-2">{date}</div> */}
+        <div className="flex flex-row">
+          <div className="text-gray-500 text-m mb-2">{dateFrom}</div>
+          {dateFrom !== dateTo && (
+            <div className="text-gray-500 text-m mb-2">&nbsp;— {dateTo}</div>
+          )}
+        </div>
         <div className="flex items-center gap-2 text-m text-gray-900">
           <span>{location}</span>
           <span>•</span>

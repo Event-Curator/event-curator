@@ -2,6 +2,18 @@ import React from "react";
 import type { FullEventType } from "../types";
 import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
 
+// Util: Find which days the event spans this week (indices in weekDates)
+function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
+  const start = new Date(ev.datetimeFrom);
+  const end = ev.datetimeTo ? new Date(ev.datetimeTo) : start;
+  const indices = weekDates
+    .map((d, i) =>
+      d >= start && d <= end ? i : null
+    )
+    .filter(i => i !== null) as number[];
+  return indices;
+}
+
 type WeekCalendarViewProps = {
   weekDates: Date[];
   eventsByDay: { [k: string]: FullEventType[] };
@@ -9,8 +21,10 @@ type WeekCalendarViewProps = {
   isMobile: boolean;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
   handleRemove: (e: React.MouseEvent, id: string) => void;
+  allEvents: FullEventType[]; // <-- ADD THIS LINE IN THE PARENT AND PASS ALL EVENTS
 };
 
+// SVG Arrows
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
     <path d="M15 19l-7-7 7-7" stroke="#2761da" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
@@ -29,14 +43,34 @@ export default function WeekCalendarView({
   isMobile,
   setWeekOffset,
   handleRemove,
+  allEvents,
 }: WeekCalendarViewProps) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
+  // --- The *only* part you need to update: ---
+  // Find multi-day events (duration > 1 day) that overlap this week, from ALL events in timeline
+  const weekStart = weekDates[0];
+  const weekEnd = weekDates[weekDates.length - 1];
+
+  const multiDayEvents: FullEventType[] = allEvents.filter(ev => {
+    if (!ev.datetimeTo) return false;
+    const start = new Date(ev.datetimeFrom);
+    const end = new Date(ev.datetimeTo);
+    return (
+      end > start &&
+      end >= weekStart &&
+      start <= weekEnd
+    );
+  });
+
+  // -------------------------------------------------
+
   return (
     <div className="w-full">
+      {/* Nav */}
       {!isMobile && (
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="flex items-center justify-center gap-4 mb-2">
           <button
             className="btn btn-ghost btn-circle"
             aria-label="Previous week"
@@ -56,6 +90,56 @@ export default function WeekCalendarView({
           </button>
         </div>
       )}
+
+      {/* Multi-day event bars */}
+      {!isMobile && (
+        <div
+          className="relative w-full mb-2"
+          style={{
+            minHeight: "170px", // enough for 6 lines
+            maxHeight: "180px",
+            paddingTop: "6px"
+          }}
+        >
+          {multiDayEvents.map((ev, idx) => {
+            const barIndices = getBarSpanIndices(ev, weekDates);
+            if (!barIndices.length) return null;
+            const start = barIndices[0];
+            const end = barIndices[barIndices.length - 1];
+            return (
+              <div
+                key={ev.externalId}
+                className="absolute flex items-center"
+                style={{
+                  left: `calc(${(start / 7) * 100}% + 8px)`,
+                  width: `calc(${((end - start + 1) / 7) * 100}% - 16px)`,
+                  top: `${idx * 26}px`,
+                  height: "24px",
+                  background: "#2761da22",
+                  borderRadius: "9999px",
+                  border: "2px solid #2761da",
+                  color: "#1e3a8a",
+                  fontWeight: 600,
+                  fontSize: "0.97rem",
+                  padding: "0 16px",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  boxShadow: "0 1px 4px #a5b4fc33",
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                  zIndex: 5,
+                }}
+                onClick={() => window.location.assign(`/event/${ev.externalId}`)}
+                title={ev.name}
+              >
+                <span className="truncate">{ev.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Grid */}
       <div className="bg-blue-50 rounded-2xl px-8 py-6 w-full">
         <div
           className="
