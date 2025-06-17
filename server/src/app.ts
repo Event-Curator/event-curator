@@ -9,13 +9,30 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import { syncFirebaseUsers } from "./middlewares/authSync.js";
 import { initCache, eaCache } from "./middlewares/apiGateway.js";
 import { scheduleBackup } from "./utils/persistence.js";
+import path from "path";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static("./client/dist"));
+
+// to fix the static url problem (sharing link)
+let myHandler = function(req, res) {
+  res.sendFile((path.join(process.cwd(), '../client/dist/index.html')), function(err) {
+    if (err) {
+      res.status(500).send(err)
+    }
+  })
+}
+
+app.use(express.static("../client/dist"));
+app.get('/', myHandler);
+app.get('/events', myHandler);
+app.get('/events/:a', myHandler);
+app.get('/timeline/public/:a', myHandler);
+app.get('/timeline', myHandler);
+
 app.use("/media", express.static(`${config.mediaStoragePath}`));
 app.use("/api", eventRoute);
 app.use("/api", userRoute);
