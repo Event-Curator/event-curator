@@ -3,25 +3,12 @@ import type { FullEventType } from "../types";
 import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
 import moment from "moment";
 
-// Util: Find which days the event spans this week (indices in weekDates)
-function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
-  const start = new Date(ev.datetimeFrom);
-  const end = ev.datetimeTo ? new Date(ev.datetimeTo) : start;
-  const indices = weekDates
-    .map((d, i) =>
-      d >= start && d <= end ? i : null
-    )
-    .filter(i => i !== null) as number[];
-  return indices;
-}
-
 type WeekCalendarViewProps = {
   weekDates: Date[];
   eventsByDay: { [k: string]: FullEventType[] };
   weekRangeStr: string;
   isMobile: boolean;
   setWeekOffset: React.Dispatch<React.SetStateAction<number>>;
-<<<<<<< feat/multiday-and-sharing-anonymous-link
   handleRemove: (e: React.MouseEvent, ev: any) => void;
   handleAdd: (e: React.MouseEvent, ev: any) => void;
   allEvents: FullEventType[];
@@ -41,13 +28,6 @@ function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
     return indices;
 }
 
-=======
-  handleRemove: (e: React.MouseEvent, id: string) => void;
-  allEvents: FullEventType[]; // <-- ADD THIS LINE IN THE PARENT AND PASS ALL EVENTS
-};
-
-// SVG Arrows
->>>>>>> main
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
     <path d="M15 19l-7-7 7-7" stroke="#2761da" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
@@ -66,16 +46,12 @@ export default function WeekCalendarView({
   isMobile,
   setWeekOffset,
   handleRemove,
-<<<<<<< feat/multiday-and-sharing-anonymous-link
   handleAdd,
-=======
->>>>>>> main
   allEvents,
 }: WeekCalendarViewProps) {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-<<<<<<< feat/multiday-and-sharing-anonymous-link
   const weekStart = weekDates[0];
   const weekEnd = weekDates[weekDates.length - 1];
 
@@ -109,29 +85,6 @@ export default function WeekCalendarView({
   return (
     <div className="w-full">
       {/* Week navigation */}
-=======
-  // --- The *only* part you need to update: ---
-  // Find multi-day events (duration > 1 day) that overlap this week, from ALL events in timeline
-  const weekStart = weekDates[0];
-  const weekEnd = weekDates[weekDates.length - 1];
-
-  const multiDayEvents: FullEventType[] = allEvents.filter(ev => {
-    if (!ev.datetimeTo) return false;
-    const start = new Date(ev.datetimeFrom);
-    const end = new Date(ev.datetimeTo);
-    return (
-      end > start &&
-      end >= weekStart &&
-      start <= weekEnd
-    );
-  });
-
-  // -------------------------------------------------
-
-  return (
-    <div className="w-full">
-      {/* Nav */}
->>>>>>> main
       {!isMobile && (
         <div className="flex items-center justify-center gap-4 mb-2">
           <button
@@ -157,19 +110,11 @@ export default function WeekCalendarView({
       {/* Multi-day event bars */}
       {!isMobile && (
         <div
-<<<<<<< feat/multiday-and-sharing-anonymous-link
           className="relative w-full"
           style={{
             height: barsTotalHeight,
             marginBottom: barsTotalHeight > 0 ? "8px" : "0",
             transition: "height 0.2s cubic-bezier(.42,0,.58,1)"
-=======
-          className="relative w-full mb-2"
-          style={{
-            minHeight: "170px", // enough for 6 lines
-            maxHeight: "180px",
-            paddingTop: "6px"
->>>>>>> main
           }}
         >
           {multiDayEvents.map((ev, idx) => {
@@ -184,11 +129,7 @@ export default function WeekCalendarView({
                 style={{
                   left: `calc(${(start / 7) * 100}% + 8px)`,
                   width: `calc(${((end - start + 1) / 7) * 100}% - 16px)`,
-<<<<<<< feat/multiday-and-sharing-anonymous-link
                   top: `${idx * eventBarHeight}px`,
-=======
-                  top: `${idx * 26}px`,
->>>>>>> main
                   height: "24px",
                   background: "#2761da22",
                   borderRadius: "9999px",
@@ -203,10 +144,7 @@ export default function WeekCalendarView({
                   cursor: "pointer",
                   pointerEvents: "auto",
                   zIndex: 5,
-<<<<<<< feat/multiday-and-sharing-anonymous-link
                   transition: "top 0.2s"
-=======
->>>>>>> main
                 }}
                 onClick={() => window.location.assign(`/event/${ev.externalId}`)}
                 title={ev.name}
@@ -218,7 +156,6 @@ export default function WeekCalendarView({
         </div>
       )}
 
-<<<<<<< feat/multiday-and-sharing-anonymous-link
       {/* Weekday header (always directly below multi-day bars) */}
       <div className="w-full flex flex-row gap-8 px-8" style={{ marginBottom: "0.5rem" }}>
         {weekDates.map(date => (
@@ -233,9 +170,6 @@ export default function WeekCalendarView({
       </div>
 
       {/* Event grid (cards per day) */}
-=======
-      {/* Grid */}
->>>>>>> main
       <div className="bg-blue-50 rounded-2xl px-8 py-6 w-full">
         <div
           className="
