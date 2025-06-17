@@ -59,7 +59,7 @@ class JpeventfeedEventSource extends DefaultEventSource {
 
           let event = new Event(upstreamEvent.fingerprint);
 
-          
+
           // general stuff
           event.originUrl = upstreamEvent.eventInfoUrl || "";
           event.name = upstreamEvent.eventName || "";
@@ -85,22 +85,18 @@ class JpeventfeedEventSource extends DefaultEventSource {
           if (upstreamEvent.venue) _r.push(upstreamEvent.venue)
           event.placeFreeform = _r.join(',');
 
+          event.placeLongitude = upstreamEvent.longitude;
+          event.placeLattitude = upstreamEvent.latitude;
+
 
           // timings
           let _startDay = moment(upstreamEvent.dateStart, 'YYYY/M/DT');
           let _endDay = moment(upstreamEvent.dateEnd, 'YYYY/M/D');
           _startDay.startOf('day');
           _endDay.endOf('day');
-          
+
           if (upstreamEvent.timeStart) {
-            // log.error('TIME: ' + upstreamEvent.timeStart);
-            // log.error('BEFORE: ' + _startDay.toISOString());
             _startDay.add(Number(upstreamEvent.timeStart.split(':')[0]), 'hours')
-            // log.error('AFTER: ' + _startDay.toISOString());
-
-            // _startDay.add(6, 'hours')
-            // log.error('AFTER2: ' + _startDay.toISOString());
-
             _startDay.add(Number(upstreamEvent.timeStart.split(':')[1]), 'minutes')
           }
 
@@ -108,7 +104,7 @@ class JpeventfeedEventSource extends DefaultEventSource {
             _endDay.add(Number(upstreamEvent.timeEnd.split(':')[0]), 'hours')
             _endDay.add(Number(upstreamEvent.timeEnd.split(':')[1]), 'minutes')
           }
-          
+
           event.datetimeFrom = _startDay.toDate();
           event.datetimeTo = _endDay.toDate();
 
@@ -130,7 +126,6 @@ class JpeventfeedEventSource extends DefaultEventSource {
 
           event.budgetCurrency = this.CURRENCY;
 
-
           if (upstreamEvent.thumbnailImage) event.teaserMedia = upstreamEvent.thumbnailImage;          
           if (event.teaserMedia && event.teaserMedia.length > 0) {
             let localUrl = await ec.saveMedia(event.teaserMedia);
@@ -138,11 +133,17 @@ class JpeventfeedEventSource extends DefaultEventSource {
             event.teaserText = upstreamEvent.venue;
           }
 
-          // FIXME
-          event.category = EventCategoryEnum.FAMILY;
+          if (upstreamEvent.category === "SPORTS") upstreamEvent.category = "SPORT";
+          if (upstreamEvent.category === "LIFESTYLE") upstreamEvent.category = "HOME";
+          if (upstreamEvent.category && 
+            Object.keys(EventCategoryEnum).includes(upstreamEvent.category) ) {
+            event.category = EventCategoryEnum[upstreamEvent.category]
+
+          } else {
+            event.category = EventCategoryEnum.OTHER;
+          }
 
           events.push(event);
-          console.log(event);
         }
 
         currentPage++;
