@@ -9,6 +9,7 @@ import { ES_SEARCH_IN_CACHE } from '../models/Event.js';
 import { EventSourceConfigType, languageEnum } from '../models/EventSource.js';
 import { JapanconcertticketsEventSource } from '../controllers/JapanconcertticketsEventSource.js';
 import { ArisugawaParkEventSource } from '../controllers/ArisugawaParkEventSource.js';
+import { JpeventfeedEventSource } from '../controllers/JpeventfeedEventSource.js';
 import { geocodingTypeEnum } from '../models/Model.js';
 
 dotenv.config()
@@ -90,6 +91,16 @@ let _source: Array<EventSourceConfigType> = [
         enabled: true,
         endpoint: "https://www.japanconcerttickets.com/wp-admin/admin-ajax.php",
         controller: new JapanconcertticketsEventSource(),
+        searchType: ES_SEARCH_IN_CACHE,
+        homeCountry: "japan",
+        contentLanguage: languageEnum.EN,
+        geocodingLookupType: geocodingTypeEnum.OPENSTREETMAP,
+    },
+    {
+        id: "jpeventfeed",
+        enabled: true,
+        endpoint: "https://jpeventfeed.nfshost.com/query.php",
+        controller: new JpeventfeedEventSource(),
         searchType: ES_SEARCH_IN_CACHE,
         homeCountry: "japan",
         contentLanguage: languageEnum.EN,
