@@ -202,13 +202,13 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       {/* Search by dates */}
       <div className="flex flex-row items-center gap-2 mb-2">
         <p>Dates</p>
-        <div style={{ position: "relative" }}>
+        
           <Calendar
             selectedDates={selectedDates}
             setSelectedDates={handleCalendarDates}
             popoverRef={calendarPopoverRef}
           />
-        </div>
+        
       </div>
 
       {/* Search type */}
