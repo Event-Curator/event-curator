@@ -145,8 +145,11 @@ class JpeventfeedEventSource extends DefaultEventSource {
             event.category = EventCategoryEnum.OTHER;
           }
 
-          event.placeSuburb = '';
-          event.placeProvince = '';
+          if (upstreamEvent.address) {
+            event.placeCity = upstreamEvent.city;
+            event.placeSuburb = upstreamEvent.ward;
+            event.placeProvince = upstreamEvent.prefecture;
+          }
 
           events.push(event);
         }
