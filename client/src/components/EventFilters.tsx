@@ -30,7 +30,9 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
   const api = import.meta.env.VITE_API;
 
   // Ref for calendar popover
-  const calendarPopoverRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+  const calendarPopoverRef = useRef<HTMLDivElement>(
+    null
+  ) as React.RefObject<HTMLDivElement>;
 
   useEffect(() => {
     async function getEventCategories() {
@@ -95,8 +97,17 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
 
   const handleSearch = () => {
     // Allow search if there is text in the search bar, or a category, price, or a location
-    if (!search && !category && !prefecture && !price && !selectedDates) {
-      alert("Please enter a search term, price, category, dates, or location!");
+    if (
+      !search &&
+      !category &&
+      !prefecture &&
+      !searchRadius &&
+      !price &&
+      !selectedDates
+    ) {
+      alert(
+        "Please enter a search term, price, category, dates, prefecure, or search radius!"
+      );
       return;
     } else if (
       selectedDates !== undefined &&
@@ -204,13 +215,12 @@ export default function EventFilters({ setDisplayHero }: EventFiltersProps) {
       {/* Search by dates */}
       <div className="flex flex-row items-center gap-2 mb-2">
         <p>Dates</p>
-        
-          <Calendar
-            selectedDates={selectedDates}
-            setSelectedDates={handleCalendarDates}
-            popoverRef={calendarPopoverRef}
-          />
-        
+
+        <Calendar
+          selectedDates={selectedDates}
+          setSelectedDates={handleCalendarDates}
+          popoverRef={calendarPopoverRef}
+        />
       </div>
 
       {/* Search type */}
