@@ -146,9 +146,12 @@ class JpeventfeedEventSource extends DefaultEventSource {
           }
 
           if (upstreamEvent.address) {
+            log.warn("saving address from upstream. begin");
             event.placeCity = upstreamEvent.city;
             event.placeSuburb = upstreamEvent.ward;
             event.placeProvince = upstreamEvent.prefecture;
+            event.placeCountry = 'Japan';
+            log.warn("saving address from upstream. end");
           }
 
           events.push(event);
