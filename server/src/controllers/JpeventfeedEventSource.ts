@@ -91,6 +91,8 @@ class JpeventfeedEventSource extends DefaultEventSource {
           _r.push(upstreamEvent.prefecture);
           event.placeFreeform = _r.join(' ');
 
+          event.placeSuburb = '';
+          event.placeProvince = '';
 
           // timings
           let _startDay = moment(upstreamEvent.dateStart, 'YYYY/M/DT');
