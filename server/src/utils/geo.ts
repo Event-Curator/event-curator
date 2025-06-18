@@ -113,8 +113,8 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         // fallback on province of no city found
         if (event.placeLattitude === 0 && event.placeLongitude === 0) {
             for (let city of  osmReplies.filter( osmReply => osmReply.addresstype === 'province')) {
-                event.placeLattitude = parseInt(city.lat, 10);
-                event.placeLongitude = parseInt(city.lon, 10);
+                event.placeLattitude = parseFloat(city.lat);
+                event.placeLongitude = parseFloat(city.lon);
             }
         }
 
@@ -122,8 +122,8 @@ async function geocodeAddress(eventsourceId: string, event: Event): Promise<Even
         // what does matter is to get the prefecture at the end. so it's ok.
         if (event.placeLattitude === 0 && event.placeLongitude === 0) {
             for (let city of osmReplies) {
-                event.placeLattitude = parseInt(city.lat, 10);
-                event.placeLongitude = parseInt(city.lon, 10);
+                event.placeLattitude = parseFloat(city.lat);
+                event.placeLongitude = parseFloat(city.lon);
                 break;
             }
         }
