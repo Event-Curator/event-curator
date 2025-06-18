@@ -91,9 +91,6 @@ class JpeventfeedEventSource extends DefaultEventSource {
           _r.push(upstreamEvent.prefecture);
           event.placeFreeform = _r.join(' ');
 
-          event.placeSuburb = '';
-          event.placeProvince = '';
-
           // timings
           let _startDay = moment(upstreamEvent.dateStart, 'YYYY/M/DT');
           let _endDay = moment(upstreamEvent.dateEnd, 'YYYY/M/D');
@@ -147,6 +144,9 @@ class JpeventfeedEventSource extends DefaultEventSource {
           } else {
             event.category = EventCategoryEnum.OTHER;
           }
+
+          event.placeSuburb = '';
+          event.placeProvince = '';
 
           events.push(event);
         }
