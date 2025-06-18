@@ -156,8 +156,15 @@ class JpeventfeedEventSource extends DefaultEventSource {
 
           events.push(event);
         }
-
+        
         currentPage++;
+      }
+      
+      for (let e of events) {
+        if (e.externalId === '02b02977fac8b57adc9e5f0aa8136b5d') {
+          log.error('FOUND IT: ');
+          log.error(e.name);
+        }
       }
 
       log.info(`${this.id}: scrapping done. ${events.length} found.`);
