@@ -41,6 +41,7 @@ export enum EventCategoryEnum {
   AUTO = "Auto, Boat & Air",
   HOBBIES = "Hobbies & Special Interest",
   SCHOOL = "School Activities",
+  TECHNOLOGY = "Technology",
   OTHER = "Other",
 }
 
