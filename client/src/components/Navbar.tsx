@@ -49,7 +49,11 @@ export default function Navbar() {
     setError(null);
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       setUser(userCredential.user);
       setEmail("");
       setPassword("");
@@ -66,7 +70,11 @@ export default function Navbar() {
     setError(null);
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       setUser(userCredential.user);
       setEmail("");
       setPassword("");
@@ -116,12 +124,18 @@ export default function Navbar() {
   const MobileAuthButtons = (
     <>
       <li>
-        <button className="btn btn-primary btn-sm w-full mb-2" onClick={() => setShowLogin(true)}>
+        <button
+          className="btn btn-primary btn-sm w-full mb-2"
+          onClick={() => setShowLogin(true)}
+        >
           Sign In
         </button>
       </li>
       <li>
-        <button className="btn btn-outline btn-sm w-full" onClick={() => setShowRegister(true)}>
+        <button
+          className="btn btn-outline btn-sm w-full"
+          onClick={() => setShowRegister(true)}
+        >
           Register
         </button>
       </li>
@@ -130,7 +144,9 @@ export default function Navbar() {
 
   async function fetchEventsByName(name: string) {
     try {
-      const response = await fetch(`${api}/events?name=${encodeURIComponent(name)}`);
+      const response = await fetch(
+        `${api}/events?name=${encodeURIComponent(name)}`
+      );
       if (!response.ok) {
         setError("Failed to fetch events.");
         return;
@@ -175,8 +191,8 @@ export default function Navbar() {
     if (
       location.pathname === "/" &&
       location.state &&
-      (typeof location.state === "object") &&
-      ("hideHero" in location.state)
+      typeof location.state === "object" &&
+      "hideHero" in location.state
     ) {
       setTimeout(() => {
         const hero = document.getElementById("hero-section");
@@ -191,8 +207,6 @@ export default function Navbar() {
     // eslint-disable-next-line
   }, [location.pathname]);
 
-  
-
   return (
     <nav className="bg-base-100 shadow-md border-b border-blue-100 w-full">
       {/* Desktop Navbar */}
@@ -202,7 +216,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3">
             <img src={eventIcon} alt="logo" className="h-20 w-20" />
             <span className="text-2xl font-bold text-blue-700 tracking-wide">
-              Japan-Events
+              Japan Events
             </span>
           </Link>
         </div>
@@ -235,10 +249,16 @@ export default function Navbar() {
             />
           ) : (
             <>
-              <button className="btn btn-outline btn-sm" onClick={() => setShowRegister(true)}>
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => setShowRegister(true)}
+              >
                 Register
               </button>
-              <button className="btn btn-primary btn-sm" onClick={() => setShowLogin(true)}>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowLogin(true)}
+              >
                 Sign In
               </button>
             </>
@@ -250,11 +270,25 @@ export default function Navbar() {
       <div className="md:hidden flex items-center justify-between px-4 h-14 w-full">
         <div className="dropdown">
           <label tabIndex={0} className="btn btn-ghost btn-circle">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </label>
-          <ul tabIndex={0} className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50">
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu p-3 shadow bg-white rounded-box w-64 mt-2 border border-blue-100 z-50"
+          >
             {user ? (
               <>
                 <li className="flex flex-col items-center justify-center gap-2 py-2">
@@ -270,22 +304,33 @@ export default function Navbar() {
                       />
                     </div>
                   </div>
-                  <span className="text-xs">{user.displayName || user.email}</span>
+                  <span className="text-xs">
+                    {user.displayName || user.email}
+                  </span>
                 </li>
                 {!isGoogleUser && (
                   <li>
-                    <button className="btn btn-outline btn-sm mt-2 w-full" onClick={() => navigate("/profile")}>
+                    <button
+                      className="btn btn-outline btn-sm mt-2 w-full"
+                      onClick={() => navigate("/profile")}
+                    >
                       Profile Settings
                     </button>
                   </li>
                 )}
                 <li>
-                  <Link to="/timeline" className="btn btn-outline btn-sm w-full mt-2">
+                  <Link
+                    to="/timeline"
+                    className="btn btn-outline btn-sm w-full mt-2"
+                  >
                     My Event Timeline
                   </Link>
                 </li>
                 <li>
-                  <button className="btn btn-outline btn-sm mt-2 w-full" onClick={handleLogout}>
+                  <button
+                    className="btn btn-outline btn-sm mt-2 w-full"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </button>
                 </li>
@@ -353,8 +398,16 @@ export default function Navbar() {
         />
       )}
       {/* Alerts */}
-      {error && <div className="fixed top-16 right-4 alert alert-error shadow-lg">{error}</div>}
-      {loading && <div className="fixed top-16 right-4 alert alert-info shadow-lg">Loading...</div>}
+      {error && (
+        <div className="fixed top-16 right-4 alert alert-error shadow-lg">
+          {error}
+        </div>
+      )}
+      {loading && (
+        <div className="fixed top-16 right-4 alert alert-info shadow-lg">
+          Loading...
+        </div>
+      )}
     </nav>
   );
 }
