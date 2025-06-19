@@ -1,20 +1,17 @@
 import type { FullEventType } from "../types";
+import fixTimeOffset from "./fixTimeOffSet";
 
 // Returns a string label for price, e.g. "Free" or "¥1,000"
 export function getPriceLabel(price: number) {
   if (price === 0) return "Free";
-  if (typeof price === "number" && !isNaN(price)) return `¥${price.toLocaleString()}`;
+  if (typeof price === "number" && !isNaN(price))
+    return `¥${price.toLocaleString()}`;
   return "";
 }
 
 export function getTimeRange(ev: FullEventType) {
-  const from = ev.datetimeFrom
-    ? new Date(ev.datetimeFrom).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : "-";
-  const to = ev.datetimeTo
-    ? new Date(ev.datetimeTo).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : "-";
-  return `${from} — ${to}`;
+  const { startTime, endTime } = fixTimeOffset(ev);
+  return `${startTime} — ${endTime}`;
 }
 
 export function getMonday(date: Date) {

@@ -63,4 +63,11 @@ export interface MetaData {
   label: string;
 }
 
+export interface StartEndInfo {
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+}
+
 export type LocationSearchType = "latLong" | "prefecture";

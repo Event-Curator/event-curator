@@ -15,27 +15,41 @@ type WeekCalendarViewProps = {
 };
 
 function getBarSpanIndices(ev: FullEventType, weekDates: Date[]) {
-  const start = moment(ev.datetimeFrom).startOf('day');
-  const end = moment(ev.datetimeTo).endOf('day');
+  const start = moment(ev.datetimeFrom).startOf("day");
+  const end = moment(ev.datetimeTo).endOf("day");
   const indices = weekDates
     .map((d, i) => {
-        let currentDate = moment(d);
-        return currentDate.startOf('day').isSameOrAfter(start) && currentDate.endOf('day').isSameOrBefore(end) ? i : null
-      }
-    )
-    .filter(i => i !== null) as number[];
+      let currentDate = moment(d);
+      return currentDate.startOf("day").isSameOrAfter(start) &&
+        currentDate.endOf("day").isSameOrBefore(end)
+        ? i
+        : null;
+    })
+    .filter((i) => i !== null) as number[];
 
-    return indices;
+  return indices;
 }
 
 const ArrowLeft = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
-    <path d="M15 19l-7-7 7-7" stroke="#2761da" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <path
+      d="M15 19l-7-7 7-7"
+      stroke="#2761da"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 const ArrowRight = (props: React.SVGProps<SVGSVGElement>) => (
   <svg width={32} height={32} fill="none" viewBox="0 0 24 24" {...props}>
-    <path d="M9 5l7 7-7 7" stroke="#2761da" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <path
+      d="M9 5l7 7-7 7"
+      stroke="#2761da"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -66,17 +80,17 @@ export default function WeekCalendarView({
   }
 
   // Collect multi-day events that overlap this week
- const multiDayEvents: FullEventType[] = allEventsDedup.filter(ev => {
-  if (!ev.datetimeTo) return false;
-  const start = moment(ev.datetimeFrom).startOf('day');
-  const end = moment(ev.datetimeTo).startOf('day');
-  // Only include if end is after start (at least 1 day apart)
-  return (
-    end.diff(start, 'days') >= 1 &&
-    end.toDate() >= weekStart &&
-    start.toDate() <= weekEnd
-  );
-});
+  const multiDayEvents: FullEventType[] = allEventsDedup.filter((ev) => {
+    if (!ev.datetimeTo) return false;
+    const start = moment(ev.datetimeFrom).startOf("day");
+    const end = moment(ev.datetimeTo).startOf("day");
+    // Only include if end is after start (at least 1 day apart)
+    return (
+      end.diff(start, "days") >= 1 &&
+      end.toDate() >= weekStart &&
+      start.toDate() <= weekEnd
+    );
+  });
 
   // Calculate height for the bars wrapper
   const eventBarHeight = 26;
@@ -114,7 +128,7 @@ export default function WeekCalendarView({
           style={{
             height: barsTotalHeight,
             marginBottom: barsTotalHeight > 0 ? "8px" : "0",
-            transition: "height 0.2s cubic-bezier(.42,0,.58,1)"
+            transition: "height 0.2s cubic-bezier(.42,0,.58,1)",
           }}
         >
           {multiDayEvents.map((ev, idx) => {
@@ -144,9 +158,11 @@ export default function WeekCalendarView({
                   cursor: "pointer",
                   pointerEvents: "auto",
                   zIndex: 5,
-                  transition: "top 0.2s"
+                  transition: "top 0.2s",
                 }}
-                onClick={() => window.location.assign(`/event/${ev.externalId}`)}
+                onClick={() =>
+                  window.location.assign(`/event/${ev.externalId}`)
+                }
                 title={ev.name}
               >
                 <span className="truncate">{ev.name}</span>
@@ -157,8 +173,11 @@ export default function WeekCalendarView({
       )}
 
       {/* Weekday header (always directly below multi-day bars) */}
-      <div className="w-full flex flex-row gap-8 px-8" style={{ marginBottom: "0.5rem" }}>
-        {weekDates.map(date => (
+      <div
+        className="w-full flex flex-row gap-8 px-8"
+        style={{ marginBottom: "0.5rem" }}
+      >
+        {weekDates.map((date) => (
           <div
             key={date.toISOString()}
             className="flex-1 text-center font-bold text-blue-700 text-xl"
@@ -211,41 +230,53 @@ export default function WeekCalendarView({
                             relative p-6 rounded-xl bg-white flex flex-col gap-2
                             w-full min-w-0
                             shadow transition cursor-pointer border-2
-                            ${isToday ? "border-blue-500 shadow-lg" : "border-gray-200"}
-                            ${ev.isPinned ? "border-blue-500" : "bg-gray-100 text-gray-300"}
+                            ${
+                              isToday
+                                ? "border-blue-500 shadow-lg"
+                                : "border-gray-200"
+                            }
+                            ${
+                              ev.isPinned
+                                ? "border-blue-500"
+                                : "bg-gray-100 text-gray-300"
+                            }
                           `}
                         >
-
-                        {ev.isPinned ? 
-                          (
+                          {ev.isPinned ? (
                             <div
                               onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemove(e, ev);
-                            }}
+                                e.stopPropagation();
+                                handleRemove(e, ev);
+                              }}
                             >
-                              <div className="font-bold text-blue-800 text-lg">{ev.name}</div>
-                              <div className="text-base text-gray-700">{ev.placeFreeform}</div>
+                              <div className="font-bold text-blue-800 text-lg">
+                                {ev.name}
+                              </div>
+                              <div className="text-base text-gray-700">
+                                {ev.placeFreeform}
+                              </div>
                               <div className="text-base text-blue-600 font-bold">
-                                {new Date(ev.datetimeFrom).toLocaleDateString()}
+                                {/* Temp hide dates and times until they're working */}
+                                {/* {new Date(ev.datetimeFrom).toLocaleDateString()} */}
+                                {/* {moment(ev.datetimeFrom)
+                                  .subtract(9, "hours")
+                                  .format("LL")} */}
                               </div>
                               <div className="text-base">
                                 <b>Time:&nbsp;</b>
                                 {getTimeRange(ev)}
                               </div>
                             </div>
-
                           ) : (
                             <div
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleAdd(e, ev);
                               }}
-                              >
-                              { "Click to schedule " + ev.name }
+                            >
+                              {"Click to schedule " + ev.name}
                             </div>
-                          )
-                        }
+                          )}
                         </div>
                       );
                     })

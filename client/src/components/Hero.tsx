@@ -37,7 +37,7 @@ export default function Hero() {
 
       <div className="relative z-10 text-white text-center px-4">
         <h1 className="text-6xl md:text-8xl font-extrabold drop-shadow mb-3 font-sans tracking-tight text-primary-content">
-          Events in Japan
+          Japan Events
         </h1>
         <p className="text-2xl md:text-4xl drop-shadow mb-3 font-sans tracking-tight text-primary-content">
           Search from {eventTotal} Festivals, Concerts, Sports Events & More!

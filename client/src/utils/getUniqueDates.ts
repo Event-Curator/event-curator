@@ -3,7 +3,7 @@ import moment from "moment";
 
 export default function getUniqueDates(events: FullEventType[]): string[] {
   const allDates = events.map((event) => {
-    const formattedDate = moment(event.datetimeFrom);
+    const formattedDate = moment(event.datetimeFrom).subtract(9, "hours");
     return formattedDate.format("LL");
   });
   const uniqueDates = new Set(allDates);

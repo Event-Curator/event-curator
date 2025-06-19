@@ -4,6 +4,8 @@ import type { FullEventType } from "../types";
 import { getTimeRange, getPriceLabel } from "../utils/eventUtils";
 import { categoryImages } from "../assets/categoryImages";
 import { auth } from "../firebase";
+import moment from "moment";
+import fixTimeOffset from "../utils/fixTimeOffSet";
 
 const server = import.meta.env.VITE_API;
 
@@ -14,11 +16,20 @@ type TableViewProps = {
   onRowClick?: (eventId: string) => void;
 };
 
-export default function TableView({ events, isMobile, handleRemove, onRowClick }: TableViewProps) {
+export default function TableView({
+  events,
+  isMobile,
+  handleRemove,
+  onRowClick,
+}: TableViewProps) {
   const navigate = useNavigate();
   const user = auth.currentUser;
-  
-  let sortedEvents = events.sort((a, b) => new Date(a.datetimeSchedule).getTime() - new Date(b.datetimeSchedule).getTime())
+
+  let sortedEvents = events.sort(
+    (a, b) =>
+      new Date(a.datetimeSchedule).getTime() -
+      new Date(b.datetimeSchedule).getTime()
+  );
 
   if (isMobile) {
     // Mobile: stacked card style, no horizontal scroll, all info and delete button visible
@@ -31,14 +42,16 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
         )}
         {sortedEvents.map((ev) => {
           const category = ev.category || "Other";
-          const fallbackImage = categoryImages[category] || categoryImages["Other"];
+          const fallbackImage =
+            categoryImages[category] || categoryImages["Other"];
           const imageSrc =
             ev.teaserMedia && ev.teaserMedia.trim() !== ""
-              ? (server + "/.." + ev.teaserMedia)
+              ? server + "/.." + ev.teaserMedia
               : fallbackImage;
+          const { startDate } = fixTimeOffset(ev);
           return (
             <div
-              key={ev.externalId + '-' + ev.datetimeSchedule}
+              key={ev.externalId + "-" + ev.datetimeSchedule}
               className="flex items-center gap-3 bg-white rounded-xl shadow px-3 py-3"
               onClick={() =>
                 onRowClick
@@ -57,27 +70,36 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-blue-700 text-base truncate">{ev.name}</div>
-                <div className="text-sm text-gray-800 truncate">{ev.placeFreeform}</div>
+                <div className="font-bold text-blue-700 text-base truncate">
+                  {ev.name}
+                </div>
+                <div className="text-sm text-gray-800 truncate">
+                  {ev.placeFreeform}
+                </div>
                 <div className="font-bold text-gray-700 text-xs">
-                  {new Date(ev.datetimeFrom).toLocaleDateString()}
+                  {startDate}
                 </div>
                 <div className="text-xs text-gray-500">{getTimeRange(ev)}</div>
-                <div className="mt-1 font-bold text-xs">{getPriceLabel(ev.budgetMax)}</div>
+                <div className="mt-1 font-bold text-xs">
+                  {getPriceLabel(ev.budgetMax)}
+                </div>
               </div>
               <div className="flex-shrink-0 pl-2">
-                { user ?
-                <button
-                  className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
-                  title="Remove from timeline"
-                  tabIndex={-1}
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleRemove(e, ev);
-                  }}
-                >
-                  &#10006;
-                </button> : "" }
+                {user ? (
+                  <button
+                    className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
+                    title="Remove from timeline"
+                    tabIndex={-1}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemove(e, ev);
+                    }}
+                  >
+                    &#10006;
+                  </button>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
           );
@@ -99,21 +121,26 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                 Date / Time
                 <span className="block md:hidden">&amp; Price</span>
               </th>
-              <th className="text-lg text-gray-600 hidden md:table-cell">Price</th>
+              <th className="text-lg text-gray-600 hidden md:table-cell">
+                Price
+              </th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {sortedEvents.map((ev, idx) => {
               const category = ev.category || "Other";
-              const fallbackImage = categoryImages[category] || categoryImages["Other"];
+              const fallbackImage =
+                categoryImages[category] || categoryImages["Other"];
               const imageSrc =
                 ev.teaserMedia && ev.teaserMedia.trim() !== ""
-                  ? (server + "/.." + ev.teaserMedia)
+                  ? server + "/.." + ev.teaserMedia
                   : fallbackImage;
+              // const { startDate, endDate, startTime, endTime } =
+              //   fixTimeOffset(ev);
               return (
                 <tr
-                  key={ev.externalId + '-' + ev.datetimeSchedule}
+                  key={ev.externalId + "-" + ev.datetimeSchedule}
                   className={`hover:bg-blue-50 transition cursor-pointer ${
                     idx % 2 === 1 ? "bg-blue-100" : "bg-white"
                   }`}
@@ -135,29 +162,46 @@ export default function TableView({ events, isMobile, handleRemove, onRowClick }
                     </div>
                   </td>
                   <td>
-                    <div className="font-bold text-blue-700 text-base">{ev.name}</div>
-                    <div className="text-m text-gray-800">{ev.placeFreeform}</div>
+                    <div className="font-bold text-blue-700 text-base">
+                      {ev.name}
+                    </div>
+                    <div className="text-m text-gray-800">
+                      {ev.placeFreeform}
+                    </div>
                   </td>
                   <td>
                     <div className="font-bold text-gray-700">
-                      {ev.datetimeSchedule ? new Date(ev.datetimeSchedule).toLocaleDateString() : new Date(ev.datetimeFrom).toLocaleDateString()}
+                      {moment(ev.datetimeSchedule)
+                        .subtract(9, "hours")
+                        .format("LL")}
                     </div>
-                    <div className="text-m text-gray-500">{getTimeRange(ev)}</div>
-                    <div className="mt-1 font-bold block md:hidden">{getPriceLabel(ev.budgetMax)}</div>
+                    <div className="text-m text-gray-500">
+                      {/* Temporarily removing this in case we can't get it working in time. */}
+                      {/* {getTimeRange(ev)} */}
+                    </div>
+                    <div className="mt-1 font-bold block md:hidden">
+                      {getPriceLabel(ev.budgetMax)}
+                    </div>
                   </td>
-                  <td className="font-bold hidden md:table-cell align-middle">{getPriceLabel(ev.budgetMax)}</td>
+                  <td className="font-bold hidden md:table-cell align-middle">
+                    {getPriceLabel(ev.budgetMax)}
+                  </td>
                   <td>
-                    { user ? <button
-                      className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
-                      title="Remove from timeline"
-                      tabIndex={-1}
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleRemove(e, ev);
-                      }}
-                    >
-                      &#10006;
-                    </button> : "" }
+                    {user ? (
+                      <button
+                        className="btn btn-xs btn-circle black hover:bg-red-400 text-white shadow"
+                        title="Remove from timeline"
+                        tabIndex={-1}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemove(e, ev);
+                        }}
+                      >
+                        &#10006;
+                      </button>
+                    ) : (
+                      ""
+                    )}
                   </td>
                 </tr>
               );
