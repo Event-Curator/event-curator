@@ -1,6 +1,6 @@
 import React from "react";
 import type { FullEventType } from "../types";
-import { getTimeRange } from "../utils/eventUtils";
+// import { getTimeRange } from "../utils/eventUtils";
 import moment from "moment";
 
 type WeekCalendarViewProps = {
