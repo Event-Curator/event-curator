@@ -344,7 +344,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center space-x-2">
             <img src={eventIcon} alt="logo" className="h-6 w-6" />
             <span className="text-lg font-bold text-blue-700">
-              Japan-Events
+              Japan Events
             </span>
           </Link>
         </div>
