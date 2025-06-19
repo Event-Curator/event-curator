@@ -31,7 +31,9 @@ export default function EventSection({ searchQuery }: Props) {
       events: [],
     };
     for (const event of filteredEvents) {
-      const fmtDate = moment(event.datetimeFrom).format("LL");
+      const fmtDate = moment(event.datetimeFrom)
+        .subtract(9, "hours")
+        .format("LL");
       if (fmtDate === group.date) {
         group.events.push(event);
       }
