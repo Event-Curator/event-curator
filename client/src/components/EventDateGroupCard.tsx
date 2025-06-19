@@ -15,7 +15,6 @@ export default function EventDateGroupCard({
     <>
       <h2 className="text-3xl font-bold no-underline">{date}</h2>
       {events.map((event) => (
-        // const fmtDate = moment(event.datetimeFrom).format("LL");
         <EventPreviewCard
           key={event.externalId}
           id={event.externalId}
@@ -23,8 +22,10 @@ export default function EventDateGroupCard({
           category={event.category}
           categoryFreeform={event.categoryFreeform}
           location={event.placeFreeform}
-          dateFrom={moment(event.datetimeFrom).format("LL")}
-          dateTo={moment(event.datetimeTo).format("LL")}
+          dateFrom={moment(event.datetimeFrom)
+            .subtract(9, "hours")
+            .format("LL")}
+          dateTo={moment(event.datetimeTo).subtract(9, "hours").format("LL")}
           price={event.budgetMax}
           link={event.originUrl}
           imageUrl={event.teaserMedia}

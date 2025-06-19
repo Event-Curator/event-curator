@@ -13,10 +13,13 @@ export default function EventSection({ searchQuery }: Props) {
   const { events } = useContext(EventContext);
 
   // Filter events if searchQuery is present
+  // TODO: Delete this? I don't see the point of this.
   const filteredEvents = searchQuery
-    ? events.filter((event: FullEventType) =>
-        event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (event.description && event.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? events.filter(
+        (event: FullEventType) =>
+          event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (event.description &&
+            event.description.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : events;
 

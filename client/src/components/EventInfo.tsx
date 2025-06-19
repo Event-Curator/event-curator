@@ -1,13 +1,9 @@
 import FormattedPrice from "../components/FormattedPrice";
 import type { FullEventType } from "../types";
+import fixTimeOffset from "../utils/fixTimeOffSet";
 
-export default function EventInfo({
-  event,
-}: {
-  event: FullEventType;
-}) {
-  const startDate = event.datetimeFrom ? new Date(event.datetimeFrom) : null;
-  const endDate = event.datetimeTo ? new Date(event.datetimeTo) : null;
+export default function EventInfo({ event }: { event: FullEventType }) {
+  const { startDate, endDate, startTime, endTime } = fixTimeOffset(event);
 
   return (
     <div className="space-y-2 text-gray-700 text-sm mb-6">
@@ -19,18 +15,11 @@ export default function EventInfo({
       </p>
       <p>
         <b>Date:&nbsp;</b>
-        {startDate ? startDate.toLocaleDateString() : "-"} —{" "}
-        {endDate ? endDate.toLocaleDateString() : "-"}
+        {startDate !== endDate ? `${startDate} — ${endDate}` : startDate}
       </p>
       <p>
         <b>Time:&nbsp;</b>
-        {startDate
-          ? startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "-"}
-        {" — "}
-        {endDate
-          ? endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          : "-"}
+        {`${startTime} — ${endTime}`}
       </p>
       <p>
         <b>Price:</b> <FormattedPrice price={event.budgetMin} />
@@ -46,7 +35,12 @@ export default function EventInfo({
       {event.website && (
         <p>
           <b>Website:</b>{" "}
-          <a href={event.website} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline">
+          <a
+            href={event.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-700 underline"
+          >
             {event.website}
           </a>
         </p>
