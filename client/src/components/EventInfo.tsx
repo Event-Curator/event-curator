@@ -4,6 +4,7 @@ import fixTimeOffset from "../utils/fixTimeOffSet";
 
 export default function EventInfo({ event }: { event: FullEventType }) {
   const { startDate, endDate, startTime, endTime } = fixTimeOffset(event);
+  console.log(startDate, endDate);
 
   return (
     <div className="space-y-2 text-gray-700 text-sm mb-6">
