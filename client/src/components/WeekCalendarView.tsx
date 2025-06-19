@@ -263,8 +263,8 @@ export default function WeekCalendarView({
                                   .format("LL")} */}
                               </div>
                               <div className="text-base">
-                                {/* <b>Time:&nbsp;</b>
-                                {getTimeRange(ev)} */}
+                                <b>Time:&nbsp;</b>
+                                {getTimeRange(ev)}
                               </div>
                             </div>
                           ) : (
