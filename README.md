@@ -28,6 +28,36 @@ First, you'll need to prepare the following environment varibles.
 - You'll also need to configure your Google Application Credentials. If deploying on Render,
   we recommend keeping this information in a `serviceAccountKey.json` file in the root of the instance.
 
+### Installation Proper
+
+You'll need at least `node.js` version 10.9.0 to run this app.
+
+```bash
+cd ./server
+npm run build
+npm run migrate
+npm start
+```
+
 ## Usage
 
 ## Tech stack
+
+### Frontend
+
+- React.js
+- React Router
+- Tailwind CSS
+- daisyUI
+
+### Backend
+
+- Node.js
+- Express.js
+- PostgreSQL
+- Knex.js
+- RxDB
+
+### Authentication
+
+- Firebase
