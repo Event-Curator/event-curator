@@ -86,38 +86,31 @@ users can share with anyone, including users who are not registered or logged in
 
 ---
 
-### configuration
+### The REST endpoint
 
-for now, configuration is static, and in `util/config.js`.
-there, you will find the list of possible datasource, you can enable/disable them with the named attribute (true/false)
+#### Initializing the cache
 
-#### homeCountry
+The first thing to do after application startup is to populate the cache.
+This call must be done for each sourceid (as seen in config.ts; see below for details) or else its content
+won't be be contained in the query results.
 
-this is used to add ", {country}" before asking for geocoding. OSM works best if you narrow down the search.
-
-- if the source website cover multiple countries: use "" (blank value) (it's also the default value)
-- if not, just add whatever works best for the given country (should be country name in english. ex: japan). (it will be converted to lowercase).
-
-### REST endpoint
-
-#### Initialisation / warmup of cache
-
-first thing to do after application startup, is to populate the cache.
-this call must be done for each sourceid (as seen in config.ts) or their content
-won't be inside the query result.
-
-launch a resync from the given source id (ex: japanscheapo)
+Launch a resync from the given source id (ex: japanscheapo)
 
 `GET /api/internal/scrap/${sourceid}`
 
-#### Usage
+#### Configuration
 
-when the cache has been loaded, you can make query against the content.
-it will return an unfiltered, merged, list of all event from all enabled source.
+Each resource that is indexed is configured separately. Configuration is static and can be found in `util/config.js`.
+There you will find a list of possible datasource, you can enable/disable them with the named attribute (true/false).
+
+#### REST endpoint usage
+
+When the cache has been loaded, you can make query against the content.
+It will return an unfiltered, merged, list of all event from all enabled source.
 
 `GET /api/events`
 
-also, you can add a query (as for now, only the description field is checked against)
+You can also add a query (as for now, only the description field is checked against)
 
 `GET /api/events?query=firework`
 
@@ -143,29 +136,51 @@ To get all fireworks in a 100km radius, with the browser location as xx.xxx/yy.y
 colorized winston is setup, default send to console
 `import { log } from ./utils/logger` then `log.info(...)`
 
-### users and timeline endpoints
+### meta information
 
-#### friendship creation
+there is one endpoint to get the content distribution with different focus.
+like how many hits there is in the dataset for a given city, or category
 
-Send a POST request to `/events/friend` with the following body:
+the endpoint is `/api/meta?key=${searchTerm}`
 
-{
-"user_uid": "user-a",
-"friend_uid": "user-b"
-}
+search term can be "category", or "placeFreeform", or any other field that is available in the search endpoint.
 
-#### create a timeline entry (=add favorite)
+the response will looks like
 
-Send a POST request to `/events/timeline` with the following body:
-
-{
-"user_uid": "user-a",
-"event_id": "uuid"
-}
-
-#### get user timeline
-
-send a GET with the userid to `/events/timeline?user_id={userUid}`
+```
+[
+    {
+        "name": "Sports & Fitness",
+        "count": 174,
+        "label": "Sports & Fitness (174)"
+    },
+    {
+        "name": "Other",
+        "count": 331,
+        "label": "Other (331)"
+    },
+    {
+        "name": "Performing & Visual Arts",
+        "count": 9,
+        "label": "Performing & Visual Arts (9)"
+    },
+    {
+        "name": "Food & Drink",
+        "count": 13,
+        "label": "Food & Drink (13)"
+    },
+    {
+        "name": "Music",
+        "count": 13,
+        "label": "Music (13)"
+    },
+    {
+        "name": "Film, Media & Entertainment",
+        "count": 3,
+        "label": "Film, Media & Entertainment (3)"
+    }
+]
+```
 
 ### Databroker
 
@@ -248,52 +263,6 @@ also, at node startup, the newest backup is took and reloaded inside the engine 
 
 note: all details are sent to node console.
 
-### meta information
-
-there is one endpoint to get the content distribution with different focus.
-like how many hits there is in the dataset for a given city, or category
-
-the endpoint is `/api/meta?key=${searchTerm}`
-
-search term can be "category", or "placeFreeform", or any other field that is available in the search endpoint.
-
-the response will looks like
-
-```
-[
-    {
-        "name": "Sports & Fitness",
-        "count": 174,
-        "label": "Sports & Fitness (174)"
-    },
-    {
-        "name": "Other",
-        "count": 331,
-        "label": "Other (331)"
-    },
-    {
-        "name": "Performing & Visual Arts",
-        "count": 9,
-        "label": "Performing & Visual Arts (9)"
-    },
-    {
-        "name": "Food & Drink",
-        "count": 13,
-        "label": "Food & Drink (13)"
-    },
-    {
-        "name": "Music",
-        "count": 13,
-        "label": "Music (13)"
-    },
-    {
-        "name": "Film, Media & Entertainment",
-        "count": 3,
-        "label": "Film, Media & Entertainment (3)"
-    }
-]
-```
-
 ### config entries:
 
 #### geocoding
@@ -310,5 +279,36 @@ for each website config entry:
 look up is done by comparing the placeFreeform name from the original website with the placename. it can start with or ends with.
 note: comparaison is done after lowercase() to both placename and placeFreeform.
 note: those result are not cached, since they are fast to get
+
+#### homeCountry
+
+this is used to add ", {country}" before asking for geocoding. OSM works best if you narrow down the search.
+
+- if the source website cover multiple countries: use "" (blank value) (it's also the default value)
+- if not, just add whatever works best for the given country (should be country name in english. ex: japan). (it will be converted to lowercase).
+
+### User administration and timeline endpoints
+
+#### friendship creation
+
+Send a POST request to `/events/friend` with the following body:
+
+{
+"user_uid": "user-a",
+"friend_uid": "user-b"
+}
+
+#### create a timeline entry (=add favorite)
+
+Send a POST request to `/events/timeline` with the following body:
+
+{
+"user_uid": "user-a",
+"event_id": "uuid"
+}
+
+#### get user timeline
+
+send a GET with the userid to `/events/timeline?user_id={userUid}`
 
 ## Photo Credits
